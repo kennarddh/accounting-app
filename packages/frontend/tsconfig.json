@@ -18,7 +18,7 @@
 			"Pages/*": ["./src/Pages/*"],
 			"Outlets/*": ["./src/Outlets/*"],
 			"Stores/*": ["./src/Stores/*"],
-			"@accounting-app/common": ["../common"],
+			"@accounting-app/common": ["../common"]
 		},
 		"types": ["vite/client", "vite-plugin-pwa/react"]
 	},

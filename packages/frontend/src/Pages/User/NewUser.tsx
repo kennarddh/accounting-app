@@ -18,7 +18,7 @@ import {
 import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import { useTranslation } from 'react-i18next'
 
-import PageContainer from 'Components/Admin/PageContainer'
+import PageContainer from 'Components/PageContainer'
 
 import HandleApiError from 'Utils/HandleApiError'
 

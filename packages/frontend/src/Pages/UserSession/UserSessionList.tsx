@@ -22,7 +22,7 @@ import {
 } from '@accounting-app/common'
 import { useTranslation } from 'react-i18next'
 
-import ListPageTemplate, { ListPageTemplateHandle } from 'Components/Admin/ListPageTemplate'
+import ListPageTemplate, { ListPageTemplateHandle } from 'Components/ListPageTemplate'
 
 import HandleApiError from 'Utils/HandleApiError'
 import TransformGridGetRowsParams from 'Utils/TransformGridGetRowsParams'

@@ -2,7 +2,7 @@ import { FC } from 'react'
 
 import { useTranslation } from 'react-i18next'
 
-import PageContainer from 'Components/Admin/PageContainer'
+import PageContainer from 'Components/PageContainer'
 
 const Home: FC = () => {
 	const { t } = useTranslation()

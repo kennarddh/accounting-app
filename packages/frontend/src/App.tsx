@@ -36,29 +36,29 @@ const router = createBrowserRouter([
 						children: [
 							{
 								index: true,
-								lazy: () => import('Pages/Admin/Home'),
+								lazy: () => import('Pages/Home'),
 							},
 							{
 								path: 'user',
 								children: [
 									{
 										index: true,
-										lazy: () => import('Pages/Admin/User/UserList'),
+										lazy: () => import('Pages/User/UserList'),
 									},
 									{
 										path: 'new',
-										lazy: () => import('Pages/Admin/User/NewUser'),
+										lazy: () => import('Pages/User/NewUser'),
 									},
 									{
 										path: ':id',
 										children: [
 											{
 												index: true,
-												lazy: () => import('Pages/Admin/User/UserDetail'),
+												lazy: () => import('Pages/User/UserDetail'),
 											},
 											{
 												path: 'edit',
-												lazy: () => import('Pages/Admin/User/EditUser'),
+												lazy: () => import('Pages/User/EditUser'),
 											},
 										],
 									},
@@ -68,12 +68,12 @@ const router = createBrowserRouter([
 											{
 												index: true,
 												lazy: () =>
-													import('Pages/Admin/UserSession/UserSessionList'),
+													import('Pages/UserSession/UserSessionList'),
 											},
 											{
 												path: ':id',
 												lazy: () =>
-													import('Pages/Admin/UserSession/UserSessionDetail'),
+													import('Pages/UserSession/UserSessionDetail'),
 											},
 										],
 									},
@@ -84,24 +84,22 @@ const router = createBrowserRouter([
 								children: [
 									{
 										index: true,
-										lazy: () => import('Pages/Admin/Account/AccountList'),
+										lazy: () => import('Pages/Account/AccountList'),
 									},
 									{
 										path: 'new',
-										lazy: () => import('Pages/Admin/Account/NewAccount'),
+										lazy: () => import('Pages/Account/NewAccount'),
 									},
 									{
 										path: ':id',
 										children: [
 											{
 												index: true,
-												lazy: () =>
-													import('Pages/Admin/Account/AccountDetail'),
+												lazy: () => import('Pages/Account/AccountDetail'),
 											},
 											{
 												path: 'edit',
-												lazy: () =>
-													import('Pages/Admin/Account/EditAccount'),
+												lazy: () => import('Pages/Account/EditAccount'),
 											},
 										],
 									},

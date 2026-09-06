@@ -6,7 +6,7 @@ import { Box, TextField } from '@mui/material'
 
 import { useTranslation } from 'react-i18next'
 
-import PageContainer from 'Components/Admin/PageContainer'
+import PageContainer from 'Components/PageContainer'
 
 import UserSessionFindByIdApi, {
 	UserSessionFindByIdOutput,

@@ -20,12 +20,12 @@ import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import useAuthStore from 'Stores/AuthStore'
 import { useTranslation } from 'react-i18next'
 
-import MenuContent from 'Components/Admin/Menu/MenuContent'
+import MenuContent from 'Components/Menu/MenuContent'
 
 import AuthLogoutApi from 'Api/Auth/AuthLogoutApi'
 import { IsApiResponseError } from 'Api/index'
 
-import LanguageSelector from '../../Menu/LanguageSelector'
+import LanguageSelector from './LanguageSelector'
 
 export interface MobileSideMenuProps {
 	open: boolean | undefined

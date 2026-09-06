@@ -13,10 +13,8 @@ import tsEslint from 'typescript-eslint'
 
 export default defineConfig(
 	js.configs.recommended,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-	importX.flatConfigs.recommended as any,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-	importX.flatConfigs.typescript as any,
+	importX.flatConfigs.recommended,
+	importX.flatConfigs.typescript,
 	tsEslint.configs.strictTypeChecked,
 	tsEslint.configs.stylisticTypeChecked,
 	prettierRecommended,

@@ -4,7 +4,7 @@ import { Outlet } from 'react-router'
 
 import { Box } from '@mui/material'
 
-import Header from 'Components/Admin/Menu/Header'
+import Header from 'Components/Menu/Header'
 
 const AdminDashboardLayout: FC = () => {
 	return (

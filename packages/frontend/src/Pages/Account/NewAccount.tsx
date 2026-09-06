@@ -7,7 +7,7 @@ import { Alert, Box, Button, FormControl, MenuItem, TextField } from '@mui/mater
 import { AccountType, ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import { useTranslation } from 'react-i18next'
 
-import PageContainer from 'Components/Admin/PageContainer'
+import PageContainer from 'Components/PageContainer'
 
 import HandleApiError from 'Utils/HandleApiError'
 
@@ -53,7 +53,7 @@ const NewAccount: FC = () => {
 				}
 			})
 		},
-		[Name, Navigate, code, type],
+		[Name, Navigate, code, type, t],
 	)
 
 	return (

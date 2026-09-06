@@ -18,7 +18,7 @@ import {
 import { UserSortField } from '@accounting-app/common'
 import { useTranslation } from 'react-i18next'
 
-import ListPageTemplate, { ListPageTemplateHandle } from 'Components/Admin/ListPageTemplate'
+import ListPageTemplate, { ListPageTemplateHandle } from 'Components/ListPageTemplate'
 
 import TransformGridGetRowsParams from 'Utils/TransformGridGetRowsParams'
 

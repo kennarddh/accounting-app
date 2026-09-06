@@ -4,7 +4,7 @@ import { AppBar, Box, Stack, Toolbar, Typography } from '@mui/material'
 
 import { useTranslation } from 'react-i18next'
 
-import LanguageSelector from '../../Menu/LanguageSelector'
+import LanguageSelector from './LanguageSelector'
 
 const DesktopHeader: FC = () => {
 	const { t } = useTranslation()

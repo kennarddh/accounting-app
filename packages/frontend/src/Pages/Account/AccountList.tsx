@@ -37,7 +37,7 @@ import {
 } from '@accounting-app/common'
 import { useTranslation } from 'react-i18next'
 
-import ListPageTemplate, { ListPageTemplateHandle } from 'Components/Admin/ListPageTemplate'
+import ListPageTemplate, { ListPageTemplateHandle } from 'Components/ListPageTemplate'
 
 import CreateArrayConditional from 'Utils/CreateArrayConditional'
 import HandleApiError from 'Utils/HandleApiError'
@@ -68,7 +68,6 @@ const AccountList: FC = () => {
 
 	const [selectedTypes, setSelectedTypes] = useState<AccountType[]>(() => {
 		const types = SearchParams.getAll('types')
-		if (types === null) return []
 
 		return types.filter(type =>
 			Object.values(AccountType).includes(type as AccountType),
