@@ -1,6 +1,11 @@
 import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from '@celosiajs/core'
 
-import { AccountSortField, AccountType, SortOrder } from '@accounting-app/common'
+import {
+	AccountSortField,
+	AccountType,
+	FilterEnableDisable,
+	SortOrder,
+} from '@accounting-app/common'
 import z from 'zod/v4'
 
 import RemoveUndefinedValueFromObject from 'Utils/RemoveUndefinedValueFromObject'
@@ -19,10 +24,10 @@ class FindManyAccounts extends Controller {
 		request: ControllerRequest<FindManyAccounts>,
 		response: CelosiaResponse,
 	) {
-		const { search, pagination, sort, types, isActive } = request.query
+		const { search, pagination, sort, types, active } = request.query
 
 		const options = RemoveUndefinedValueFromObject({
-			filter: { search, types, isActive },
+			filter: { search, types, active },
 			pagination,
 			sort,
 		}) satisfies AccountFindManyOptions
@@ -45,7 +50,7 @@ class FindManyAccounts extends Controller {
 		return z.object({
 			search: z.string().optional(),
 			types: z.array(z.enum(AccountType)).optional(),
-			isActive: z.boolean().optional(),
+			active: z.enum(FilterEnableDisable).optional(),
 			pagination: ZodPagination.optional(),
 			sort: z
 				.object({

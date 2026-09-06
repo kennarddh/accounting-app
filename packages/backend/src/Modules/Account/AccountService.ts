@@ -1,6 +1,11 @@
 import { DI, Injectable, Service } from '@celosiajs/core'
 
-import { AccountSortField, AccountType, SortOrder } from '@accounting-app/common'
+import {
+	AccountSortField,
+	AccountType,
+	FilterEnableDisable,
+	SortOrder,
+} from '@accounting-app/common'
 
 import { DeepPartialAndUndefined } from 'Types/Types'
 
@@ -40,7 +45,7 @@ export interface AccountUpdateData {
 export interface AccountFilterOptions {
 	search?: string
 	types?: AccountType[]
-	isActive?: boolean
+	active?: FilterEnableDisable
 }
 
 export interface AccountFindManyOptions extends FindManyOptions<AccountSortField> {
@@ -98,8 +103,9 @@ class AccountService extends Service {
 				in: filter.types,
 			}
 
-		if (filter.isActive !== undefined)
-			repositoryFilter.disabledAt = filter.isActive ? null : { not: null }
+		if (filter.active !== undefined && filter.active !== FilterEnableDisable.All)
+			repositoryFilter.disabledAt =
+				filter.active === FilterEnableDisable.Active ? null : { not: null }
 
 		return repositoryFilter
 	}

@@ -60,3 +60,9 @@ export enum AccountType {
 	Revenue = 'Revenue',
 	Expense = 'Expense',
 }
+
+export enum FilterEnableDisable {
+	Active = 'Active',
+	All = 'All',
+	Disabled = 'Disabled',
+}

@@ -1,4 +1,4 @@
-import { AccountSortField, AccountType } from '@accounting-app/common'
+import { AccountSortField, AccountType, FilterEnableDisable } from '@accounting-app/common'
 
 import CallApi from 'Api/CallApi'
 import { ApiFunction, FindManyData, FindManyOutput, FindManyResponse } from 'Api/Types'
@@ -28,7 +28,7 @@ export type AccountFindManyOutput = FindManyOutput<AccountFindManySingleOutput>
 export interface AccountFindManyData extends FindManyData<AccountSortField> {
 	search?: string
 	types?: AccountType[]
-	isActive?: boolean
+	active?: FilterEnableDisable
 }
 
 const AccountFindManyApi: ApiFunction<AccountFindManyOutput, AccountFindManyData> = async data => {
@@ -38,7 +38,7 @@ const AccountFindManyApi: ApiFunction<AccountFindManyOutput, AccountFindManyData
 			sort: data.sort,
 			search: data.search,
 			types: data.types,
-			isActive: data.isActive,
+			active: data.active,
 		},
 	})
 

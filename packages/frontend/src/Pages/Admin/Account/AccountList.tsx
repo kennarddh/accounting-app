@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useNavigate, useSearchParams } from 'react-router'
 
@@ -6,7 +6,7 @@ import EditIcon from '@mui/icons-material/Edit'
 import SearchIcon from '@mui/icons-material/Search'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import { Chip, InputAdornment, TextField } from '@mui/material'
+import { Chip, InputAdornment, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import {
 	GridActionsCellItem,
 	GridColDef,
@@ -15,7 +15,7 @@ import {
 	GridGetRowsResponse,
 } from '@mui/x-data-grid'
 
-import { AccountSortField, ApiErrorKind } from '@accounting-app/common'
+import { AccountSortField, ApiErrorKind, FilterEnableDisable } from '@accounting-app/common'
 import { useTranslation } from 'react-i18next'
 
 import ListPageTemplate, { ListPageTemplateHandle } from 'Components/Admin/ListPageTemplate'
@@ -34,6 +34,15 @@ const AccountList: FC = () => {
 	const [SearchParams, SetSearchParams] = useSearchParams()
 
 	const [FilterSearch, SetFilterSearch] = useState(() => SearchParams.get('search') ?? '')
+	const [enableDisableFilter, setEnableDisableFilter] = useState<FilterEnableDisable>(() => {
+		const enableDisableFilter = SearchParams.get(
+			'enableDisableFilter',
+		) as FilterEnableDisable | null
+
+		if (enableDisableFilter === null) return FilterEnableDisable.All
+
+		return enableDisableFilter
+	})
 
 	const ListPageTemplateRef = useRef<ListPageTemplateHandle>(null)
 
@@ -41,8 +50,18 @@ const AccountList: FC = () => {
 
 	const { t } = useTranslation()
 
+	const handleEnableDisableFilterChange = (
+		_: React.MouseEvent<HTMLElement>,
+		newValue: FilterEnableDisable | null,
+	) => {
+		if (newValue === null) return
+
+		setEnableDisableFilter(newValue)
+	}
+
 	const OnFilterReset = useCallback(() => {
 		SetFilterSearch('')
+		setEnableDisableFilter(FilterEnableDisable.All)
 	}, [])
 
 	const EnableDisable = useCallback(
@@ -158,19 +177,18 @@ const AccountList: FC = () => {
 	)
 
 	const debouncedFilterSearch = useDebounce(FilterSearch, 500)
+	const debouncedEnableDisableFilter = useDebounce(enableDisableFilter, 500)
 
-	const OnRefreshData = useCallback(
-		() => {
-			SetSearchParams(prev => {
-				if (debouncedFilterSearch !== '') prev.set('search', debouncedFilterSearch)
-				else prev.delete('search')
+	useEffect(() => {
+		SetSearchParams(prev => {
+			if (debouncedFilterSearch !== '') prev.set('search', debouncedFilterSearch)
+			else prev.delete('search')
 
-				return prev
-			})
-		},
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[debouncedFilterSearch],
-	)
+			prev.set('enableDisableFilter', debouncedEnableDisableFilter)
+
+			return prev
+		})
+	}, [SetSearchParams, debouncedFilterSearch, debouncedEnableDisableFilter])
 
 	const AccountDataSource = useMemo<GridDataSource>(
 		() => ({
@@ -178,14 +196,13 @@ const AccountList: FC = () => {
 				const result = await AccountFindManyApi({
 					...TransformGridGetRowsParams<AccountSortField>(params),
 					search: debouncedFilterSearch,
+					active: debouncedEnableDisableFilter,
 				})
-
-				OnRefreshData()
 
 				return { rows: result.list, rowCount: result.pagination.total }
 			},
 		}),
-		[OnRefreshData, debouncedFilterSearch],
+		[debouncedEnableDisableFilter, debouncedFilterSearch],
 	)
 
 	return (
@@ -197,23 +214,41 @@ const AccountList: FC = () => {
 			sortFieldEnum={AccountSortField}
 			onFilterReset={OnFilterReset}
 			filterSlot={
-				<TextField
-					id='search'
-					label={t('common.search')}
-					variant='outlined'
-					value={FilterSearch}
-					onChange={event => SetFilterSearch(event.target.value)}
-					sx={{ minWidth: 200 }}
-					slotProps={{
-						input: {
-							startAdornment: (
-								<InputAdornment position='start'>
-									<SearchIcon />
-								</InputAdornment>
-							),
-						},
-					}}
-				/>
+				<>
+					<TextField
+						id='search'
+						label={t('common.search')}
+						variant='outlined'
+						value={FilterSearch}
+						onChange={event => SetFilterSearch(event.target.value)}
+						sx={{ minWidth: 200 }}
+						slotProps={{
+							input: {
+								startAdornment: (
+									<InputAdornment position='start'>
+										<SearchIcon />
+									</InputAdornment>
+								),
+							},
+						}}
+					/>
+					<ToggleButtonGroup
+						value={enableDisableFilter}
+						exclusive
+						onChange={handleEnableDisableFilterChange}
+						size='small'
+					>
+						<ToggleButton value={FilterEnableDisable.Active}>
+							{t('common.active')}
+						</ToggleButton>
+						<ToggleButton value={FilterEnableDisable.All}>
+							{t('common.all')}
+						</ToggleButton>
+						<ToggleButton value={FilterEnableDisable.Disabled}>
+							{t('common.disabled')}
+						</ToggleButton>
+					</ToggleButtonGroup>
+				</>
 			}
 		/>
 	)
