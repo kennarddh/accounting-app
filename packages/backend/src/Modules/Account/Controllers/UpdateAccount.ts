@@ -1,6 +1,6 @@
 import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from '@celosiajs/core'
 
-import { AccountType, ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
+import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import z from 'zod/v4'
 
 import { ResourceNotFoundError } from 'Errors'
@@ -17,14 +17,13 @@ class UpdateAccount extends Controller {
 		request: ControllerRequest<UpdateAccount>,
 		response: CelosiaResponse,
 	) {
-		const { code, name, type } = request.body
+		const { code, name } = request.body
 		const { id } = request.params
 
 		try {
 			await this.accountService.update(id, {
 				code,
 				name,
-				type,
 			})
 
 			return response.sendStatus(204)
@@ -55,7 +54,6 @@ class UpdateAccount extends Controller {
 		return z.object({
 			code: z.string().trim().min(1).max(20).optional(),
 			name: z.string().trim().min(1).max(100).optional(),
-			type: z.enum(AccountType).optional(),
 		})
 	}
 

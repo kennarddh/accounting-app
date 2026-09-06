@@ -59,7 +59,7 @@ const EditAccount: FC = () => {
 
 			startTransition(async () => {
 				try {
-					await AccountUpdateApi({ id, code, name: Name, type })
+					await AccountUpdateApi({ id, code, name: Name,  })
 
 					await Navigate('../../')
 				} catch (error) {
@@ -117,11 +117,10 @@ const EditAccount: FC = () => {
 				<FormControl fullWidth>
 					<TextField
 						select
-						value={type}
-						onChange={event => setType(event.target.value as AccountType)}
+						defaultValue={type}
 						label={t('accounts.type')}
 						variant='outlined'
-						required
+						disabled
 					>
 						{Object.values(AccountType).map(type => (
 							<MenuItem key={type} value={type}>

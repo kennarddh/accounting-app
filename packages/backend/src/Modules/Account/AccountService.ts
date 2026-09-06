@@ -32,7 +32,6 @@ export interface AccountCreateData {
 export interface AccountUpdateData {
 	code?: string
 	name?: string
-	type?: AccountType
 }
 
 export interface AccountFilterOptions {
