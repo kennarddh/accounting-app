@@ -51,13 +51,10 @@ export interface SelectTemplateProps {
 	shrinkedText: string | null
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const SelectButton = styled(Button)(({ theme }) => ({
 	textTransform: 'none',
 	position: 'relative',
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
 	color: theme.palette.text.primary,
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
 	minHeight: theme.spacing(7),
 }))
 
