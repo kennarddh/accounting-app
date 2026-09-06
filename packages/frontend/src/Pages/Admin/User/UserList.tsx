@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { FC, useCallback, useMemo, useRef, useState } from 'react'
 
 import { useNavigate, useSearchParams } from 'react-router'
 
@@ -27,39 +27,21 @@ import useDebounce from 'Hooks/useDebounce'
 import UserFindManyApi, { UserFindManySingleOutput } from 'Api/User/UserFindManyApi'
 
 const UserList: FC = () => {
-	const [searchParams, setSearchParams] = useSearchParams()
+	const [SearchParams, SetSearchParams] = useSearchParams()
 
-	const [filterSearch, setFilterSearch] = useState(() => searchParams.get('search') ?? '')
+	const [FilterSearch, SetFilterSearch] = useState(() => SearchParams.get('search') ?? '')
 
-	const listPageTemplateRef = useRef<ListPageTemplateHandle>(null)
+	const ListPageTemplateRef = useRef<ListPageTemplateHandle>(null)
 
-	const navigate = useNavigate()
+	const Navigate = useNavigate()
+
 	const { t } = useTranslation()
 
-	const debouncedFilterSearch = useDebounce(filterSearch, 500)
-
-	useEffect(() => {
-		setSearchParams(
-			prev => {
-				const next = new URLSearchParams(prev)
-
-				if (debouncedFilterSearch) {
-					next.set('search', debouncedFilterSearch)
-				} else {
-					next.delete('search')
-				}
-
-				return next
-			},
-			{ replace: true },
-		)
-	}, [debouncedFilterSearch, setSearchParams])
-
-	const onFilterReset = useCallback(() => {
-		setFilterSearch('')
+	const OnFilterReset = useCallback(() => {
+		SetFilterSearch('')
 	}, [])
 
-	const columns = useMemo<GridColDef<UserFindManySingleOutput>[]>(
+	const Columns = useMemo<GridColDef<UserFindManySingleOutput>[]>(
 		() => [
 			{ field: 'name', headerName: t('users.name'), width: 300, filterable: false },
 			{
@@ -86,21 +68,33 @@ const UserList: FC = () => {
 						key='seeDetail'
 						icon={<VisibilityIcon />}
 						label={t('common.seeDetail')}
-						onClick={() => navigate(params.row.id)}
+						onClick={() => Navigate(params.row.id)}
 					/>,
 					<GridActionsCellItem
 						key='edit'
 						icon={<EditIcon />}
 						label={t('common.edit')}
-						onClick={() => navigate(`${params.row.id}/edit`)}
+						onClick={() => Navigate(`${params.row.id}/edit`)}
 					/>,
 				],
 			},
 		],
-		[navigate, t],
+		[Navigate, t],
 	)
 
-	const userDataSource = useMemo<GridDataSource>(
+	const debouncedFilterSearch = useDebounce(FilterSearch, 500)
+
+	const OnRefreshData = useCallback(() => {
+		SetSearchParams(prev => {
+			if (debouncedFilterSearch !== '') prev.set('search', debouncedFilterSearch)
+			else prev.delete('search')
+
+			return prev
+		})
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [debouncedFilterSearch])
+
+	const UserDataSource = useMemo<GridDataSource>(
 		() => ({
 			getRows: async (params: GridGetRowsParams): Promise<GridGetRowsResponse> => {
 				const result = await UserFindManyApi({
@@ -108,27 +102,29 @@ const UserList: FC = () => {
 					search: debouncedFilterSearch,
 				})
 
+				OnRefreshData()
+
 				return { rows: result.list, rowCount: result.pagination.total }
 			},
 		}),
-		[debouncedFilterSearch],
+		[OnRefreshData, debouncedFilterSearch],
 	)
 
 	return (
 		<ListPageTemplate
-			ref={listPageTemplateRef}
+			ref={ListPageTemplateRef}
 			title={t('users.list.title')}
-			dataSource={userDataSource}
-			columns={columns}
+			dataSource={UserDataSource}
+			columns={Columns}
 			sortFieldEnum={UserSortField}
-			onFilterReset={onFilterReset}
+			onFilterReset={OnFilterReset}
 			filterSlot={
 				<TextField
 					id='search'
 					label={t('common.search')}
 					variant='outlined'
-					value={filterSearch}
-					onChange={event => setFilterSearch(event.target.value)}
+					value={FilterSearch}
+					onChange={event => SetFilterSearch(event.target.value)}
 					sx={{ minWidth: 200 }}
 					slotProps={{
 						input: {

@@ -31,7 +31,7 @@ export const resolveAlias = Object.entries(relativeAlias).reduce(
 
 		return prev
 	},
-	{ '@mui/styled-engine': '@mui/styled-engine-sc' },
+	{},
 )
 
 // https://vitejs.dev/config/

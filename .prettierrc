@@ -61,7 +61,6 @@
 					"^@vitejs/",
 					"^vite-",
 					"^react-router$",
-					"^styled-components$",
 					"^@mui/icons-material/",
 					"^@mui/",
 

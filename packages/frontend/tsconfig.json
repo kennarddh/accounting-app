@@ -8,17 +8,6 @@
 		"sourceMap": true,
 		"jsx": "react-jsx",
 		"lib": ["DOM", "DOM.Iterable", "ES2023", "WebWorker"],
-		"plugins": [
-			{
-				"name": "@styled/typescript-styled-plugin",
-				"lint": {
-					"duplicateProperties": "error",
-					"zeroUnits": "warning",
-					"ieHack": "error",
-					"important": "warning"
-				}
-			}
-		],
 		"paths": {
 			"Components/*": ["./src/Components/*"],
 			"Contexts/*": ["./src/Contexts/*"],
@@ -30,7 +19,6 @@
 			"Outlets/*": ["./src/Outlets/*"],
 			"Stores/*": ["./src/Stores/*"],
 			"@accounting-app/common": ["../common"],
-			"@mui/styled-engine": ["./node_modules/@mui/styled-engine-sc"]
 		},
 		"types": ["vite/client", "vite-plugin-pwa/react"]
 	},

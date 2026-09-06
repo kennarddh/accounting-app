@@ -13,7 +13,7 @@ import {
 } from '@mui/x-data-grid'
 import { GridApiCommunity } from '@mui/x-data-grid/internals'
 
-import { SortOrder } from '@accounting-app/common'
+import { SortOrder } from '@sport-score/common'
 
 import HandleDataGridError from 'Utils/HandleDataGridError'
 
@@ -95,6 +95,11 @@ const ListPageDataGrid: FC<ListPageDataGridProps> = props => {
 		})
 	}, [SortModel, SetSearchParams])
 
+	const noRowsOverlay = useCallback(
+		() => <CustomNoRowsOverlay errorKind={DataSourceError} />,
+		[DataSourceError],
+	)
+
 	return (
 		<DataGrid
 			apiRef={props.apiRef}
@@ -109,8 +114,9 @@ const ListPageDataGrid: FC<ListPageDataGridProps> = props => {
 			dataSource={props.dataSource}
 			onDataSourceError={OnError}
 			slots={{
-				noRowsOverlay: () => <CustomNoRowsOverlay errorKind={DataSourceError} />,
+				noRowsOverlay,
 			}}
+
 			loading={props.loading ?? false}
 		/>
 	)
