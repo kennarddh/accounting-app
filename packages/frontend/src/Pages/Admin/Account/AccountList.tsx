@@ -6,7 +6,21 @@ import EditIcon from '@mui/icons-material/Edit'
 import SearchIcon from '@mui/icons-material/Search'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import { Chip, InputAdornment, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import {
+	Box,
+	Checkbox,
+	Chip,
+	FormControl,
+	InputAdornment,
+	InputLabel,
+	ListItemText,
+	MenuItem,
+	OutlinedInput,
+	Select,
+	TextField,
+	ToggleButton,
+	ToggleButtonGroup,
+} from '@mui/material'
 import {
 	GridActionsCellItem,
 	GridColDef,
@@ -15,7 +29,12 @@ import {
 	GridGetRowsResponse,
 } from '@mui/x-data-grid'
 
-import { AccountSortField, ApiErrorKind, FilterEnableDisable } from '@accounting-app/common'
+import {
+	AccountSortField,
+	AccountType,
+	ApiErrorKind,
+	FilterEnableDisable,
+} from '@accounting-app/common'
 import { useTranslation } from 'react-i18next'
 
 import ListPageTemplate, { ListPageTemplateHandle } from 'Components/Admin/ListPageTemplate'
@@ -41,7 +60,19 @@ const AccountList: FC = () => {
 
 		if (enableDisableFilter === null) return FilterEnableDisable.All
 
-		return enableDisableFilter
+		if (Object.values(FilterEnableDisable).includes(enableDisableFilter))
+			return enableDisableFilter
+
+		return FilterEnableDisable.All
+	})
+
+	const [selectedTypes, setSelectedTypes] = useState<AccountType[]>(() => {
+		const types = SearchParams.getAll('types')
+		if (types === null) return []
+
+		return types.filter(type =>
+			Object.values(AccountType).includes(type as AccountType),
+		) as AccountType[]
 	})
 
 	const ListPageTemplateRef = useRef<ListPageTemplateHandle>(null)
@@ -178,6 +209,7 @@ const AccountList: FC = () => {
 
 	const debouncedFilterSearch = useDebounce(FilterSearch, 500)
 	const debouncedEnableDisableFilter = useDebounce(enableDisableFilter, 500)
+	const debouncedSelectedTypes = useDebounce(selectedTypes, 500)
 
 	useEffect(() => {
 		SetSearchParams(prev => {
@@ -186,9 +218,20 @@ const AccountList: FC = () => {
 
 			prev.set('enableDisableFilter', debouncedEnableDisableFilter)
 
+			prev.delete('types')
+
+			for (const type of debouncedSelectedTypes) {
+				prev.append('types', type)
+			}
+
 			return prev
 		})
-	}, [SetSearchParams, debouncedFilterSearch, debouncedEnableDisableFilter])
+	}, [
+		SetSearchParams,
+		debouncedFilterSearch,
+		debouncedEnableDisableFilter,
+		debouncedSelectedTypes,
+	])
 
 	const AccountDataSource = useMemo<GridDataSource>(
 		() => ({
@@ -197,12 +240,13 @@ const AccountList: FC = () => {
 					...TransformGridGetRowsParams<AccountSortField>(params),
 					search: debouncedFilterSearch,
 					active: debouncedEnableDisableFilter,
+					types: debouncedSelectedTypes,
 				})
 
 				return { rows: result.list, rowCount: result.pagination.total }
 			},
 		}),
-		[debouncedEnableDisableFilter, debouncedFilterSearch],
+		[debouncedEnableDisableFilter, debouncedFilterSearch, debouncedSelectedTypes],
 	)
 
 	return (
@@ -219,6 +263,7 @@ const AccountList: FC = () => {
 						id='search'
 						label={t('common.search')}
 						variant='outlined'
+						size='small'
 						value={FilterSearch}
 						onChange={event => SetFilterSearch(event.target.value)}
 						sx={{ minWidth: 200 }}
@@ -248,6 +293,36 @@ const AccountList: FC = () => {
 							{t('common.disabled')}
 						</ToggleButton>
 					</ToggleButtonGroup>
+					<FormControl sx={{ minWidth: 200 }} size='small' variant='outlined'>
+						<InputLabel id='type-filter-label'>{t('accounts.type')}</InputLabel>
+						<Select
+							labelId='type-filter-label'
+							multiple
+							value={selectedTypes}
+							onChange={event =>
+								setSelectedTypes(event.target.value as AccountType[])
+							}
+							input={<OutlinedInput label={t('accounts.type')} />}
+							renderValue={selected => (
+								<Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+									{selected.map(value => (
+										<Chip
+											key={value}
+											label={t(`accounts.enum.type.${value}`)}
+											size='small'
+										/>
+									))}
+								</Box>
+							)}
+						>
+							{Object.values(AccountType).map(type => (
+								<MenuItem key={type} value={type}>
+									<Checkbox checked={selectedTypes.includes(type)} size='small' />
+									<ListItemText primary={t(`accounts.enum.type.${type}`)} />
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
 				</>
 			}
 		/>

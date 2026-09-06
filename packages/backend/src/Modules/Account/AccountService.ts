@@ -98,7 +98,7 @@ class AccountService extends Service {
 				},
 			]
 
-		if (filter.types !== undefined)
+		if (filter.types !== undefined && filter.types.length > 0)
 			repositoryFilter.type = {
 				in: filter.types,
 			}
