@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useNavigate, useSearchParams } from 'react-router'
 
@@ -133,15 +133,14 @@ const UserSessionList: FC = () => {
 
 	const debouncedFilterIncludeDisabled = useDebounce(FilterIncludeInactive, 500)
 
-	const OnRefreshData = useCallback(() => {
+	useEffect(() => {
 		SetSearchParams(prev => {
 			if (debouncedFilterIncludeDisabled) prev.set('includeInactive', 'true')
 			else prev.delete('includeInactive')
 
 			return prev
 		})
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [debouncedFilterIncludeDisabled])
+	}, [SetSearchParams, debouncedFilterIncludeDisabled])
 
 	const UserDataSource = useMemo<GridDataSource>(
 		() => ({
@@ -151,12 +150,10 @@ const UserSessionList: FC = () => {
 					includeInactive: debouncedFilterIncludeDisabled,
 				})
 
-				OnRefreshData()
-
 				return { rows: result.list, rowCount: result.pagination.total }
 			},
 		}),
-		[OnRefreshData, debouncedFilterIncludeDisabled],
+		[debouncedFilterIncludeDisabled],
 	)
 
 	return (

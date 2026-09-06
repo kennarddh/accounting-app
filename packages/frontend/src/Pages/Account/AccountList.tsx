@@ -92,6 +92,7 @@ const AccountList: FC = () => {
 	const OnFilterReset = useCallback(() => {
 		SetFilterSearch('')
 		setEnableDisableFilter(FilterEnableDisable.All)
+		setSelectedTypes([])
 	}, [])
 
 	const EnableDisable = useCallback(

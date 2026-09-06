@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useNavigate, useSearchParams } from 'react-router'
 
@@ -84,15 +84,14 @@ const UserList: FC = () => {
 
 	const debouncedFilterSearch = useDebounce(FilterSearch, 500)
 
-	const OnRefreshData = useCallback(() => {
+	useEffect(() => {
 		SetSearchParams(prev => {
 			if (debouncedFilterSearch !== '') prev.set('search', debouncedFilterSearch)
 			else prev.delete('search')
 
 			return prev
 		})
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [debouncedFilterSearch])
+	}, [SetSearchParams, debouncedFilterSearch])
 
 	const UserDataSource = useMemo<GridDataSource>(
 		() => ({
@@ -102,12 +101,10 @@ const UserList: FC = () => {
 					search: debouncedFilterSearch,
 				})
 
-				OnRefreshData()
-
 				return { rows: result.list, rowCount: result.pagination.total }
 			},
 		}),
-		[OnRefreshData, debouncedFilterSearch],
+		[debouncedFilterSearch],
 	)
 
 	return (
