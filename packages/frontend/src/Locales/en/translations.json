@@ -186,6 +186,15 @@
 			"button": "Select Account",
 			"title": "Select Account"
 		},
+		"enum": {
+			"type": {
+				"Asset": "Asset",
+				"Liability": "Liability",
+				"Equity": "Equity",
+				"Revenue": "Revenue",
+				"Expense": "Expense"
+			}
+		},
 		"errors": {
 			"notFound": "The account you are looking for does not exist.",
 			"codeTaken": "The code is already taken."

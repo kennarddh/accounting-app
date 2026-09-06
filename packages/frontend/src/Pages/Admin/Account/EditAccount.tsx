@@ -129,7 +129,7 @@ const EditAccount: FC = () => {
 					>
 						{Object.values(AccountType).map(type => (
 							<MenuItem key={type} value={type}>
-								{type}
+								{t(`accounts.enum.type.${type}`)}
 							</MenuItem>
 						))}
 					</TextField>

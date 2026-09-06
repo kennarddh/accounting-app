@@ -2,8 +2,9 @@ import { FC, useEffect, useState } from 'react'
 
 import { useNavigate, useParams } from 'react-router'
 
-import { Box, FormControl, TextField } from '@mui/material'
+import { Box, FormControl, MenuItem, TextField } from '@mui/material'
 
+import { AccountType } from '@sport-score/common'
 import { useTranslation } from 'react-i18next'
 
 import PageContainer from 'Components/Admin/PageContainer'
@@ -64,11 +65,18 @@ const AccountDetail: FC = () => {
 				</FormControl>
 				<FormControl fullWidth>
 					<TextField
-						value={Account.type}
+						select
+						defaultValue={Account.type}
 						label={t('accounts.type')}
 						variant='outlined'
-						slotProps={{ inputLabel: { shrink: true }, input: { readOnly: true } }}
-					/>
+						disabled
+					>
+						{Object.values(AccountType).map(type => (
+							<MenuItem key={type} value={type}>
+								{t(`accounts.enum.type.${type}`)}
+							</MenuItem>
+						))}
+					</TextField>
 				</FormControl>
 				<FormControl fullWidth>
 					<TextField

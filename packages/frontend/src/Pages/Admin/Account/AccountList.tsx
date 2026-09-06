@@ -61,6 +61,7 @@ const AccountList: FC = () => {
 				headerName: t('accounts.type'),
 				width: 100,
 				filterable: false,
+				valueGetter: (_, row) => t(`accounts.enum.type.${row.type}`),
 			},
 			{
 				field: 'actions',
