@@ -8,8 +8,9 @@ type AccountFindManyResponse = FindManyResponse<{
 	code: string
 	name: string
 	type: string
-	createdAt: string
-	updatedAt: string
+	createdAt: number
+	updatedAt: number
+	disabledAt: number | null
 }>
 
 export interface AccountFindManySingleOutput {
@@ -19,6 +20,7 @@ export interface AccountFindManySingleOutput {
 	type: AccountType
 	createdAt: Date
 	updatedAt: Date
+	disabledAt: Date | null
 }
 
 export type AccountFindManyOutput = FindManyOutput<AccountFindManySingleOutput>
@@ -26,6 +28,7 @@ export type AccountFindManyOutput = FindManyOutput<AccountFindManySingleOutput>
 export interface AccountFindManyData extends FindManyData<AccountSortField> {
 	search?: string
 	types?: AccountType[]
+	isActive?: boolean
 }
 
 const AccountFindManyApi: ApiFunction<AccountFindManyOutput, AccountFindManyData> = async data => {
@@ -35,6 +38,7 @@ const AccountFindManyApi: ApiFunction<AccountFindManyOutput, AccountFindManyData
 			sort: data.sort,
 			search: data.search,
 			types: data.types,
+			isActive: data.isActive,
 		},
 	})
 
@@ -49,6 +53,7 @@ const AccountFindManyApi: ApiFunction<AccountFindManyOutput, AccountFindManyData
 			type: account.type as AccountType,
 			createdAt: new Date(account.createdAt),
 			updatedAt: new Date(account.updatedAt),
+			disabledAt: account.disabledAt ? new Date(account.disabledAt) : null,
 		})),
 	}
 }

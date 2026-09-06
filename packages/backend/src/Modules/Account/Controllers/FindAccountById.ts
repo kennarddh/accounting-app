@@ -42,6 +42,7 @@ class FindAccountById extends Controller {
 					type: account.type,
 					createdAt: account.createdAt.getTime(),
 					updatedAt: account.updatedAt.getTime(),
+					disabledAt: account.disabledAt?.getTime() ?? null,
 				},
 			})
 		} catch (error) {

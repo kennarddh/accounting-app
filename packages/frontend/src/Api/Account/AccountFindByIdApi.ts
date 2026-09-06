@@ -8,8 +8,9 @@ interface AccountFindByIdResponse {
 	code: string
 	name: string
 	type: string
-	createdAt: string
-	updatedAt: string
+	createdAt: number
+	updatedAt: number
+	disabledAt: number | null
 }
 
 export interface AccountFindByIdOutput {
@@ -19,6 +20,7 @@ export interface AccountFindByIdOutput {
 	type: AccountType
 	createdAt: Date
 	updatedAt: Date
+	disabledAt: Date | null
 }
 
 export interface AccountFindByIdData {
@@ -37,6 +39,7 @@ const AccountFindByIdApi: ApiFunction<AccountFindByIdOutput, AccountFindByIdData
 		type: outputData.type as AccountType,
 		createdAt: new Date(outputData.createdAt),
 		updatedAt: new Date(outputData.updatedAt),
+		disabledAt: outputData.disabledAt ? new Date(outputData.disabledAt) : null,
 	}
 }
 

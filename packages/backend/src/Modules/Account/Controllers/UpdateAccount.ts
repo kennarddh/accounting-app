@@ -44,12 +44,25 @@ class UpdateAccount extends Controller {
 				}
 			} else if (
 				error instanceof InvalidStateError &&
-				error.operation === 'create' &&
+				error.operation === 'update' &&
 				error.state === 'duplicateAccountCode'
 			) {
 				return response.status(400).json({
 					errors: {
 						others: [{ resource: ApiErrorResource.Account, kind: ApiErrorKind.Taken }],
+					},
+					data: null,
+				})
+			} else if (
+				error instanceof InvalidStateError &&
+				error.operation === 'update' &&
+				error.state === 'disabled'
+			) {
+				return response.status(400).json({
+					errors: {
+						others: [
+							{ resource: ApiErrorResource.Account, kind: ApiErrorKind.Disabled },
+						],
 					},
 					data: null,
 				})

@@ -75,13 +75,18 @@ const EditAccount: FC = () => {
 								error.kind === ApiErrorKind.Taken
 							) {
 								return t('accounts.errors.codeTaken')
+							} else if (
+								error.resource === ApiErrorResource.Account &&
+								error.kind === ApiErrorKind.Disabled
+							) {
+								return t('accounts.errors.disabled')
 							}
 						}),
 					)
 				}
 			})
 		},
-		[HasLoaded, Name, Navigate, code, id, t, type],
+		[HasLoaded, Name, Navigate, code, id, t],
 	)
 
 	return (

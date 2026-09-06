@@ -8,6 +8,8 @@ import RemoveUndefinedValueFromObject from 'Utils/RemoveUndefinedValueFromObject
 
 import UnitOfWork from 'Repositories/UnitOfWork/UnitOfWork'
 
+import { InvalidStateError, ResourceNotFoundError } from 'Errors'
+
 import { Prisma } from 'PrismaGenerated/client'
 
 import { FindManyOptions } from '../../Types/ServiceTypes'
@@ -21,6 +23,7 @@ export interface Account {
 	type: AccountType
 	createdAt: Date
 	updatedAt: Date
+	disabledAt: Date | null
 }
 
 export interface AccountCreateData {
@@ -37,6 +40,7 @@ export interface AccountUpdateData {
 export interface AccountFilterOptions {
 	search?: string
 	types?: AccountType[]
+	isActive?: boolean
 }
 
 export interface AccountFindManyOptions extends FindManyOptions<AccountSortField> {
@@ -66,6 +70,7 @@ class AccountService extends Service {
 			type: data.type as AccountType,
 			createdAt: data.createdAt,
 			updatedAt: data.updatedAt,
+			disabledAt: data.disabledAt,
 		}
 	}
 
@@ -93,6 +98,9 @@ class AccountService extends Service {
 				in: filter.types,
 			}
 
+		if (filter.isActive !== undefined)
+			repositoryFilter.disabledAt = filter.isActive ? null : { not: null }
+
 		return repositoryFilter
 	}
 
@@ -104,6 +112,7 @@ class AccountService extends Service {
 			type: true,
 			createdAt: true,
 			updatedAt: true,
+			disabledAt: true,
 		} satisfies Prisma.AccountSelect
 	}
 
@@ -183,6 +192,7 @@ class AccountService extends Service {
 					type: user.type,
 					createdAt: user.createdAt.getTime(),
 					updatedAt: user.updatedAt.getTime(),
+					disabledAt: user.disabledAt?.getTime() ?? null,
 				})),
 			}
 		})
@@ -200,9 +210,33 @@ class AccountService extends Service {
 		const updateData: Prisma.AccountUpdateArgs['data'] = RemoveUndefinedValueFromObject(data)
 
 		await this.unitOfWork.execute(async transaction => {
+			const account = await this.findById(id)
+
+			if (account === null) throw new ResourceNotFoundError('account')
+
+			if (account.disabledAt !== null) throw new InvalidStateError('update', 'disabled')
+
 			await transaction
 				.getRepository(AccountRepository)
 				.update({ filter: { id }, data: updateData })
+		})
+	}
+
+	async disable(id: bigint) {
+		await this.unitOfWork.execute(async transaction => {
+			await transaction.getRepository(AccountRepository).update({
+				filter: { id },
+				data: { disabledAt: new Date() },
+			})
+		})
+	}
+
+	async enable(id: bigint) {
+		await this.unitOfWork.execute(async transaction => {
+			await transaction.getRepository(AccountRepository).update({
+				filter: { id },
+				data: { disabledAt: null },
+			})
 		})
 	}
 }

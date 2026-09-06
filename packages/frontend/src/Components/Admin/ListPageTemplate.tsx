@@ -46,6 +46,8 @@ const ListPageTemplate: FC<ListPageTemplateProps> = props => {
 	}, [])
 
 	const OnRefreshData = useCallback(async () => {
+		SetErrorText(null)
+
 		await GridApiRef.current?.dataSource.fetchRows()
 	}, [GridApiRef])
 

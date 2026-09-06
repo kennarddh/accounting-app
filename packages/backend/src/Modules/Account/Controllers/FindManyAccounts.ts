@@ -19,10 +19,10 @@ class FindManyAccounts extends Controller {
 		request: ControllerRequest<FindManyAccounts>,
 		response: CelosiaResponse,
 	) {
-		const { search, pagination, sort, types } = request.query
+		const { search, pagination, sort, types, isActive } = request.query
 
 		const options = RemoveUndefinedValueFromObject({
-			filter: { search, types },
+			filter: { search, types, isActive },
 			pagination,
 			sort,
 		}) satisfies AccountFindManyOptions
@@ -45,6 +45,7 @@ class FindManyAccounts extends Controller {
 		return z.object({
 			search: z.string().optional(),
 			types: z.array(z.enum(AccountType)).optional(),
+			isActive: z.boolean().optional(),
 			pagination: ZodPagination.optional(),
 			sort: z
 				.object({

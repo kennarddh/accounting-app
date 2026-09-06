@@ -15,6 +15,10 @@
 		"all": "All",
 		"yes": "Yes",
 		"no": "No",
+		"disable": "Disable",
+		"enable": "Enable",
+		"disabled": "Disabled",
+		"active": "Active",
 		"dateTime": "{{date, datetime(weekday: long; year: numeric; month: long; day: numeric; hour: numeric; minute: numeric; hourCycle: h24)}}",
 		"currency": "{{value, currency(currency: IDR; maximumFractionDigits: 0)}}",
 		"duration": "{{value, duration}}",
@@ -25,8 +29,6 @@
 		"seeDetail": "See detail",
 		"description": "Description",
 		"lastUpdated": "Last Updated",
-		"approve": "Approve",
-		"reject": "Reject",
 		"includeDisabled": "Include Disabled",
 		"includeInactive": "Include Inactive",
 		"loadMore": "Load More",
@@ -169,6 +171,7 @@
 		"code": "Code",
 		"name": "Name",
 		"type": "Type",
+		"status": "Status",
 		"createdAt": "Created At",
 		"new": {
 			"title": "New Account"
@@ -197,7 +200,8 @@
 		},
 		"errors": {
 			"notFound": "The account you are looking for does not exist.",
-			"codeTaken": "The code is already taken."
+			"codeTaken": "The code is already taken.",
+			"disabled": "The account is disabled."
 		}
 	}
 }

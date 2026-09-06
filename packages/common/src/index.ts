@@ -21,6 +21,7 @@ export enum ApiErrorKind {
 	Unauthorized = 'Unauthorized',
 	Invalid = 'Invalid',
 	Inactive = 'Inactive',
+	Disabled = 'Disabled',
 	Exceeded = 'Exceeded',
 	Expired = 'Expired',
 	Taken = 'Taken',

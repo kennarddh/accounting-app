@@ -95,9 +95,9 @@ class AccountRepository extends PrismaRepository {
 			})
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-				const meta = error.meta as any
-
-				const constraintIndex = meta?.driverAdapterError?.cause?.constraint?.index
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+				const constraintIndex = (error.meta as any)?.driverAdapterError?.cause?.constraint
+					?.index
 
 				if (constraintIndex === 'accounts_code_key') {
 					throw new InvalidStateError('create', 'duplicateAccountCode')
@@ -122,12 +122,12 @@ class AccountRepository extends PrismaRepository {
 				if (error.code === 'P2025') {
 					throw new ResourceNotFoundError('account')
 				} else if (error.code === 'P2002') {
-					const meta = error.meta as any
-
-					const constraintIndex = meta?.driverAdapterError?.cause?.constraint?.index
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+					const constraintIndex = (error.meta as any)?.driverAdapterError?.cause
+						?.constraint?.index
 
 					if (constraintIndex === 'accounts_code_key') {
-						throw new InvalidStateError('create', 'duplicateAccountCode')
+						throw new InvalidStateError('update', 'duplicateAccountCode')
 					}
 				}
 			}
