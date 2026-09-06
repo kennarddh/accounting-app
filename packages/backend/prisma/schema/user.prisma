@@ -1,0 +1,36 @@
+model User {
+    id       BigInt @id @default(autoincrement())
+    name     String
+    username String @unique
+    password String
+
+    createdById BigInt?
+    createdBy   User?   @relation("CreatedByUser", fields: [createdById], references: [id])
+
+    userSessions UserSession[] @relation("User")
+    createdUsers User[]        @relation("CreatedByUser")
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("users")
+}
+
+model UserSession {
+    id              BigInt @id @default(autoincrement())
+    accessTokenJti  String @unique
+    refreshTokenJti String @unique
+
+    ipAddress String
+
+    userId BigInt
+    user   User   @relation("User", fields: [userId], references: [id])
+
+    loggedOutAt   DateTime?
+    revokedAt     DateTime?
+    expireAt      DateTime
+    lastRefreshAt DateTime  @default(now())
+    createdAt     DateTime  @default(now())
+
+    @@map("user_sessions")
+}

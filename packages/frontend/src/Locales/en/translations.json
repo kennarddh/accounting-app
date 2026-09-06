@@ -1,0 +1,193 @@
+{
+	"common": {
+		"submit": "Submit",
+		"search": "Search",
+		"refreshData": "Refresh Data",
+		"create": "Create",
+		"close": "Close",
+		"showFilter": "Show Filter",
+		"hideFilter": "Hide Filter",
+		"resetFilter": "Reset Filter",
+		"back": "Back",
+		"home": "Home",
+		"refresh": "Refresh",
+		"edit": "Edit",
+		"all": "All",
+		"yes": "Yes",
+		"no": "No",
+		"dateTime": "{{date, datetime(weekday: long; year: numeric; month: long; day: numeric; hour: numeric; minute: numeric; hourCycle: h24)}}",
+		"currency": "{{value, currency(currency: IDR; maximumFractionDigits: 0)}}",
+		"duration": "{{value, duration}}",
+		"save": "Save",
+		"cancel": "Cancel",
+		"delete": "Delete",
+		"details": "Details",
+		"seeDetail": "See detail",
+		"description": "Description",
+		"lastUpdated": "Last Updated",
+		"approve": "Approve",
+		"reject": "Reject",
+		"includeDisabled": "Include Disabled",
+		"loadMore": "Load More",
+		"loading": "Loading..."
+	},
+	"auth": {
+		"name": "Name",
+		"username": "Username",
+		"password": "Password",
+		"hidePassword": "Hide password",
+		"showPassword": "Show password",
+		"logoutButton": "Logout",
+		"forgetPasswordLink": "Forget password?",
+		"login": {
+			"title": "Login",
+			"submit": "Login"
+		},
+		"haveAccountLoginLink": "Already have an account? Login",
+		"errors": {
+			"sessionInactive": "Session is inactive.",
+			"unauthorized": "Unauthorized.",
+			"usernameTaken": "Username is already taken."
+		}
+	},
+	"errors": {
+		"noData": "No data.",
+		"notFound": {
+			"title": "Page Not Found",
+			"text": "The page you are looking for does not exist."
+		},
+		"unknown": {
+			"title": "Unknown Error",
+			"text": "We are having a problem. Please try again later."
+		},
+		"network": {
+			"title": "Network Error",
+			"text": "We could not connect to the server. Please check your internet connection. If the problem persists, please try again later."
+		},
+		"accessDenied": {
+			"title": "Access Denied",
+			"text": "You do not have permission to access this resource."
+		}
+	},
+	"pwa": {
+		"manager": {
+			"modal": {
+				"Error": {
+					"title": "PWA Error",
+					"description": "App service worker failed to register."
+				},
+				"OfflineReady": {
+					"title": "Offline Ready",
+					"description": "App is ready to work offline."
+				},
+				"UpdateAvailable": {
+					"title": "An update is available.",
+					"description": "\"Update\" will refresh the app. You may lose the progress, if any. \"Close\" will install the update next time you visit the app.",
+					"update": "Update"
+				}
+			}
+		}
+	},
+	"languages": {
+		"changeLanguage": {
+			"tooltip": "Change Language"
+		},
+		"languages": {
+			"en": "English"
+		}
+	},
+	"home": {
+		"title": "Home"
+	},
+	"users": {
+		"name": "Name",
+		"username": "Username",
+		"password": "Password",
+		"createdBy": "Created By",
+		"noCreatedBy": "None",
+		"hidePassword": "Hide password",
+		"showPassword": "Show password",
+		"new": {
+			"title": "New User"
+		},
+		"edit": {
+			"title": "Edit User"
+		},
+		"list": {
+			"title": "Users"
+		},
+		"detail": {
+			"title": "User Detail"
+		},
+		"errors": {
+			"notFound": "The user you are looking for does not exist.",
+			"usernameTaken": "The username is already taken.",
+			"roleRequired": "Role is required."
+		},
+		"enums": {
+			"role": {
+				"Admin": "Admin",
+				"Member": "Member"
+			}
+		}
+	},
+	"userSessions": {
+		"user": "User",
+		"ipAddress": "IP Address",
+		"createdAt": "Created At",
+		"expireAt": "Expire At",
+		"lastRefreshAt": "Last Refresh At",
+		"loggedOutAt": "Logged Out At",
+		"revokedAt": "Revoked At",
+		"revokeSession": "Revoke session",
+		"list": {
+			"title": "User Sessions"
+		},
+		"detail": {
+			"title": "User Session Detail"
+		},
+		"errors": {
+			"notFound": "The user session you are looking for does not exist.",
+			"inactive": "The user session is inactive."
+		}
+	},
+	"navigations": {
+		"brand": "Sport Score",
+		"menu": {
+			"open": "Open menu"
+		},
+		"links": {
+			"home": "Home",
+			"profile": "Profile",
+			"users": "Users",
+			"userSessions": "User Sessions",
+			"accounts": "Accounts"
+		}
+	},
+	"accounts": {
+		"code": "Code",
+		"name": "Name",
+		"type": "Type",
+		"createdAt": "Created At",
+		"new": {
+			"title": "New Account"
+		},
+		"edit": {
+			"title": "Edit Account"
+		},
+		"detail": {
+			"title": "Account Detail"
+		},
+		"list": {
+			"title": "Accounts"
+		},
+		"select": {
+			"button": "Select Account",
+			"title": "Select Account"
+		},
+		"errors": {
+			"notFound": "The account you are looking for does not exist.",
+			"typeRequired": "Type is required."
+		}
+	}
+}

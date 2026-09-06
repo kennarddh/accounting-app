@@ -1,0 +1,124 @@
+name: accounting_app-production
+
+services:
+    database:
+        image: postgres:17.2-alpine
+        volumes:
+            - database:/var/lib/postgresql/data
+        networks:
+            - database
+            - backend
+        environment:
+            POSTGRES_DB: accounting_app
+            POSTGRES_USER_FILE: /run/secrets/database-postgres-user
+            POSTGRES_PASSWORD_FILE: /run/secrets/database-postgres-password
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -d $$POSTGRES_DB"]
+            interval: 30s
+            timeout: 20s
+            start_period: 1s
+            start_interval: 5s
+            retries: 5
+        restart: unless-stopped
+        secrets:
+            - database-postgres-user
+            - database-postgres-password
+
+    database-migration:
+        build:
+            context: .
+            dockerfile: ./packages/backend/Dockerfile.migration
+        networks:
+            - database
+        environment:
+            DATABASE_URL_FILE: /run/secrets/database-url
+        depends_on:
+            database:
+                condition: service_healthy
+        secrets:
+            - database-url
+
+    backend:
+        build:
+            context: .
+            dockerfile: ./packages/backend/Dockerfile
+        stop_signal: SIGTERM
+        stop_grace_period: 30s
+        volumes:
+            - backend-logs:/app/Logs/
+        networks:
+            - backend
+            - app
+        environment:
+            DATABASE_URL_FILE: /run/secrets/database-url
+            HOST: 0.0.0.0
+            PORT: 8080
+
+            ACCESS_TOKEN_SECRET_FILE: /run/secrets/backend-access-token-secret
+            ACCESS_TOKEN_EXPIRE: 60 # 1 Minute
+
+            REFRESH_TOKEN_SECRET_FILE: /run/secrets/backend-refresh-token-secret
+            REFRESH_TOKEN_EXPIRE: 2592000 # 30 Days
+
+            RATE_LIMITER_MAX: 100
+            RATE_LIMITER_WINDOW: 60
+
+            PASSWORD_HASH_SECRET_FILE: /run/secrets/backend-password-hash-secret
+
+            CORS_ORIGIN: http://localhost:3000
+
+            LOG_LEVEL: info
+            LOG_PATH: /app/Logs/
+        depends_on:
+            database-migration:
+                condition: service_completed_successfully
+        restart: unless-stopped
+        secrets:
+            - database-url
+            - backend-access-token-secret
+            - backend-refresh-token-secret
+            - backend-password-hash-secret
+
+    frontend:
+        build:
+            context: .
+            dockerfile: ./packages/frontend/Dockerfile
+        stop_signal: SIGTERM
+        stop_grace_period: 30s
+        volumes:
+            - frontend-logs:/var/log/nginx/
+        networks:
+            - app
+        ports:
+            - "80:80/tcp"
+            - "443:443/tcp"
+        depends_on:
+            backend:
+                condition: service_healthy
+        restart: unless-stopped
+
+volumes:
+    database:
+    backend-logs:
+    frontend-logs:
+
+networks:
+    backend:
+    database:
+    app:
+
+secrets:
+    database-url:
+        file: ./secrets/database-url
+
+    backend-access-token-secret:
+        file: ./secrets/backend/access-token-secret
+    backend-refresh-token-secret:
+        file: ./secrets/backend/refresh-token-secret
+    backend-password-hash-secret:
+        file: ./secrets/backend/password-hash-secret
+
+    database-postgres-user:
+        file: ./secrets/database/postgres-user
+    database-postgres-password:
+        file: ./secrets/database/postgres-password

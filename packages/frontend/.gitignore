@@ -1,0 +1,5 @@
+# Build
+/build
+
+# vite-pwa dist
+/dev-dist/

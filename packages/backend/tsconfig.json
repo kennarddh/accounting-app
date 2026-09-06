@@ -1,0 +1,25 @@
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"composite": true,
+		"rootDir": "../..",
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"outDir": "./build/",
+		"lib": ["ES2023"],
+		"paths": {
+			"Controllers/*": ["./src/Controllers/*"],
+			"Middlewares/*": ["./src/Middlewares/*"],
+			"Repositories/*": ["./src/Repositories/*"],
+			"Modules/*": ["./src/Modules/*"],
+			"Types/*": ["./src/Types/*"],
+			"Utils/*": ["./src/Utils/*"],
+			"Errors": ["./src/Errors.ts"],
+			"App": ["./src/App.ts"],
+			"Validations/*": ["./src/Validations/*"],
+			"@accounting-app/common": ["../common/src"],
+			"PrismaGenerated/*": ["./prisma/generated/*"]
+		}
+	},
+	"include": ["src", "prisma", "prisma.config.ts", "../common/src"]
+}

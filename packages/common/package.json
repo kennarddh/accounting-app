@@ -1,0 +1,16 @@
+{
+	"name": "@accounting-app/common",
+	"version": "1.0.0",
+	"description": "Accounting App Common",
+	"type": "module",
+	"main": "./src/index.ts",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/kennarddh/accounting-app.git"
+	},
+	"author": "kennarddh",
+	"bugs": {
+		"url": "https://github.com/kennarddh/accounting-app/issues"
+	},
+	"homepage": "https://github.com/kennarddh/accounting-app#readme"
+}

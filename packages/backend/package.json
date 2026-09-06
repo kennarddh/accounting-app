@@ -1,0 +1,48 @@
+{
+	"name": "@accounting-app/backend",
+	"version": "1.0.0",
+	"description": "Backend for Accounting App",
+	"main": "src/index.ts",
+	"type": "module",
+	"scripts": {
+		"start": "cross-env NODE_ENV=development tsx watch --env-file=.env ./src/index.ts",
+		"build": "npm run clean:build && tsx ./scripts/build.ts",
+		"prod": "cross-env NODE_ENV=production node --env-file=.env ./build/index.js",
+		"clean": "concurrently \"npm run clean:build\" \"npm run clean:logs\"",
+		"clean:build": "rimraf ./build",
+		"clean:logs": "rimraf ./Logs"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/kennarddh/accounting-app.git"
+	},
+	"bugs": {
+		"url": "https://github.com/kennarddh/accounting-app/issues"
+	},
+	"homepage": "https://github.com/kennarddh/accounting-app#readme",
+	"author": "kennarddh",
+	"dependencies": {
+		"@celosiajs/core": "^0.0.2",
+		"@celosiajs/file-upload": "^0.0.2",
+		"@celosiajs/logging": "^0.0.2",
+		"@accounting-app/common": "^1.0.0",
+		"@prisma/adapter-pg": "^7.10.0",
+		"@prisma/client": "^7.10.0",
+		"argon2": "^0.45.1",
+		"cors": "^2.8.6",
+		"helmet": "^8.3.0",
+		"jsonwebtoken": "^9.0.3",
+		"mergician": "^2.0.2",
+		"rate-limiter-flexible": "^11.2.0",
+		"winston": "^3.19.0",
+		"winston-daily-rotate-file": "^5.0.0",
+		"zod": "^4.5.4"
+	},
+	"devDependencies": {
+		"@types/cors": "^2.8.19",
+		"@types/jsonwebtoken": "^9.0.10",
+		"dotenv": "^17.4.2",
+		"esbuild": "^0.28.2",
+		"prisma": "^7.10.0"
+	}
+}

@@ -1,0 +1,11 @@
+model Account {
+    id   BigInt @id @default(autoincrement())
+    code String @unique
+    name String
+    type String @db.VarChar(50)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("accounts")
+}

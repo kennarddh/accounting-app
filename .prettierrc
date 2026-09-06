@@ -1,0 +1,83 @@
+{
+	"tabWidth": 4,
+	"singleQuote": true,
+	"useTabs": true,
+	"jsxSingleQuote": true,
+	"semi": false,
+	"arrowParens": "avoid",
+	"endOfLine": "lf",
+	"printWidth": 100,
+
+	"importOrderSeparation": true,
+	"importOrderSortSpecifiers": true,
+
+	"plugins": ["@trivago/prettier-plugin-sort-imports"],
+
+	"overrides": [
+		{
+			"files": ["packages/backend/**/*.ts"],
+			"options": {
+				"importOrderParserPlugins": ["typescript", "decorators"],
+				"importOrder": [
+					"^express$",
+					"^http$",
+					"^path$",
+					"^argon2$",
+					"^winston",
+					"^compression$",
+					"^cookie-parser$",
+					"^helmet$",
+					"^jsonwebtoken$",
+					"^zod$",
+					"^@celosiajs/",
+
+					"<THIRD_PARTY_MODULES>",
+
+					"^App$",
+					"^Types",
+					"^Utils",
+					"^Middlewares",
+					"^Controllers",
+					"^Repositories",
+					"^Validations",
+					"^Errors",
+					"^Modules/(.*)/",
+					"^PrismaGenerated/",
+
+					"^[./]"
+				]
+			}
+		},
+		{
+			"files": ["packages/frontend/**/*.{ts,tsx}"],
+			"options": {
+				"importOrderParserPlugins": ["typescript", "jsx"],
+				"importOrder": [
+					"^react$",
+					"^react-router-dom",
+					"^@fortawesome/react-fontawesome",
+					"^@fortawesome",
+					"^vite$",
+					"^@vitejs/",
+					"^vite-",
+					"^react-router$",
+					"^styled-components$",
+					"^@mui/icons-material/",
+					"^@mui/",
+
+					"<THIRD_PARTY_MODULES>",
+
+					"^Components/",
+					"^Contexts/",
+					"^Utils/",
+					"^Hooks/",
+					"^Constants/",
+					"^Api/",
+					"^Pages/",
+
+					"^[./]"
+				]
+			}
+		}
+	]
+}

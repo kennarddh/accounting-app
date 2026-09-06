@@ -1,0 +1,41 @@
+{
+	"typescript.tsdk": "node_modules\\typescript\\lib",
+	"restoreTerminals.runOnStartup": true,
+	"restoreTerminals.terminals": [
+		{
+			"splitTerminals": [
+				{
+					"name": "Backend Server",
+					"commands": ["cd packages/backend", "npm start"],
+					"shouldRunCommands": false
+				},
+				{
+					"name": "Backend Shell",
+					"commands": ["cd packages/backend"]
+				}
+			]
+		},
+		{
+			"splitTerminals": [
+				{
+					"name": "Frontend Server",
+					"commands": ["cd packages/frontend", "npm start"],
+					"shouldRunCommands": false
+				},
+				{
+					"name": "Frontend Shell",
+					"commands": ["cd packages/frontend"]
+				}
+			]
+		},
+		{
+			"splitTerminals": [
+				{
+					"name": "Shell",
+					"commands": []
+				}
+			]
+		}
+	],
+	"js/ts.tsdk.path": "node_modules\\typescript\\lib"
+}

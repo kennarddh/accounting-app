@@ -1,0 +1,14 @@
+FROM node:lts-alpine
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+COPY ./packages/backend/package.json ./packages/backend/package.json
+
+RUN npm i &&\
+	npm cache clean --force &&\
+	rm -rf /root/.npm
+
+COPY ./packages/backend/prisma/ ./packages/backend/prisma/
+
+ENTRYPOINT DATABASE_URL=$(cat $DATABASE_URL_FILE) npx -w @accounting-app/backend prisma migrate deploy
