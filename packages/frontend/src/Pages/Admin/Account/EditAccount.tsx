@@ -59,17 +59,22 @@ const EditAccount: FC = () => {
 
 			startTransition(async () => {
 				try {
-					await AccountUpdateApi({ id, code, name: Name,  })
+					await AccountUpdateApi({ id, code, name: Name })
 
 					await Navigate('../../')
-				} catch (error) {
+				} catch (thrownError) {
 					SetErrorText(
-						await HandleApiError(error, async error => {
+						await HandleApiError(thrownError, async error => {
 							if (
 								error.resource === ApiErrorResource.Account &&
 								error.kind === ApiErrorKind.NotFound
 							) {
 								return t('accounts.errors.notFound')
+							} else if (
+								error.resource === ApiErrorResource.Account &&
+								error.kind === ApiErrorKind.Taken
+							) {
+								return t('accounts.errors.codeTaken')
 							}
 						}),
 					)

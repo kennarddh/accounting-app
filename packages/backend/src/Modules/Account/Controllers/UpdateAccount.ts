@@ -3,7 +3,7 @@ import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from 
 import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import z from 'zod/v4'
 
-import { ResourceNotFoundError } from 'Errors'
+import { InvalidStateError, ResourceNotFoundError } from 'Errors'
 
 import AccountService from '../AccountService'
 
@@ -42,6 +42,17 @@ class UpdateAccount extends Controller {
 						data: {},
 					})
 				}
+			} else if (
+				error instanceof InvalidStateError &&
+				error.operation === 'create' &&
+				error.state === 'duplicateAccountCode'
+			) {
+				return response.status(400).json({
+					errors: {
+						others: [{ resource: ApiErrorResource.Account, kind: ApiErrorKind.Taken }],
+					},
+					data: null,
+				})
 			}
 
 			this.logger.error('Other.', error)

@@ -6,7 +6,7 @@ import ConfigurationService from 'Modules/Configuration/ConfigurationService'
 
 import { PrismaClient } from 'PrismaGenerated/client'
 
-type ConfiguredPrismaClient = PrismaClient<'info' | 'query' | 'warn' | 'error'>
+type ConfiguredPrismaClient = PrismaClient<'info' | 'query' | 'warn'>
 
 @Injectable(DependencyScope.Singleton)
 class DatabaseRepository extends Repository {
@@ -25,10 +25,6 @@ class DatabaseRepository extends Repository {
 				{
 					emit: 'event',
 					level: 'query',
-				},
-				{
-					emit: 'event',
-					level: 'error',
 				},
 				{
 					emit: 'event',
@@ -51,10 +47,6 @@ class DatabaseRepository extends Repository {
 
 		this.prisma.$on('warn', event => {
 			this.logger.warn('Warn event.', event)
-		})
-
-		this.prisma.$on('error', event => {
-			this.logger.error('Error event.', event)
 		})
 	}
 

@@ -188,7 +188,7 @@
 		},
 		"errors": {
 			"notFound": "The account you are looking for does not exist.",
-			"typeRequired": "Type is required."
+			"codeTaken": "The code is already taken."
 		}
 	}
 }

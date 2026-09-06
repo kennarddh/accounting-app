@@ -2,7 +2,7 @@ import { UnpackArray } from 'Types/Types'
 
 import { Prisma } from 'PrismaGenerated/client'
 
-import { DataAccessError, ResourceNotFoundError } from '../../Errors'
+import { DataAccessError, InvalidStateError, ResourceNotFoundError } from '../../Errors'
 import PrismaRepository from '../../Repositories/PrismaRepository'
 import { PaginationOptions } from '../../Repositories/Types'
 
@@ -94,6 +94,16 @@ class AccountRepository extends PrismaRepository {
 				...(options.select !== undefined ? { select: options.select } : {}),
 			})
 		} catch (error) {
+			if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+				const meta = error.meta as any
+
+				const constraintIndex = meta?.driverAdapterError?.cause?.constraint?.index
+
+				if (constraintIndex === 'accounts_code_key') {
+					throw new InvalidStateError('create', 'duplicateAccountCode')
+				}
+			}
+
 			this.logger.error('Create.', error)
 
 			throw new DataAccessError()
@@ -111,6 +121,14 @@ class AccountRepository extends PrismaRepository {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
 				if (error.code === 'P2025') {
 					throw new ResourceNotFoundError('account')
+				} else if (error.code === 'P2002') {
+					const meta = error.meta as any
+
+					const constraintIndex = meta?.driverAdapterError?.cause?.constraint?.index
+
+					if (constraintIndex === 'accounts_code_key') {
+						throw new InvalidStateError('create', 'duplicateAccountCode')
+					}
 				}
 			}
 

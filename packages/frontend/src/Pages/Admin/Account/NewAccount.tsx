@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router'
 
 import { Alert, Box, Button, FormControl, MenuItem, TextField } from '@mui/material'
 
-import { AccountType } from '@accounting-app/common'
+import { AccountType, ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import { useTranslation } from 'react-i18next'
 
 import PageContainer from 'Components/Admin/PageContainer'
@@ -39,8 +39,17 @@ const NewAccount: FC = () => {
 					})
 
 					await Navigate('../')
-				} catch (error) {
-					SetErrorText(await HandleApiError(error))
+				} catch (thrownError) {
+					SetErrorText(
+						await HandleApiError(thrownError, async error => {
+							if (
+								error.resource === ApiErrorResource.Account &&
+								error.kind === ApiErrorKind.Taken
+							) {
+								return t('accounts.errors.codeTaken')
+							}
+						}),
+					)
 				}
 			})
 		},
