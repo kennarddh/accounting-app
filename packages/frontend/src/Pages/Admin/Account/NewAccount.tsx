@@ -18,7 +18,7 @@ const NewAccount: FC = () => {
 
 	const [code, setCode] = useState('')
 	const [Name, SetName] = useState('')
-	const [type, setType] = useState<AccountType | null>(null)
+	const [type, setType] = useState<AccountType>(AccountType.Asset)
 
 	const [isPending, startTransition] = useTransition()
 
@@ -29,8 +29,6 @@ const NewAccount: FC = () => {
 	const OnSubmit = useCallback(
 		(event: SubmitEvent<HTMLFormElement>) => {
 			event.preventDefault()
-
-			if (type === null) return SetErrorText('accounts.errors.typeRequired')
 
 			startTransition(async () => {
 				try {
@@ -70,7 +68,7 @@ const NewAccount: FC = () => {
 					<TextField
 						value={code}
 						onChange={event => setCode(event.target.value)}
-						label={t('accounts.name')}
+						label={t('accounts.code')}
 						variant='outlined'
 						required
 					/>

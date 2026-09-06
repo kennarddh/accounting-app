@@ -22,7 +22,7 @@ const EditAccount: FC = () => {
 
 	const [code, setCode] = useState('')
 	const [Name, SetName] = useState('')
-	const [type, setType] = useState<AccountType | null>(null)
+	const [type, setType] = useState<AccountType>(AccountType.Asset)
 
 	const [isPending, startTransition] = useTransition()
 
@@ -56,7 +56,6 @@ const EditAccount: FC = () => {
 
 			if (!id) return
 			if (!HasLoaded) return
-			if (type === null) return SetErrorText('accounts.errors.typeRequired')
 
 			startTransition(async () => {
 				try {

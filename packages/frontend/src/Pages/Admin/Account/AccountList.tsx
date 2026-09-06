@@ -47,7 +47,6 @@ const AccountList: FC = () => {
 				field: 'code',
 				headerName: t('accounts.code'),
 				width: 100,
-				flex: 1,
 				filterable: false,
 			},
 			{
