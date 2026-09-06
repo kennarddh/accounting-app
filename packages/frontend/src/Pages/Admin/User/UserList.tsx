@@ -123,6 +123,7 @@ const UserList: FC = () => {
 					id='search'
 					label={t('common.search')}
 					variant='outlined'
+					size='small'
 					value={FilterSearch}
 					onChange={event => SetFilterSearch(event.target.value)}
 					sx={{ minWidth: 200 }}
