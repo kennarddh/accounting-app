@@ -1,11 +1,13 @@
 model Account {
-    id   BigInt @id @default(autoincrement())
-    code String @unique(map: "accounts_code_key")
-    name String
-    type String @db.VarChar(50)
+    id       BigInt  @id @default(autoincrement())
+    code     String  @unique(map: "accounts_code_key")
+    name     String
+    type     String  @db.VarChar(50)
+    isActive Boolean @default(true)
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
+    disabledAt DateTime?
 
     @@map("accounts")
 }

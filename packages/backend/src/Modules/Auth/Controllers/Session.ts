@@ -1,8 +1,10 @@
 import { CelosiaResponse, Controller, ControllerRequest, DI } from '@celosiajs/core'
 
+import { ApiErrorKind } from '@accounting-app/common'
+
 import { JWTVerifiedData } from 'Middlewares/VerifyJWT'
 
-import { ResourceNotFoundError } from 'Errors'
+import { ResourceNotFoundError, UnauthorizedError } from 'Errors'
 
 import AuthService from '../AuthService'
 
@@ -45,9 +47,21 @@ class Session extends Controller {
 						error,
 					})
 				}
-			} else {
-				this.logger.error('Other.', error)
+			} else if (error instanceof UnauthorizedError) {
+				response.status(401).json({
+					errors: {
+						others: [
+							{
+								resource: null,
+								kind: ApiErrorKind.Unauthorized,
+							},
+						],
+					},
+					data: {},
+				})
 			}
+
+			this.logger.error('Other.', error)
 
 			return response.sendInternalServerError()
 		}

@@ -95,11 +95,11 @@ class AuthService extends Service {
 			)
 
 			if (userSession === null) {
-				this.logger.error('User session not found while refresh.', {
+				this.logger.warn('User session not found while refresh.', {
 					refreshTokenJti: currentRefreshTokenPayload.jti,
 				})
 
-				throw new ResourceNotFoundError('userSession')
+				throw new UnauthorizedError()
 			}
 
 			if (!this.userSessionService.isSessionActive(userSession)) throw new UnauthorizedError()
@@ -122,11 +122,11 @@ class AuthService extends Service {
 			const newUserSession = await this.userSessionService.findById(userSession.id)
 
 			if (newUserSession === null) {
-				this.logger.error('User session not found after refresh.', {
+				this.logger.warn('User session not found after refresh.', {
 					userSessionId: userSession.id,
 				})
 
-				throw new ResourceNotFoundError('userSession')
+				throw new UnauthorizedError()
 			}
 			const tokens = await this.createTokens(
 				{
@@ -152,11 +152,11 @@ class AuthService extends Service {
 		)
 
 		if (userSession === null) {
-			this.logger.error('User session not found while verify.', {
+			this.logger.warn('User session not found while verify.', {
 				accessTokenJti: currentAccessTokenPayload.jti,
 			})
 
-			throw new ResourceNotFoundError('userSession')
+			throw new UnauthorizedError()
 		}
 
 		if (!this.userSessionService.isSessionActive(userSession)) throw new UnauthorizedError()

@@ -4,7 +4,7 @@ import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 
 import { JWTVerifiedData } from 'Middlewares/VerifyJWT'
 
-import { InvalidStateError, ResourceNotFoundError } from 'Errors'
+import { InvalidStateError, UnauthorizedError } from 'Errors'
 
 import UserSessionService from '../../UserSession/UserSessionService'
 
@@ -23,8 +23,9 @@ class Logout extends Controller {
 
 			return response.status(204).send()
 		} catch (error) {
-			if (error instanceof ResourceNotFoundError && error.resource === 'userSession') {
-				this.logger.error('User session not found.', error)
+			if (error instanceof UnauthorizedError) {
+				// The purpose of this endpoint is to log the user out, so if the session is already invalid, we can just return a 204 No Content response.
+				return response.status(204).send()
 			} else if (
 				error instanceof InvalidStateError &&
 				error.operation === 'logout' &&
