@@ -28,6 +28,7 @@
 		"approve": "Approve",
 		"reject": "Reject",
 		"includeDisabled": "Include Disabled",
+		"includeInactive": "Include Inactive",
 		"loadMore": "Load More",
 		"loading": "Loading..."
 	},
