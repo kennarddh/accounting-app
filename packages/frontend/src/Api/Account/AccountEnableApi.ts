@@ -7,8 +7,6 @@ export interface AccountEnableData {
 
 const AccountEnableApi: ApiFunction<null, AccountEnableData> = async data => {
 	await CallApi(`/account/${data.id}/enable`, 'POST', true)
-
-	console.log('ENABLE')
 }
 
 export default AccountEnableApi
