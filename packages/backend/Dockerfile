@@ -12,7 +12,6 @@ RUN npm ci --prefer-offline --no-audit
 COPY ./packages/backend/ ./packages/backend/
 COPY ./packages/common/ ./packages/common/
 
-
 # Dummy database url to generate prisma schema
 RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx -w @accounting-app/backend prisma generate
 

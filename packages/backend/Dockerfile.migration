@@ -11,6 +11,7 @@ RUN npm ci --prefer-offline --no-audit
 COPY ./packages/common/ ./packages/common/
 COPY ./packages/backend/ ./packages/backend/
 
-RUN npx -w @accounting-app/backend prisma generate
+# Dummy database url to generate prisma schema
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx -w @accounting-app/backend prisma generate
 
 ENTRYPOINT ["/bin/sh", "-c", "export DATABASE_URL=$(cat \"$DATABASE_URL_FILE\") && npx -w @accounting-app/backend prisma migrate deploy && npx tsx ./packages/backend/prisma/prodSeed.ts"]
