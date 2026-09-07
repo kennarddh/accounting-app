@@ -5,8 +5,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY ./packages/frontend/package.json ./packages/frontend/package.json
 
-RUN --mount=type=cache,target=/root/.npm \
-	npm ci --prefer-offline --no-audit
+RUN npm ci --prefer-offline --no-audit
 
 COPY ./packages/frontend/ ./packages/frontend/
 COPY ./packages/common/ ./packages/common/

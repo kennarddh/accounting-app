@@ -7,8 +7,7 @@ COPY package.json package-lock.json tsconfig.json ./
 COPY ./packages/backend/package.json ./packages/backend/package.json
 COPY ./packages/common/package.json ./packages/common/package.json
 
-RUN --mount=type=cache,target=/root/.npm \
-	npm ci --prefer-offline --no-audit
+RUN npm ci --prefer-offline --no-audit
 
 COPY ./packages/backend/ ./packages/backend/
 COPY ./packages/common/ ./packages/common/
@@ -26,8 +25,7 @@ COPY ./packages/common/package.json ./packages/common/
 
 COPY --from=builder /app/node_modules ./node_modules
 
-RUN --mount=type=cache,target=/root/.npm \
-	npm ci --prefer-offline --no-audit --omit=dev
+RUN npm ci --prefer-offline --no-audit --omit=dev
 
 COPY --from=builder /app/packages/backend/build ./
 
