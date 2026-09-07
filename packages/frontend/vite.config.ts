@@ -107,7 +107,6 @@ export default defineConfig(({ mode }) => {
 		base,
 		build: {
 			outDir: 'build',
-			target: 'ES2022',
 		},
 	}
 })

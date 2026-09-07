@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router'
 
 import { Box, FormControl, MenuItem, TextField } from '@mui/material'
 
-import { AccountType } from '@sport-score/common'
+import { AccountType } from '@accounting-app/common'
 import { useTranslation } from 'react-i18next'
 
 import PageContainer from 'Components/PageContainer'

@@ -73,7 +73,7 @@ class ConfigurationService extends Service {
 
 		if (!parseResult.success) {
 			this.logger.error(
-				'ConfiguratioService load failed due to invalid configurations',
+				'Load failed due to invalid configurations',
 				z.treeifyError(parseResult.error),
 			)
 

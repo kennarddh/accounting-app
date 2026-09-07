@@ -13,7 +13,7 @@ import {
 } from '@mui/x-data-grid'
 import { GridApiCommunity } from '@mui/x-data-grid/internals'
 
-import { SortOrder } from '@sport-score/common'
+import { SortOrder } from '@accounting-app/common'
 
 import HandleDataGridError from 'Utils/HandleDataGridError'
 

@@ -3,3 +3,5 @@
 
 # vite-pwa dist
 /dev-dist/
+
+!.env

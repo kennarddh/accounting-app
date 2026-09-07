@@ -5,9 +5,11 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY ./packages/frontend/package.json ./packages/frontend/package.json
 
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm \
+	npm ci --prefer-offline --no-audit
 
 COPY ./packages/frontend/ ./packages/frontend/
+COPY ./packages/common/ ./packages/common/
 COPY ./tsconfig.json ./tsconfig.json
 
 RUN npm -w @accounting-app/frontend run build

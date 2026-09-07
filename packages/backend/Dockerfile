@@ -2,12 +2,16 @@ FROM node:lts-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-COPY ./packages/backend/package.json ./packages/backend/package.json
+COPY package.json package-lock.json tsconfig.json ./
 
-RUN npm ci
+COPY ./packages/backend/package.json ./packages/backend/package.json
+COPY ./packages/common/package.json ./packages/common/package.json
+
+RUN --mount=type=cache,target=/root/.npm \
+	npm ci --prefer-offline --no-audit
 
 COPY ./packages/backend/ ./packages/backend/
+COPY ./packages/common/ ./packages/common/
 
 RUN npm -w @accounting-app/backend run build
 RUN npx -w @accounting-app/backend prisma generate
@@ -16,13 +20,14 @@ FROM node:lts-alpine
 
 WORKDIR /app
 
-COPY --from=builder /app/packages/backend/package.json ./
+COPY package*.json ./
+COPY ./packages/backend/package.json ./packages/backend/
+COPY ./packages/common/package.json ./packages/common/
 
-RUN npm i --omit=dev &&\
-	npm cache clean --force &&\
-	rm -rf /root/.npm
+COPY --from=builder /app/node_modules ./node_modules
 
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma	
+RUN --mount=type=cache,target=/root/.npm \
+	npm ci --prefer-offline --no-audit --omit=dev
 
 COPY --from=builder /app/packages/backend/build ./
 
