@@ -31,6 +31,7 @@ const esbuildOptions = {
 	platform: 'node',
 	minify: true,
 	target: 'esnext',
+	tsconfig: './tsconfig.json',
 	define: {
 		'process.env.NODE_ENV': "'production'",
 	},

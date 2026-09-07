@@ -12,8 +12,8 @@ RUN npm ci --prefer-offline --no-audit
 COPY ./packages/backend/ ./packages/backend/
 COPY ./packages/common/ ./packages/common/
 
-RUN npm -w @accounting-app/backend run build
 RUN npx -w @accounting-app/backend prisma generate
+RUN npm -w @accounting-app/backend run build
 
 FROM node:lts-alpine
 
