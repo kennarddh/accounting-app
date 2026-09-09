@@ -208,7 +208,6 @@ const AccountList: FC = () => {
 	)
 
 	const debouncedFilterSearch = useDebounce(FilterSearch, 500)
-	const debouncedEnableDisableFilter = useDebounce(enableDisableFilter, 500)
 	const debouncedSelectedTypes = useDebounce(selectedTypes, 500)
 
 	useEffect(() => {
@@ -216,7 +215,7 @@ const AccountList: FC = () => {
 			if (debouncedFilterSearch !== '') prev.set('search', debouncedFilterSearch)
 			else prev.delete('search')
 
-			prev.set('enableDisableFilter', debouncedEnableDisableFilter)
+			prev.set('enableDisableFilter', enableDisableFilter)
 
 			prev.delete('types')
 
@@ -226,12 +225,7 @@ const AccountList: FC = () => {
 
 			return prev
 		})
-	}, [
-		SetSearchParams,
-		debouncedFilterSearch,
-		debouncedEnableDisableFilter,
-		debouncedSelectedTypes,
-	])
+	}, [SetSearchParams, debouncedFilterSearch, debouncedSelectedTypes, enableDisableFilter])
 
 	const AccountDataSource = useMemo<GridDataSource>(
 		() => ({
@@ -239,14 +233,14 @@ const AccountList: FC = () => {
 				const result = await AccountFindManyApi({
 					...TransformGridGetRowsParams<AccountSortField>(params),
 					search: debouncedFilterSearch,
-					active: debouncedEnableDisableFilter,
+					active: enableDisableFilter,
 					types: debouncedSelectedTypes,
 				})
 
 				return { rows: result.list, rowCount: result.pagination.total }
 			},
 		}),
-		[debouncedEnableDisableFilter, debouncedFilterSearch, debouncedSelectedTypes],
+		[enableDisableFilter, debouncedFilterSearch, debouncedSelectedTypes],
 	)
 
 	return (
