@@ -164,7 +164,8 @@
 			"profile": "Profile",
 			"users": "Users",
 			"userSessions": "User Sessions",
-			"accounts": "Accounts"
+			"accounts": "Accounts",
+			"journal": "Journal"
 		}
 	},
 	"accounts": {
@@ -202,6 +203,27 @@
 			"notFound": "The account you are looking for does not exist.",
 			"codeTaken": "The code is already taken.",
 			"disabled": "The account is disabled."
+		}
+	},
+	"journal": {
+		"entryNumber": "Entry Number",
+		"date": "Date",
+		"description": "Description",
+		"createdAt": "Created At",
+		"new": {
+			"title": "New Journal Entry"
+		},
+		"edit": {
+			"title": "Edit Journal Entry"
+		},
+		"detail": {
+			"title": "Journal Entry Detail"
+		},
+		"list": {
+			"title": "Journal"
+		},
+		"errors": {
+			"notFound": "The journal entry you are looking for does not exist."
 		}
 	}
 }

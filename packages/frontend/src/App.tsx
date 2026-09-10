@@ -105,6 +105,15 @@ const router = createBrowserRouter([
 									},
 								],
 							},
+							{
+								path: 'journal',
+								children: [
+									{
+										index: true,
+										lazy: () => import('Pages/Journal/JournalList'),
+									},
+								],
+							},
 						],
 					},
 				],

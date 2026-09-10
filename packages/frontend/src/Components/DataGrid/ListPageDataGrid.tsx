@@ -95,6 +95,8 @@ const ListPageDataGrid: FC<ListPageDataGridProps> = props => {
 		})
 	}, [SortModel, SetSearchParams])
 
+	console.log({ DataSourceError })
+
 	const noRowsOverlay = useCallback(
 		() => <CustomNoRowsOverlay errorKind={DataSourceError} />,
 		[DataSourceError],
@@ -113,10 +115,7 @@ const ListPageDataGrid: FC<ListPageDataGridProps> = props => {
 			onSortModelChange={SetSortModel}
 			dataSource={props.dataSource}
 			onDataSourceError={OnError}
-			slots={{
-				noRowsOverlay,
-			}}
-
+			slots={{ noRowsOverlay }}
 			loading={props.loading ?? false}
 		/>
 	)

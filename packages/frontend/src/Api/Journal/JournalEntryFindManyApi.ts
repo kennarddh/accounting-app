@@ -63,7 +63,7 @@ const JournalEntryFindManyApi: ApiFunction<
 	JournalEntryFindManyOutput,
 	JournalEntryFindManyData
 > = async data => {
-	const result = await CallApi<JournalEntryFindManyResponse>('/account', 'GET', true, {
+	const result = await CallApi<JournalEntryFindManyResponse>('/journal', 'GET', true, {
 		params: {
 			pagination: data.pagination,
 			sort: data.sort,
