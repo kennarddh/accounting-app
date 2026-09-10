@@ -50,7 +50,7 @@ const JournalList: FC = () => {
 			{
 				field: 'date',
 				headerName: t('journal.date'),
-				width: 200,
+				width: 300,
 				valueGetter: (_, row) => t('common.dateTime', { date: row.date }),
 			},
 			{ field: 'description', headerName: t('journal.description'), minWidth: 200, flex: 1 },

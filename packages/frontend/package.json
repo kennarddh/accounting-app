@@ -39,6 +39,7 @@
 		"@mui/x-date-pickers": "^9.13.0",
 		"axios": "^1.20.0",
 		"dayjs": "^1.11.23",
+		"decimal.js": "^10.6.0",
 		"i18next": "^26.4.2",
 		"i18next-browser-languagedetector": "^8.2.1",
 		"i18next-resources-to-backend": "^1.2.3",

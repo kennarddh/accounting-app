@@ -210,6 +210,13 @@
 		"date": "Date",
 		"description": "Description",
 		"createdAt": "Created At",
+		"account": "Account",
+		"lineDescription": "Line Description",
+		"debit": "Debit",
+		"credit": "Credit",
+		"selectAccount": "Select Account",
+		"totals": "Totals",
+		"addLine": "Add Line",
 		"new": {
 			"title": "New Journal Entry"
 		},
@@ -223,7 +230,11 @@
 			"title": "Journal"
 		},
 		"errors": {
-			"notFound": "The journal entry you are looking for does not exist."
+			"notFound": "The journal entry you are looking for does not exist.",
+			"invalid": "The journal entry is invalid.",
+			"entryNumberTaken": "The entry number is already taken.",
+			"unbalanced": "The journal entry is unbalanced.",
+			"incomplete": "The journal entry is incomplete."
 		}
 	}
 }

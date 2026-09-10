@@ -14,7 +14,7 @@ export interface JournalEntryCreateData {
 		debit: string
 		credit: string
 		description: string
-	}
+	}[]
 }
 
 export interface JournalEntryCreateOutput {
