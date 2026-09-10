@@ -1,4 +1,4 @@
-import { FC, SubmitEvent, useCallback, useEffect, useState, useTransition } from 'react'
+import { FC, SubmitEvent, useCallback, useEffect, useMemo, useState, useTransition } from 'react'
 
 import { useNavigate } from 'react-router'
 
@@ -28,7 +28,7 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker'
 
 import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import dayjs, { Dayjs } from 'dayjs'
-import Decimal from 'decimal.js'
+import { Decimal } from 'decimal.js'
 import { useTranslation } from 'react-i18next'
 
 import { MuiMoneyInput } from 'Components/MuiMoneyInput'
@@ -87,7 +87,7 @@ const NewJournalEntry: FC = () => {
 			)
 		}
 
-		main()
+		main().catch((error: unknown) => console.error('JournalEntryCreate load error', error))
 	}, [])
 
 	const handleAddLine = () => {
@@ -106,20 +106,30 @@ const NewJournalEntry: FC = () => {
 	const handleLineChange = (index: number, field: keyof LineRow, value: string) => {
 		setLines(prev => {
 			const updated = [...prev]
-			updated[index] = { ...(updated[index] as LineRow), [field]: value }
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			updated[index] = { ...updated[index]!, [field]: value }
 
 			// Mutual exclusion: if debit is entered, clear credit and vice versa
-			if (field === 'debit' && value && updated[index]) updated[index].credit = ''
-			if (field === 'credit' && value && updated[index]) updated[index].debit = ''
+			if (field === 'debit' && value) updated[index].credit = ''
+			if (field === 'credit' && value) updated[index].debit = ''
 
 			return updated
 		})
 	}
 
 	// Calculate live totals using Decimal to avoid float bugs
-	const totalDebit = lines.reduce((acc, l) => acc.plus(l.debit || 0), new Decimal(0))
-	const totalCredit = lines.reduce((acc, l) => acc.plus(l.credit || 0), new Decimal(0))
-	const isBalanced = totalDebit.equals(totalCredit) && totalDebit.greaterThan(0)
+	const totalDebit = useMemo(
+		() => lines.reduce((acc, l) => acc.plus(l.debit || 0), new Decimal(0)),
+		[lines],
+	)
+	const totalCredit = useMemo(
+		() => lines.reduce((acc, l) => acc.plus(l.credit || 0), new Decimal(0)),
+		[lines],
+	)
+	const isBalanced = useMemo(
+		() => totalDebit.equals(totalCredit) && totalDebit.greaterThan(0),
+		[totalDebit, totalCredit],
+	)
 
 	const OnSubmit = useCallback(
 		(event: SubmitEvent<HTMLFormElement>) => {
@@ -198,7 +208,7 @@ const NewJournalEntry: FC = () => {
 					<DateTimePicker
 						label={t('journal.date')}
 						value={date}
-						onChange={newValue => setDate(newValue as Dayjs)}
+						onChange={newValue => newValue && setDate(newValue)}
 						ampm={false}
 					/>
 				</FormControl>

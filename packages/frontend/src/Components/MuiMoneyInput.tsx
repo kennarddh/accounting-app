@@ -13,6 +13,7 @@ export interface MuiMoneyInputProps {
 	error?: boolean
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const NumberInput: React.ComponentType<any> = NumericFormat
 
 export const MuiMoneyInput: React.FC<MuiMoneyInputProps> = ({
@@ -27,15 +28,19 @@ export const MuiMoneyInput: React.FC<MuiMoneyInputProps> = ({
 		<NumberInput
 			customInput={TextField}
 			value={value}
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
 			onValueChange={(values: any) => onChange?.(values.value)}
 			thousandSeparator=','
 			decimalSeparator='.'
 			decimalScale={4}
 			allowNegative={false}
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			isAllowed={(values: any) => {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 				const [integerPart] = values.value.split('.')
 
-				return (integerPart || '').length <= 24
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+				return (integerPart ?? '').length <= 24
 			}}
 			placeholder={placeholder}
 			disabled={disabled}

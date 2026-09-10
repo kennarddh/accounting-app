@@ -18,7 +18,7 @@ import {
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker'
 
 import dayjs from 'dayjs'
-import Decimal from 'decimal.js'
+import { Decimal } from 'decimal.js'
 import { useTranslation } from 'react-i18next'
 
 import { MuiMoneyInput } from 'Components/MuiMoneyInput'
@@ -50,8 +50,8 @@ const JournalEntryDetail: FC = () => {
 			}
 		}
 
-		main()
-	}, [])
+		main().catch((error: unknown) => console.error('JournalEntryDetail load error', error))
+	}, [Navigate, id])
 
 	if (journalEntry === null) return null
 
