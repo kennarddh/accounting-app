@@ -40,7 +40,10 @@ class FindJournalEntryById extends Controller {
 					entryNumber: account.entryNumber,
 					date: account.date.getTime(),
 					description: account.description,
-					createdById: account.createdById.toString(),
+					createdBy: {
+						id: account.createdBy.id.toString(),
+						name: account.createdBy.name,
+					},
 					createdAt: account.createdAt.getTime(),
 					lines: account.lines.map(line => ({
 						id: line.id.toString(),

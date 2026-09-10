@@ -26,7 +26,7 @@ export interface JournalEntryDetail {
 	entryNumber: string
 	date: Date
 	description: string
-	createdById: bigint
+	createdBy: { id: bigint; name: string }
 	createdAt: Date
 	updatedAt: Date
 	lines: JournalLineItem[]
@@ -78,7 +78,12 @@ class JournalService extends Service {
 			entryNumber: true,
 			date: true,
 			description: true,
-			createdById: true,
+			createdBy: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
 			createdAt: true,
 			updatedAt: true,
 			lines: {
@@ -108,7 +113,10 @@ class JournalService extends Service {
 			entryNumber: data.entryNumber,
 			date: data.date,
 			description: data.description,
-			createdById: data.createdById,
+			createdBy: {
+				id: data.createdBy.id,
+				name: data.createdBy.name,
+			},
 			createdAt: data.createdAt,
 			updatedAt: data.updatedAt,
 			lines: data.lines.map(line => ({
@@ -162,6 +170,10 @@ class JournalService extends Service {
 					description: string
 					createdAt: Date
 				}[]
+				createdBy: {
+					id: bigint
+					name: string
+				}
 			}>({
 				filter: { id },
 				select: this.dataSelect,
@@ -211,6 +223,7 @@ class JournalService extends Service {
 					description: string
 					createdAt: Date
 				}[]
+				createdBy: { id: bigint; name: string }
 			}>(repositoryOptions),
 		)
 	}
@@ -248,7 +261,10 @@ class JournalService extends Service {
 						entryNumber: transformed.entryNumber,
 						date: transformed.date.getTime(),
 						description: transformed.description,
-						createdById: transformed.createdById.toString(),
+						createdBy: {
+							id: transformed.createdBy.id.toString(),
+							name: transformed.createdBy.name,
+						},
 						createdAt: transformed.createdAt.getTime(),
 						lines: transformed.lines.map(line => ({
 							id: line.id.toString(),
