@@ -14,6 +14,7 @@ export enum ApiErrorResource {
 	Duration = 'Duration',
 	DateTime = 'DateTime',
 	Account = 'Account',
+	JournalEntry = 'JournalEntry',
 }
 
 export enum ApiErrorKind {
@@ -65,4 +66,10 @@ export enum FilterEnableDisable {
 	Active = 'Active',
 	All = 'All',
 	Disabled = 'Disabled',
+}
+
+export enum JournalEntrySortField {
+	Date = 'date',
+	CreatedAt = 'createdAt',
+	EntryNumber = 'entryNumber',
 }

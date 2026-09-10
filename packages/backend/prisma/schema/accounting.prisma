@@ -1,12 +1,52 @@
 model Account {
-    id       BigInt  @id @default(autoincrement())
-    code     String  @unique(map: "accounts_code_key")
-    name     String
-    type     String  @db.VarChar(50)
+    id   BigInt @id @default(autoincrement())
+    code String @unique(map: "accounts_code_key")
+    name String
+    type String @db.VarChar(50)
 
-    createdAt  DateTime  @default(now())
-    updatedAt  DateTime  @updatedAt
-    disabledAt DateTime?
+    createdAt    DateTime      @default(now())
+    updatedAt    DateTime      @updatedAt
+    disabledAt   DateTime?
+    journalLines JournalLine[]
 
     @@map("accounts")
+}
+
+model JournalEntry {
+    id          BigInt   @id @default(autoincrement())
+    entryNumber String   @unique(map: "journal_entries_entryNumber_key")
+    date        DateTime // Date the transaction affects books
+    description String   @db.Text
+
+    createdById BigInt
+    createdBy   User   @relation("JournalEntryCreator", fields: [createdById], references: [id])
+
+    lines JournalLine[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([date])
+    @@map("journal_entries")
+}
+
+model JournalLine {
+    id BigInt @id @default(autoincrement())
+
+    journalEntryId BigInt
+    journalEntry   JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+
+    accountId BigInt
+    account   Account @relation(fields: [accountId], references: [id])
+
+    debit  Decimal @default(0) @db.Decimal(28, 4)
+    credit Decimal @default(0) @db.Decimal(28, 4)
+
+    description String
+
+    createdAt DateTime @default(now())
+
+    @@index([accountId])
+    @@index([journalEntryId])
+    @@map("journal_lines")
 }
