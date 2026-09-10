@@ -255,7 +255,7 @@ const NewJournalEntry: FC = () => {
 										<TextField
 											fullWidth
 											size='small'
-											placeholder='Description'
+											placeholder={t('journal.description')}
 											value={line.description}
 											onChange={e =>
 												handleLineChange(

@@ -6,7 +6,7 @@ import { NumericFormat } from 'react-number-format'
 
 export interface MuiMoneyInputProps {
 	value: string
-	onChange: (value: string) => void
+	onChange?: (value: string) => void
 	placeholder?: string
 	disabled?: boolean
 	size?: 'small' | 'medium'
@@ -27,7 +27,7 @@ export const MuiMoneyInput: React.FC<MuiMoneyInputProps> = ({
 		<NumberInput
 			customInput={TextField}
 			value={value}
-			onValueChange={(values: any) => onChange(values.value)}
+			onValueChange={(values: any) => onChange?.(values.value)}
 			thousandSeparator=','
 			decimalSeparator='.'
 			decimalScale={4}

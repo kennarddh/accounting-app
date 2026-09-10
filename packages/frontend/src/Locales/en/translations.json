@@ -220,9 +220,6 @@
 		"new": {
 			"title": "New Journal Entry"
 		},
-		"edit": {
-			"title": "Edit Journal Entry"
-		},
 		"detail": {
 			"title": "Journal Entry Detail"
 		},
