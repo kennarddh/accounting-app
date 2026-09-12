@@ -16,13 +16,9 @@ services:
             start_period: 1s
             start_interval: 5s
             retries: 5
-        networks:
-            - app
         ports:
             - 5432:5432
+        restart: unless-stopped
 
 volumes:
     database:
-
-networks:
-    app:
