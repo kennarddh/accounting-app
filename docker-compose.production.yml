@@ -75,7 +75,7 @@ services:
 
             CORS_ORIGIN: "*"
 
-            LOG_LEVEL: info
+            LOG_LEVEL: http
 
             BASE_URL: http://localhost:8080
         depends_on:
