@@ -7,26 +7,26 @@ import { DeepPartialAndUndefined } from 'Types/Types'
 import RemoveKeyFromObjectImmutable from 'Utils/RemoveKeyFromObjectImmutable'
 import RemoveUndefinedValueFromObject from 'Utils/RemoveUndefinedValueFromObject'
 
-import UnitOfWork from 'Repositories/UnitOfWork/UnitOfWork'
-
-import { InvalidStateError } from 'Errors'
+import DatabaseService from 'Modules/Database/DatabaseService'
+import { buildPrismaPagination, handlePrismaError } from 'Modules/Database/PrismaUtils'
 
 import { Prisma } from 'PrismaGenerated/client'
 
 import { FindManyOptions } from '../../Types/ServiceTypes'
 import PasswordHashService from '../Auth/PasswordHashService'
 import ConfigurationService from '../Configuration/ConfigurationService'
-import UserRepository, { UserQueryAllOptions } from './UserRepository'
 
-export interface User {
-	id: bigint
-	name: string
-	username: string
-	password: string
-	createdBy: { id: bigint; name: string } | null
-	createdAt: Date
-	updatedAt: Date
-}
+export type User = Prisma.UserGetPayload<{
+	select: {
+		id: true
+		username: true
+		password: true
+		createdBy: { select: { id: true; name: true } }
+		name: true
+		createdAt: true
+		updatedAt: true
+	}
+}>
 
 export interface UserCreateData {
 	name: string
@@ -35,8 +35,9 @@ export interface UserCreateData {
 	createdById?: bigint
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface UserUpdateData {}
+export interface UserUpdateData {
+	name?: string
+}
 
 export interface UserFilterOptions {
 	search?: string
@@ -46,45 +47,23 @@ export interface UserFindManyOptions extends FindManyOptions<UserSortField> {
 	filter?: UserFilterOptions
 }
 
-export interface UserCountOptions {
-	filter?: UserFilterOptions
-}
-
 @Injectable()
 class UserService extends Service {
 	constructor(
-		private unitOfWork = DI.get(UnitOfWork),
+		private db = DI.get(DatabaseService),
 		private passwordHashService = DI.get(PasswordHashService),
 		private configurationService = DI.get(ConfigurationService),
 	) {
 		super('UserService')
 	}
 
-	private transformData(
-		data: Prisma.UserGetPayload<{ select: UserService['dataSelect'] }>,
-	): User {
-		return {
-			id: data.id,
-			name: data.name,
-			username: data.username,
-			password: data.password,
-			createdBy:
-				data.createdBy === null
-					? null
-					: {
-							id: data.createdBy.id,
-							name: data.createdBy.name,
-						},
-			createdAt: data.createdAt,
-			updatedAt: data.updatedAt,
-		}
-	}
+	private buildWhereFilter(filter?: UserFilterOptions) {
+		if (!filter) return {}
 
-	private buildRepositoryFilterOptions(filter: UserFilterOptions) {
-		const repositoryFilter: Prisma.UserWhereInput = {}
+		const where: Prisma.UserWhereInput = {}
 
 		if (filter.search !== undefined)
-			repositoryFilter.OR = [
+			where.OR = [
 				{
 					name: {
 						contains: filter.search,
@@ -99,7 +78,7 @@ class UserService extends Service {
 				},
 			]
 
-		return repositoryFilter
+		return where
 	}
 
 	private get dataSelect() {
@@ -115,143 +94,95 @@ class UserService extends Service {
 	}
 
 	async findById(id: bigint) {
-		return await this.unitOfWork.execute(async transaction => {
-			const result = await transaction.getRepository(UserRepository).findUnique<{
-				createdBy: { id: bigint; name: string } | null
-			}>({
-				filter: { id },
-				select: this.dataSelect,
-			})
-
-			if (result === null) return null
-
-			return this.transformData(result)
+		return await this.db.client.user.findUnique({
+			where: { id },
+			select: this.dataSelect,
 		})
 	}
 
 	async findByUsername(username: string) {
-		return await this.unitOfWork.execute(async transaction => {
-			const result = await transaction.getRepository(UserRepository).findUnique<{
-				createdBy: { id: bigint; name: string } | null
-				name: string
-			}>({ filter: { username }, select: this.dataSelect })
-
-			if (result === null) return null
-
-			return this.transformData(result)
+		return await this.db.client.user.findUnique({
+			where: { username },
+			select: this.dataSelect,
 		})
 	}
 
 	async findMany(options: UserFindManyOptions = {}) {
-		const repositoryOptions: UserQueryAllOptions = {
-			select: this.dataSelect,
-		}
-
-		if (options.sort !== undefined) {
-			repositoryOptions.sort = {
-				[options.sort.field]: options.sort.order ?? SortOrder.Ascending,
-			}
-		}
-
-		if (options.filter !== undefined) {
-			repositoryOptions.filter = this.buildRepositoryFilterOptions(options.filter)
-		}
-
-		if (options.pagination !== undefined) {
-			repositoryOptions.pagination = {
-				limit: Math.min(
-					options.pagination.limit ??
-						this.configurationService.configurations.pagination.defaultLimit,
-					this.configurationService.configurations.pagination.defaultMaxLimit,
-				),
-				page: options.pagination.page ?? 0,
-			}
-		}
-
-		return await this.unitOfWork.execute(async transaction =>
-			transaction
-				.getRepository(UserRepository)
-				.findMany<{ createdBy: { id: bigint; name: string } | null }>(repositoryOptions),
+		const { skip, take } = buildPrismaPagination(
+			options.pagination,
+			this.configurationService.configurations.pagination.defaultLimit,
+			this.configurationService.configurations.pagination.defaultMaxLimit,
 		)
-	}
 
-	async count(options: UserCountOptions): Promise<number> {
-		const repositoryOptions: UserQueryAllOptions = {}
+		const where = this.buildWhereFilter(options.filter)
+		const orderBy: Prisma.UserOrderByWithRelationInput = options.sort
+			? { [options.sort.field]: options.sort.order ?? SortOrder.Ascending }
+			: { id: SortOrder.Ascending }
 
-		if (options.filter !== undefined) {
-			repositoryOptions.filter = this.buildRepositoryFilterOptions(options.filter)
+		const [total, users] = await Promise.all([
+			this.db.client.user.count({ where }),
+			this.db.client.user.findMany({
+				where,
+				select: this.dataSelect,
+				skip,
+				take,
+				orderBy,
+			}),
+		])
+
+		return {
+			pagination: {
+				page: options.pagination?.page ?? 0,
+				limit: take,
+				total,
+			},
+			items: users,
 		}
-
-		return await this.unitOfWork.execute(async transaction =>
-			transaction.getRepository(UserRepository).count(repositoryOptions),
-		)
-	}
-
-	async list(options: UserFindManyOptions = {}) {
-		return await this.unitOfWork.execute(async () => {
-			const result = await this.findMany(options)
-			const count = await this.count(options)
-
-			return {
-				pagination: {
-					page: options.pagination?.page ?? 0,
-					limit:
-						options.pagination?.limit ??
-						this.configurationService.configurations.pagination.defaultLimit,
-					total: count,
-				},
-				list: result.map(user => ({
-					id: user.id.toString(),
-					name: user.name,
-					username: user.username,
-					createdBy:
-						user.createdBy === null
-							? null
-							: { id: user.createdBy.id.toString(), name: user.createdBy.name },
-					createdAt: user.createdAt.getTime(),
-					updatedAt: user.updatedAt.getTime(),
-				})),
-			}
-		})
 	}
 
 	async create(data: UserCreateData) {
-		return await this.unitOfWork.execute(async transaction => {
-			const user = await this.findByUsername(data.username)
+		const passwordDigest = await this.passwordHashService.hash(data.password)
 
-			if (user !== null) throw new InvalidStateError('create', 'userAlreadyExists')
+		const newData = RemoveKeyFromObjectImmutable(data, ['password'])
 
-			const passwordDigest = await this.passwordHashService.hash(data.password)
-
-			const newData = RemoveKeyFromObjectImmutable(data, ['password'])
-
-			return await transaction.getRepository(UserRepository).create({
+		try {
+			// If the username is taken, the DB will reject it instantly.
+			return await this.db.client.user.create({
 				data: {
 					...newData,
 					password: passwordDigest,
 				},
 			})
-		})
+		} catch (error) {
+			handlePrismaError(error, 'user')
+		}
 	}
 
 	async updatePassword(id: bigint, newPassword: string) {
-		const passworDigest = await this.passwordHashService.hash(newPassword)
+		const passwordDigest = await this.passwordHashService.hash(newPassword)
 
-		await this.unitOfWork.execute(async transaction =>
-			transaction
-				.getRepository(UserRepository)
-				.update({ filter: { id }, data: { password: passworDigest } }),
-		)
+		try {
+			// 2. Update directly. (Will throw NotFoundError if `id` doesn't exist).
+			await this.db.client.user.update({
+				where: { id },
+				data: { password: passwordDigest },
+			})
+		} catch (error) {
+			handlePrismaError(error, 'user')
+		}
 	}
 
 	async update(id: bigint, data: DeepPartialAndUndefined<UserUpdateData>) {
 		const updateData: Prisma.UserUpdateArgs['data'] = RemoveUndefinedValueFromObject(data)
 
-		await this.unitOfWork.execute(async transaction => {
-			await transaction
-				.getRepository(UserRepository)
-				.update({ filter: { id }, data: updateData })
-		})
+		try {
+			await this.db.client.user.update({
+				where: { id },
+				data: updateData,
+			})
+		} catch (error) {
+			handlePrismaError(error, 'user')
+		}
 	}
 }
 

@@ -4,9 +4,8 @@ import Instance from 'App'
 
 import Logger from 'Utils/Logger/Logger'
 
-import DatabaseRepository from 'Repositories/DatabaseRepository'
-
 import ConfigurationService from 'Modules/Configuration/ConfigurationService'
+import DatabaseService from 'Modules/Database/DatabaseService'
 
 const OnShutdown = async (signal: string | undefined, exitCode = 0) => {
 	const configurationService = DI.get(ConfigurationService)
@@ -34,7 +33,7 @@ const OnShutdown = async (signal: string | undefined, exitCode = 0) => {
 	})
 
 	try {
-		await DI.get(DatabaseRepository).disconnect()
+		await DI.get(DatabaseService).disconnect()
 
 		Logger.info('Database connection closed.')
 	} catch (error) {

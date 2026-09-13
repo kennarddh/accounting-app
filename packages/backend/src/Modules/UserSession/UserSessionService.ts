@@ -2,28 +2,28 @@ import { DI, Injectable, Service } from '@celosiajs/core'
 
 import { SortOrder, UserSessionSortField } from '@accounting-app/common'
 
-import UnitOfWork from 'Repositories/UnitOfWork/UnitOfWork'
-
-import { InvalidStateError, ResourceNotFoundError } from 'Errors'
+import DatabaseService from 'Modules/Database/DatabaseService'
+import { buildPrismaPagination, handlePrismaError } from 'Modules/Database/PrismaUtils'
 
 import { Prisma } from 'PrismaGenerated/client'
 
 import { FindManyOptions } from '../../Types/ServiceTypes'
 import ConfigurationService from '../Configuration/ConfigurationService'
-import UserSessionRepository, { UserSessionQueryAllOptions } from './UserSessionRepository'
 
-export interface UserSession {
-	id: bigint
-	accessTokenJti: string
-	refreshTokenJti: string
-	ipAddress: string
-	user: { id: bigint; name: string }
-	loggedOutAt: Date | null
-	revokedAt: Date | null
-	expireAt: Date
-	lastRefreshAt: Date
-	createdAt: Date
-}
+export type UserSession = Prisma.UserSessionGetPayload<{
+	select: {
+		id: true
+		accessTokenJti: true
+		refreshTokenJti: true
+		ipAddress: true
+		user: { select: { id: true; name: true } }
+		loggedOutAt: true
+		revokedAt: true
+		expireAt: true
+		lastRefreshAt: true
+		createdAt: true
+	}
+}>
 
 export interface UserSessionCreateData {
 	ipAddress: string
@@ -40,53 +40,29 @@ export interface UserSessionFindManyOptions extends FindManyOptions<UserSessionS
 	filter?: UserSessionFilterOptions
 }
 
-export interface UserSessionCountOptions {
-	filter?: UserSessionFilterOptions
-}
-
 @Injectable()
 class UserSessionService extends Service {
 	constructor(
-		private unitOfWork = DI.get(UnitOfWork),
+		private db = DI.get(DatabaseService),
 		private configurationService = DI.get(ConfigurationService),
 	) {
 		super('UserService')
 	}
 
-	private transformData(
-		data: Prisma.UserSessionGetPayload<{
-			select: UserSessionService['dataSelect']
-		}>,
-	): UserSession {
-		return {
-			id: data.id,
-			accessTokenJti: data.accessTokenJti,
-			refreshTokenJti: data.refreshTokenJti,
-			ipAddress: data.ipAddress,
-			user: {
-				id: data.user.id,
-				name: data.user.name,
-			},
-			loggedOutAt: data.loggedOutAt,
-			revokedAt: data.revokedAt,
-			expireAt: data.expireAt,
-			lastRefreshAt: data.lastRefreshAt,
-			createdAt: data.createdAt,
-		}
-	}
+	private buildWhereFilter(filter?: UserSessionFilterOptions) {
+		if (!filter) return {}
 
-	private buildRepositoryFilterOptions(filter: UserSessionFilterOptions) {
-		const repositoryFilter: Prisma.UserSessionWhereInput = {}
+		const where: Prisma.UserSessionWhereInput = {}
 
-		if (filter.userId !== undefined) repositoryFilter.userId = filter.userId
+		if (filter.userId !== undefined) where.userId = filter.userId
 
 		if (filter.includeInactive !== true) {
-			repositoryFilter.expireAt = { gte: new Date() }
-			repositoryFilter.revokedAt = null
-			repositoryFilter.loggedOutAt = null
+			where.expireAt = { gte: new Date() }
+			where.revokedAt = null
+			where.loggedOutAt = null
 		}
 
-		return repositoryFilter
+		return where
 	}
 
 	private get dataSelect() {
@@ -109,156 +85,74 @@ class UserSessionService extends Service {
 	}
 
 	async findById(id: bigint) {
-		return await this.unitOfWork.execute(async transaction => {
-			const result = await transaction.getRepository(UserSessionRepository).findUnique<{
-				user: { id: bigint; name: string }
-			}>({
-				filter: { id },
-				select: this.dataSelect,
-			})
-
-			if (result === null) return null
-
-			return this.transformData(result)
-		})
-	}
-
-	async findByAccessTokenJti(accessTokenJti: string) {
-		return await this.unitOfWork.execute(async transaction => {
-			const result = await transaction.getRepository(UserSessionRepository).findUnique<{
-				user: { id: bigint; name: string }
-			}>({
-				filter: { accessTokenJti },
-				select: this.dataSelect,
-			})
-
-			if (result === null) return null
-
-			return this.transformData(result)
-		})
-	}
-
-	async findByRefreshTokenJti(refreshTokenJti: string) {
-		return await this.unitOfWork.execute(async transaction => {
-			const result = await transaction.getRepository(UserSessionRepository).findUnique<{
-				user: { id: bigint; name: string }
-			}>({
-				filter: { refreshTokenJti },
-				select: this.dataSelect,
-			})
-
-			if (result === null) return null
-
-			return this.transformData(result)
+		return await this.db.client.userSession.findUnique({
+			where: { id },
+			select: this.dataSelect,
 		})
 	}
 
 	async findMany(options: UserSessionFindManyOptions = {}) {
-		const repositoryOptions: UserSessionQueryAllOptions = {
-			select: this.dataSelect,
-		}
-
-		if (options.sort !== undefined) {
-			repositoryOptions.sort = {
-				[options.sort.field]: options.sort.order ?? SortOrder.Ascending,
-			}
-		}
-
-		if (options.filter !== undefined) {
-			repositoryOptions.filter = this.buildRepositoryFilterOptions(options.filter)
-		}
-
-		if (options.pagination !== undefined) {
-			repositoryOptions.pagination = {
-				limit: Math.min(
-					options.pagination.limit ??
-						this.configurationService.configurations.pagination.defaultLimit,
-					this.configurationService.configurations.pagination.defaultMaxLimit,
-				),
-				page: options.pagination.page ?? 0,
-			}
-		}
-
-		return await this.unitOfWork.execute(async transaction =>
-			transaction.getRepository(UserSessionRepository).findMany<{
-				user: { id: bigint; name: string }
-			}>(repositoryOptions),
+		const { skip, take } = buildPrismaPagination(
+			options.pagination,
+			this.configurationService.configurations.pagination.defaultLimit,
+			this.configurationService.configurations.pagination.defaultMaxLimit,
 		)
-	}
 
-	async count(options: UserSessionCountOptions): Promise<number> {
-		const repositoryOptions: UserSessionQueryAllOptions = {}
+		const where = this.buildWhereFilter(options.filter)
+		const orderBy: Prisma.UserSessionOrderByWithRelationInput = options.sort
+			? { [options.sort.field]: options.sort.order ?? SortOrder.Ascending }
+			: { id: SortOrder.Ascending }
 
-		if (options.filter !== undefined) {
-			repositoryOptions.filter = this.buildRepositoryFilterOptions(options.filter)
+		const [total, userSessions] = await Promise.all([
+			this.db.client.userSession.count({ where }),
+			this.db.client.userSession.findMany({
+				where,
+				select: this.dataSelect,
+				skip,
+				take,
+				orderBy,
+			}),
+		])
+
+		return {
+			pagination: {
+				page: options.pagination?.page ?? 0,
+				limit: take,
+				total,
+			},
+			items: userSessions,
 		}
-
-		return await this.unitOfWork.execute(async transaction =>
-			transaction.getRepository(UserSessionRepository).count(repositoryOptions),
-		)
-	}
-
-	async list(options: UserSessionFindManyOptions = {}) {
-		return await this.unitOfWork.execute(async () => {
-			const result = await this.findMany(options)
-			const count = await this.count(options)
-
-			return {
-				pagination: {
-					page: options.pagination?.page ?? 0,
-					limit:
-						options.pagination?.limit ??
-						this.configurationService.configurations.pagination.defaultLimit,
-					total: count,
-				},
-				list: result.map(userSession => ({
-					id: userSession.id.toString(),
-					user: {
-						id: userSession.user.id.toString(),
-						name: userSession.user.name,
-					},
-					ipAddress: userSession.ipAddress,
-					createdAt: userSession.createdAt.getTime(),
-					expireAt: userSession.expireAt.getTime(),
-					lastRefreshAt: userSession.lastRefreshAt.getTime(),
-					loggedOutAt: userSession.loggedOutAt?.getTime() ?? null,
-					revokedAt: userSession.revokedAt?.getTime() ?? null,
-				})),
-			}
-		})
 	}
 
 	async create(data: UserSessionCreateData) {
-		return await this.unitOfWork.execute(async transaction => {
-			return await transaction.getRepository(UserSessionRepository).create({
+		try {
+			return await this.db.client.userSession.create({
 				data: {
 					...data,
 					accessTokenJti: this.generateJti(),
 					refreshTokenJti: this.generateJti(),
 				},
 			})
-		})
+		} catch (error) {
+			handlePrismaError(error, 'userSession')
+		}
 	}
 
 	async revoke(id: bigint) {
-		await this.unitOfWork.execute(async transaction => {
-			const userSession = await this.findById(id)
-
-			if (userSession === null) throw new ResourceNotFoundError('userSession')
-
-			if (!this.isSessionActive(userSession))
-				throw new InvalidStateError('revoke', 'sessionInactive')
-
-			await transaction
-				.getRepository(UserSessionRepository)
-				.update({ filter: { id }, data: { revokedAt: new Date() } })
-		})
+		try {
+			await this.db.client.userSession.update({
+				where: { id },
+				data: { revokedAt: new Date() },
+			})
+		} catch (error) {
+			handlePrismaError(error, 'userSession')
+		}
 	}
 
 	async revokeAllByUserId(userId: bigint) {
-		await this.unitOfWork.execute(async transaction => {
-			await transaction.getRepository(UserSessionRepository).updateMany({
-				filter: {
+		try {
+			await this.db.client.userSession.updateMany({
+				where: {
 					userId,
 					revokedAt: null,
 					loggedOutAt: null,
@@ -268,25 +162,25 @@ class UserSessionService extends Service {
 					revokedAt: new Date(),
 				},
 			})
-		})
+		} catch (error) {
+			handlePrismaError(error, 'userSession')
+		}
 	}
 
 	async logout(id: bigint) {
-		await this.unitOfWork.execute(async transaction => {
-			const userSession = await this.findById(id)
-
-			if (userSession === null) throw new ResourceNotFoundError('userSession')
-
-			if (!this.isSessionActive(userSession))
-				throw new InvalidStateError('logout', 'sessionInactive')
-
-			await transaction
-				.getRepository(UserSessionRepository)
-				.update({ filter: { id }, data: { loggedOutAt: new Date() } })
-		})
+		try {
+			await this.db.client.userSession.update({
+				where: { id },
+				data: { loggedOutAt: new Date() },
+			})
+		} catch (error) {
+			handlePrismaError(error, 'userSession')
+		}
 	}
 
-	isSessionActive(userSession: UserSession) {
+	public isSessionActive(
+		userSession: Pick<UserSession, 'revokedAt' | 'loggedOutAt' | 'expireAt'>,
+	) {
 		if (userSession.revokedAt !== null) return false
 		if (userSession.loggedOutAt !== null) return false
 
@@ -302,9 +196,9 @@ class UserSessionService extends Service {
 	}
 
 	async refresh(id: bigint, expireAt: Date) {
-		await this.unitOfWork.execute(async transaction => {
-			await transaction.getRepository(UserSessionRepository).update({
-				filter: { id },
+		try {
+			await this.db.client.userSession.update({
+				where: { id },
 				data: {
 					lastRefreshAt: new Date(),
 					accessTokenJti: this.generateJti(),
@@ -312,7 +206,9 @@ class UserSessionService extends Service {
 					expireAt,
 				},
 			})
-		})
+		} catch (error) {
+			handlePrismaError(error, 'userSession')
+		}
 	}
 }
 

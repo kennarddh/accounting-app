@@ -3,7 +3,7 @@ import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from 
 import { AccountType, ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import z from 'zod/v4'
 
-import { InvalidStateError } from 'Errors'
+import { ConflictError } from 'Modules/Database/PrismaUtils'
 
 import AccountService from '../AccountService'
 
@@ -34,9 +34,9 @@ class CreateAccount extends Controller {
 			})
 		} catch (error) {
 			if (
-				error instanceof InvalidStateError &&
-				error.operation === 'create' &&
-				error.state === 'duplicateAccountCode'
+				error instanceof ConflictError &&
+				error.field === 'code' &&
+				error.resource === 'account'
 			) {
 				return response.status(400).json({
 					errors: {

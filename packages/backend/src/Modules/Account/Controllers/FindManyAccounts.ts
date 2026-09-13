@@ -33,11 +33,23 @@ class FindManyAccounts extends Controller {
 		}) satisfies AccountFindManyOptions
 
 		try {
-			const data = await this.accountService.list(options)
+			const { pagination: resultPagination, items } =
+				await this.accountService.findMany(options)
 
 			return response.status(200).json({
 				errors: {},
-				data,
+				data: {
+					pagination: resultPagination,
+					list: items.map(account => ({
+						id: account.id.toString(),
+						code: account.code,
+						name: account.name,
+						type: account.type,
+						createdAt: account.createdAt.getTime(),
+						updatedAt: account.updatedAt.getTime(),
+						disabledAt: account.disabledAt?.getTime() ?? null,
+					})),
+				},
 			})
 		} catch (error) {
 			this.logger.error('Other.', error)

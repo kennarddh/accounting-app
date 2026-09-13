@@ -1,4 +1,4 @@
-import { User } from '../../User/UserService'
+import { User } from 'Modules/User/UserService'
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 abstract class ResourceAccessPolicy<Context> {

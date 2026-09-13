@@ -1,6 +1,6 @@
 import { DI, Injectable, Service } from '@celosiajs/core'
 
-import DatabaseRepository from 'Repositories/DatabaseRepository'
+import DatabaseService from 'Modules/Database/DatabaseService'
 
 import ConfigurationService from '../Configuration/ConfigurationService'
 
@@ -8,7 +8,7 @@ import ConfigurationService from '../Configuration/ConfigurationService'
 class HealthService extends Service {
 	constructor(
 		private configurationService = DI.get(ConfigurationService),
-		private databaseRepository = DI.get(DatabaseRepository),
+		private db = DI.get(DatabaseService),
 	) {
 		super('HealthService')
 	}
@@ -16,7 +16,7 @@ class HealthService extends Service {
 	async isHealthy() {
 		if (!this.configurationService.loaded) return false
 
-		const isDatabaseReady = await this.databaseRepository.isReady()
+		const isDatabaseReady = await this.db.isReady()
 
 		if (!isDatabaseReady) return false
 

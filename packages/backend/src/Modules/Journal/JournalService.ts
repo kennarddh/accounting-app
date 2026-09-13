@@ -2,35 +2,19 @@ import { DI, Injectable, Service } from '@celosiajs/core'
 
 import { JournalEntrySortField, SortOrder } from '@accounting-app/common'
 
-import UnitOfWork from 'Repositories/UnitOfWork/UnitOfWork'
+import { InvalidStateError } from 'Errors'
 
-import { InvalidStateError, ResourceNotFoundError } from 'Errors'
+import DatabaseService from 'Modules/Database/DatabaseService'
+import {
+	NotFoundError,
+	buildPrismaPagination,
+	handlePrismaError,
+} from 'Modules/Database/PrismaUtils'
 
 import { Prisma } from 'PrismaGenerated/client'
 
 import { FindManyOptions } from '../../Types/ServiceTypes'
-import AccountRepository from '../Account/AccountRepository'
 import ConfigurationService from '../Configuration/ConfigurationService'
-import JournalRepository, { JournalQueryAllOptions } from './JournalRepository'
-
-export interface JournalLineItem {
-	id: bigint
-	account: { id: bigint; code: string; name: string }
-	debit: Prisma.Decimal
-	credit: Prisma.Decimal
-	description: string
-}
-
-export interface JournalEntryDetail {
-	id: bigint
-	entryNumber: string
-	date: Date
-	description: string
-	createdBy: { id: bigint; name: string }
-	createdAt: Date
-	updatedAt: Date
-	lines: JournalLineItem[]
-}
 
 export interface JournalLineCreateData {
 	accountId: bigint
@@ -52,21 +36,17 @@ export interface JournalFilterOptions {
 	fromDate?: Date
 	toDate?: Date
 	createdById?: bigint
-	accountId?: bigint // Filter entries touching a specific account
+	accountId?: bigint
 }
 
 export interface JournalFindManyOptions extends FindManyOptions<JournalEntrySortField> {
 	filter?: JournalFilterOptions
 }
 
-export interface JournalCountOptions {
-	filter?: JournalFilterOptions
-}
-
 @Injectable()
 class JournalService extends Service {
 	constructor(
-		private unitOfWork = DI.get(UnitOfWork),
+		private db = DI.get(DatabaseService),
 		private configurationService = DI.get(ConfigurationService),
 	) {
 		super('JournalService')
@@ -105,182 +85,76 @@ class JournalService extends Service {
 		} satisfies Prisma.JournalEntrySelect
 	}
 
-	private transformData(
-		data: Prisma.JournalEntryGetPayload<{ select: JournalService['dataSelect'] }>,
-	): JournalEntryDetail {
-		return {
-			id: data.id,
-			entryNumber: data.entryNumber,
-			date: data.date,
-			description: data.description,
-			createdBy: {
-				id: data.createdBy.id,
-				name: data.createdBy.name,
-			},
-			createdAt: data.createdAt,
-			updatedAt: data.updatedAt,
-			lines: data.lines.map(line => ({
-				id: line.id,
-				account: { id: line.account.id, code: line.account.code, name: line.account.name },
-				debit: line.debit,
-				credit: line.credit,
-				description: line.description,
-			})),
-		}
-	}
+	private buildWhereFilter(filter?: JournalFilterOptions) {
+		if (!filter) return {}
 
-	private buildRepositoryFilterOptions(filter: JournalFilterOptions) {
-		const repositoryFilter: Prisma.JournalEntryWhereInput = {}
+		const where: Prisma.JournalEntryWhereInput = {}
 
 		if (filter.search !== undefined) {
-			repositoryFilter.OR = [
+			where.OR = [
 				{ entryNumber: { contains: filter.search, mode: 'insensitive' } },
 				{ description: { contains: filter.search, mode: 'insensitive' } },
 			]
 		}
 
 		if (filter.fromDate !== undefined || filter.toDate !== undefined) {
-			repositoryFilter.date = {
+			where.date = {
 				...(filter.fromDate !== undefined ? { gte: filter.fromDate } : {}),
 				...(filter.toDate !== undefined ? { lte: filter.toDate } : {}),
 			}
 		}
 
 		if (filter.createdById !== undefined) {
-			repositoryFilter.createdById = filter.createdById
+			where.createdById = filter.createdById
 		}
 
 		if (filter.accountId !== undefined) {
-			repositoryFilter.lines = {
+			where.lines = {
 				some: { accountId: filter.accountId },
 			}
 		}
 
-		return repositoryFilter
+		return where
 	}
 
 	async findById(id: bigint) {
-		return await this.unitOfWork.execute(async transaction => {
-			const result = await transaction.getRepository(JournalRepository).findUnique<{
-				lines: {
-					id: bigint
-					account: { id: bigint; code: string; name: string }
-					debit: Prisma.Decimal
-					credit: Prisma.Decimal
-					description: string
-					createdAt: Date
-				}[]
-				createdBy: {
-					id: bigint
-					name: string
-				}
-			}>({
-				filter: { id },
-				select: this.dataSelect,
-			})
-
-			if (result === null) return null
-
-			return this.transformData(result)
+		return await this.db.client.journalEntry.findUnique({
+			where: { id },
+			select: this.dataSelect,
 		})
 	}
 
 	async findMany(options: JournalFindManyOptions = {}) {
-		const repositoryOptions: JournalQueryAllOptions = {
-			select: this.dataSelect,
-		}
-
-		if (options.sort !== undefined) {
-			repositoryOptions.sort = {
-				[options.sort.field]: options.sort.order ?? SortOrder.Ascending,
-			}
-		} else {
-			repositoryOptions.sort = { date: SortOrder.Descending }
-		}
-
-		if (options.filter !== undefined) {
-			repositoryOptions.filter = this.buildRepositoryFilterOptions(options.filter)
-		}
-
-		if (options.pagination !== undefined) {
-			repositoryOptions.pagination = {
-				limit: Math.min(
-					options.pagination.limit ??
-						this.configurationService.configurations.pagination.defaultLimit,
-					this.configurationService.configurations.pagination.defaultMaxLimit,
-				),
-				page: options.pagination.page ?? 0,
-			}
-		}
-
-		return await this.unitOfWork.execute(async transaction =>
-			transaction.getRepository(JournalRepository).findMany<{
-				lines: {
-					id: bigint
-					account: { id: bigint; code: string; name: string }
-					debit: Prisma.Decimal
-					credit: Prisma.Decimal
-					description: string
-					createdAt: Date
-				}[]
-				createdBy: { id: bigint; name: string }
-			}>(repositoryOptions),
+		const { skip, take } = buildPrismaPagination(
+			options.pagination,
+			this.configurationService.configurations.pagination.defaultLimit,
+			this.configurationService.configurations.pagination.defaultMaxLimit,
 		)
-	}
 
-	async count(options: JournalCountOptions): Promise<number> {
-		const repositoryOptions: JournalQueryAllOptions = {}
+		const where = this.buildWhereFilter(options.filter)
+		const orderBy: Prisma.AccountOrderByWithRelationInput = options.sort
+			? { [options.sort.field]: options.sort.order ?? SortOrder.Ascending }
+			: { id: SortOrder.Ascending }
 
-		if (options.filter !== undefined) {
-			repositoryOptions.filter = this.buildRepositoryFilterOptions(options.filter)
+		const [total, journalEntries] = await Promise.all([
+			this.db.client.journalEntry.count({ where }),
+			this.db.client.journalEntry.findMany({
+				where,
+				select: this.dataSelect,
+				skip,
+				take,
+				orderBy,
+			}),
+		])
+
+		return {
+			pagination: {
+				page: options.pagination?.page ?? 0,
+				limit: take,
+				total,
+			},
+			items: journalEntries,
 		}
-
-		return await this.unitOfWork.execute(async transaction =>
-			transaction.getRepository(JournalRepository).count(repositoryOptions),
-		)
-	}
-
-	async list(options: JournalFindManyOptions = {}) {
-		return await this.unitOfWork.execute(async () => {
-			const result = await this.findMany(options)
-			const count = await this.count(options)
-
-			return {
-				pagination: {
-					page: options.pagination?.page ?? 0,
-					limit:
-						options.pagination?.limit ??
-						this.configurationService.configurations.pagination.defaultLimit,
-					total: count,
-				},
-				list: result.map(entry => {
-					const transformed = this.transformData(entry)
-
-					return {
-						id: transformed.id.toString(),
-						entryNumber: transformed.entryNumber,
-						date: transformed.date.getTime(),
-						description: transformed.description,
-						createdBy: {
-							id: transformed.createdBy.id.toString(),
-							name: transformed.createdBy.name,
-						},
-						createdAt: transformed.createdAt.getTime(),
-						lines: transformed.lines.map(line => ({
-							id: line.id.toString(),
-							account: {
-								id: line.account.id.toString(),
-								code: line.account.code,
-								name: line.account.name,
-							},
-							debit: line.debit.toString(),
-							credit: line.credit.toString(),
-							description: line.description,
-						})),
-					}
-				}),
-			}
-		})
 	}
 
 	async create(data: JournalCreateData) {
@@ -316,40 +190,42 @@ class JournalService extends Service {
 			throw new InvalidStateError('create', 'journalEntryUnbalanced')
 		}
 
-		return await this.unitOfWork.execute(async transaction => {
-			const accountIds = Array.from(new Set(data.lines.map(l => l.accountId)))
+		try {
+			return await this.db.transaction(async tx => {
+				const accountIds = Array.from(new Set(data.lines.map(l => l.accountId)))
 
-			const accounts = await transaction.getRepository(AccountRepository).findMany({
-				filter: { id: { in: accountIds } },
-			})
+				const accounts = await tx.account.findMany({
+					where: { id: { in: accountIds } },
+				})
 
-			if (accounts.length !== accountIds.length) {
-				throw new ResourceNotFoundError('account')
-			}
+				if (accounts.length !== accountIds.length) {
+					throw new NotFoundError('account')
+				}
 
-			const hasDisabledAccount = accounts.some(acc => acc.disabledAt !== null)
+				if (accounts.some(acc => acc.disabledAt !== null)) {
+					throw new InvalidStateError('create', 'accountDisabled')
+				}
 
-			if (hasDisabledAccount) {
-				throw new InvalidStateError('create', 'accountDisabled')
-			}
-
-			return await transaction.getRepository(JournalRepository).create({
-				data: {
-					entryNumber: data.entryNumber,
-					date: data.date,
-					description: data.description,
-					createdById: data.createdById,
-					lines: {
-						create: data.lines.map(line => ({
-							accountId: line.accountId,
-							debit: new Prisma.Decimal(line.debit),
-							credit: new Prisma.Decimal(line.credit),
-							description: line.description,
-						})),
+				return await tx.journalEntry.create({
+					data: {
+						entryNumber: data.entryNumber,
+						date: data.date,
+						description: data.description,
+						createdById: data.createdById,
+						lines: {
+							create: data.lines.map(line => ({
+								accountId: line.accountId,
+								debit: new Prisma.Decimal(line.debit),
+								credit: new Prisma.Decimal(line.credit),
+								description: line.description,
+							})),
+						},
 					},
-				},
+				})
 			})
-		})
+		} catch (error) {
+			handlePrismaError(error, 'journalEntry')
+		}
 	}
 }
 

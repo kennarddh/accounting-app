@@ -23,18 +23,8 @@ export interface JWTVerifiedData {
 	}
 }
 
-export type OptionalJWTVerifiedData = Partial<JWTVerifiedData>
-
-class VerifyJWT<Optional extends boolean> extends Middleware<
-	CelosiaRequest,
-	CelosiaResponse,
-	EmptyObject,
-	Optional extends true ? OptionalJWTVerifiedData : JWTVerifiedData
-> {
-	constructor(
-		public optional: Optional,
-		private authService = DI.get(AuthService),
-	) {
+class VerifyJWT extends Middleware<CelosiaRequest, CelosiaResponse, EmptyObject, JWTVerifiedData> {
+	constructor(private authService = DI.get(AuthService)) {
 		super('VerifyJWT')
 	}
 
@@ -42,13 +32,11 @@ class VerifyJWT<Optional extends boolean> extends Middleware<
 		_: EmptyObject,
 		request: CelosiaRequest,
 		response: CelosiaResponse,
-		next: NextFunction<Optional extends true ? OptionalJWTVerifiedData : JWTVerifiedData>,
+		next: NextFunction<JWTVerifiedData>,
 	) {
 		const accessTokenHeader = request.header('Access-Token')
 
 		if (!accessTokenHeader) {
-			if (this.optional) return next()
-
 			return response.status(401).json({
 				errors: {
 					others: [
@@ -96,8 +84,8 @@ class VerifyJWT<Optional extends boolean> extends Middleware<
 
 			next({
 				user: {
-					session: userSession,
 					data: user,
+					session: userSession,
 				},
 			})
 		} catch (error) {

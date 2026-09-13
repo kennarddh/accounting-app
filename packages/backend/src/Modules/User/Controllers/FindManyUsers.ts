@@ -28,11 +28,27 @@ class FindManyUsers extends Controller {
 		}) satisfies UserFindManyOptions
 
 		try {
-			const data = await this.userService.list(options)
+			const { pagination: resultPagination, items } = await this.userService.findMany(options)
 
 			return response.status(200).json({
 				errors: {},
-				data,
+				data: {
+					pagination: resultPagination,
+					list: items.map(user => ({
+						id: user.id.toString(),
+						name: user.name,
+						username: user.username,
+						createdBy:
+							user.createdBy === null
+								? null
+								: {
+										id: user.createdBy.id.toString(),
+										name: user.createdBy.name,
+									},
+						createdAt: user.createdAt.getTime(),
+						updatedAt: user.updatedAt.getTime(),
+					})),
+				},
 			})
 		} catch (error) {
 			this.logger.error('Other.', error)

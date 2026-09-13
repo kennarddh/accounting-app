@@ -10,7 +10,7 @@ import ZodPagination from 'Validations/Zod/ZodPagination'
 import JournalService, { JournalFindManyOptions } from '../JournalService'
 
 class FindManyJournalEntries extends Controller {
-	constructor(private accountService = DI.get(JournalService)) {
+	constructor(private journalService = DI.get(JournalService)) {
 		super('FindManyJournalEntries')
 	}
 
@@ -34,11 +34,37 @@ class FindManyJournalEntries extends Controller {
 		}) satisfies JournalFindManyOptions
 
 		try {
-			const data = await this.accountService.list(options)
+			const { pagination: resultPagination, items } =
+				await this.journalService.findMany(options)
 
 			return response.status(200).json({
 				errors: {},
-				data,
+				data: {
+					pagination: resultPagination,
+					list: items.map(journalEntry => ({
+						id: journalEntry.id.toString(),
+						entryNumber: journalEntry.entryNumber,
+						date: journalEntry.date.getTime(),
+						description: journalEntry.description,
+						createdBy: {
+							id: journalEntry.createdBy.id.toString(),
+							name: journalEntry.createdBy.name,
+						},
+						lines: journalEntry.lines.map(line => ({
+							id: line.id.toString(),
+							account: {
+								id: line.account.id.toString(),
+								code: line.account.code,
+								name: line.account.name,
+							},
+							debit: line.debit.toString(),
+							credit: line.credit.toString(),
+							description: line.description,
+						})),
+						createdAt: journalEntry.createdAt.getTime(),
+						updatedAt: journalEntry.updatedAt.getTime(),
+					})),
+				},
 			})
 		} catch (error) {
 			this.logger.error('Other.', error)

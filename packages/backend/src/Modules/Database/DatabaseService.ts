@@ -1,19 +1,22 @@
-import { DI, DependencyScope, Injectable, Repository } from '@celosiajs/core'
+import { DI, DependencyScope, Injectable, Service } from '@celosiajs/core'
 
 import { PrismaPg } from '@prisma/adapter-pg'
+import { AsyncLocalStorage } from 'async_hooks'
 
 import ConfigurationService from 'Modules/Configuration/ConfigurationService'
 
-import { PrismaClient } from 'PrismaGenerated/client'
+import { Prisma, PrismaClient } from 'PrismaGenerated/client'
 
 type ConfiguredPrismaClient = PrismaClient<'info' | 'query' | 'warn'>
 
 @Injectable(DependencyScope.Singleton)
-class DatabaseRepository extends Repository {
+class DatabaseService extends Service {
 	private _prisma: ConfiguredPrismaClient
 
+	private asyncLocalStorage = new AsyncLocalStorage<Prisma.TransactionClient>()
+
 	constructor(configurationService = DI.get(ConfigurationService)) {
-		super('DatabaseRepository')
+		super('DatabaseService')
 
 		const adapter = new PrismaPg({
 			connectionString: configurationService.configurations.databaseUrl,
@@ -37,15 +40,15 @@ class DatabaseRepository extends Repository {
 			],
 		})
 
-		this.prisma.$on('query', event => {
+		this._prisma.$on('query', event => {
 			this.logger.debug('Query.', event)
 		})
 
-		this.prisma.$on('info', event => {
+		this._prisma.$on('info', event => {
 			this.logger.info('Information.', event)
 		})
 
-		this.prisma.$on('warn', event => {
+		this._prisma.$on('warn', event => {
 			this.logger.warn('Warn event.', event)
 		})
 	}
@@ -54,7 +57,7 @@ class DatabaseRepository extends Repository {
 		this.logger.info('Init.')
 
 		try {
-			await this.prisma.$connect()
+			await this._prisma.$connect()
 
 			const isReady = await this.isReady()
 
@@ -75,18 +78,14 @@ class DatabaseRepository extends Repository {
 	async disconnect() {
 		this.logger.info('Disconnecting.')
 
-		await this.prisma.$disconnect()
+		await this._prisma.$disconnect()
 
 		this.logger.info('Disconnected.')
 	}
 
-	get prisma() {
-		return this._prisma
-	}
-
 	public async isReady() {
 		try {
-			await this.prisma.$queryRaw`SELECT 1`
+			await this._prisma.$queryRaw`SELECT 1`
 
 			return true
 		} catch (error) {
@@ -95,6 +94,32 @@ class DatabaseRepository extends Repository {
 			return false
 		}
 	}
+
+	/**
+	 * Always returns the current active transaction client if inside a transaction,
+	 * or the root prisma client if outside.
+	 */
+	get client(): Prisma.TransactionClient | PrismaClient {
+		return this.asyncLocalStorage.getStore() ?? this._prisma
+	}
+
+	/**
+	 * Reusable Unit of Work transaction runner.
+	 * Automatically handles nested calls: If a transaction is already active,
+	 * it joins the existing one rather than spawning a new one.
+	 */
+	async transaction<T>(fn: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
+		const currentTx = this.asyncLocalStorage.getStore()
+
+		if (currentTx) return await fn(currentTx)
+
+		// Otherwise, start a new transaction and bind it to the async context
+		return await this._prisma.$transaction(async tx => {
+			return await this.asyncLocalStorage.run(tx, async () => {
+				return await fn(tx)
+			})
+		})
+	}
 }
 
-export default DatabaseRepository
+export default DatabaseService

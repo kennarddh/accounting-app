@@ -19,7 +19,7 @@ class RevokeAllUserSessionsByUserId extends Controller {
 		try {
 			await this.userSessionService.revokeAllByUserId(id)
 
-			return response.status(204).send()
+			return response.sendStatus(204)
 		} catch (error) {
 			this.logger.error('Other.', error)
 

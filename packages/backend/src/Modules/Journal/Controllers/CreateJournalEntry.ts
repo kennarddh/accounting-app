@@ -5,7 +5,9 @@ import z from 'zod/v4'
 
 import { JWTVerifiedData } from 'Middlewares/VerifyJWT'
 
-import { InvalidStateError, ResourceNotFoundError } from 'Errors'
+import { InvalidStateError } from 'Errors'
+
+import { ConflictError, NotFoundError } from 'Modules/Database/PrismaUtils'
 
 import JournalService from '../JournalService'
 
@@ -47,9 +49,9 @@ class CreateJournalEntry extends Controller {
 			})
 		} catch (error) {
 			if (
-				error instanceof InvalidStateError &&
-				error.operation === 'create' &&
-				error.state === 'duplicateEntryNumber'
+				error instanceof ConflictError &&
+				error.field === 'entryNumber' &&
+				error.resource === 'journalEntry'
 			) {
 				return response.status(400).json({
 					errors: {
@@ -57,64 +59,67 @@ class CreateJournalEntry extends Controller {
 							{ resource: ApiErrorResource.JournalEntry, kind: ApiErrorKind.Taken },
 						],
 					},
-					data: null,
+					data: {},
 				})
 			}
-			if (
-				error instanceof InvalidStateError &&
-				error.operation === 'create' &&
-				error.state === 'journalEntryUnbalanced'
-			) {
-				return response.status(400).json({
-					errors: {
-						others: [
-							{ resource: ApiErrorResource.JournalEntry, kind: ApiErrorKind.Invalid },
-						],
-					},
-					message: 'Debits and credits must be equal.',
-					data: null,
-				})
-			}
-			if (
-				error instanceof InvalidStateError &&
-				error.operation === 'create' &&
-				(error.state === 'lineMustHaveDebitOrCredit' ||
-					error.state === 'negativeAmountNotAllowed' ||
-					error.state === 'minimumLinesRequired')
-			) {
-				return response.status(400).json({
-					errors: {
-						others: [
-							{ resource: ApiErrorResource.JournalEntry, kind: ApiErrorKind.Invalid },
-						],
-					},
-					message: error.state,
-					data: null,
-				})
-			}
-			if (
-				error instanceof InvalidStateError &&
-				error.operation === 'create' &&
-				error.state === 'accountDisabled'
-			) {
-				return response.status(400).json({
-					errors: {
-						others: [
-							{ resource: ApiErrorResource.Account, kind: ApiErrorKind.Disabled },
-						],
-					},
-					data: null,
-				})
-			}
-			if (error instanceof ResourceNotFoundError && error.resource === 'account') {
+
+			if (error instanceof NotFoundError && error.resource === 'account') {
 				return response.status(404).json({
 					errors: {
 						others: [
 							{ resource: ApiErrorResource.Account, kind: ApiErrorKind.NotFound },
 						],
 					},
-					data: null,
+					data: {},
 				})
+			}
+
+			if (error instanceof InvalidStateError) {
+				if (error.state === 'journalEntryUnbalanced') {
+					return response.status(400).json({
+						errors: {
+							others: [
+								{
+									resource: ApiErrorResource.JournalEntry,
+									kind: ApiErrorKind.Invalid,
+								},
+							],
+						},
+						data: {},
+					})
+				}
+
+				if (
+					[
+						'lineMustHaveDebitOrCredit',
+						'negativeAmountNotAllowed',
+						'minimumLinesRequired',
+					].includes(error.state)
+				) {
+					return response.status(400).json({
+						errors: {
+							others: [
+								{
+									resource: ApiErrorResource.JournalEntry,
+									kind: ApiErrorKind.Invalid,
+								},
+							],
+						},
+						message: error.state,
+						data: {},
+					})
+				}
+
+				if (error.state === 'accountDisabled') {
+					return response.status(400).json({
+						errors: {
+							others: [
+								{ resource: ApiErrorResource.Account, kind: ApiErrorKind.Disabled },
+							],
+						},
+						data: {},
+					})
+				}
 			}
 
 			this.logger.error('Other.', error)

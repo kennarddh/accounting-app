@@ -3,7 +3,7 @@ import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from 
 import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import z from 'zod/v4'
 
-import { ResourceNotFoundError } from 'Errors'
+import { NotFoundError } from 'Modules/Database/PrismaUtils'
 
 import UserService from '../UserService'
 
@@ -21,26 +21,17 @@ class UpdateUser extends Controller {
 		const { id } = request.params
 
 		try {
-			await this.userService.update(id, {
-				name,
-			})
+			await this.userService.update(id, { name })
 
 			return response.sendStatus(204)
 		} catch (error) {
-			if (error instanceof ResourceNotFoundError) {
-				if (error.resource === 'user') {
-					return response.status(404).json({
-						errors: {
-							others: [
-								{
-									resource: ApiErrorResource.User,
-									kind: ApiErrorKind.NotFound,
-								},
-							],
-						},
-						data: {},
-					})
-				}
+			if (error instanceof NotFoundError && error.resource === 'user') {
+				return response.status(404).json({
+					errors: {
+						others: [{ resource: ApiErrorResource.User, kind: ApiErrorKind.NotFound }],
+					},
+					data: {},
+				})
 			}
 
 			this.logger.error('Other.', error)

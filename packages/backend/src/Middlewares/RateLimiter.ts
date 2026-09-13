@@ -12,7 +12,7 @@ import { RateLimiterAbstract, RateLimiterMemory, RateLimiterRes } from 'rate-lim
 
 import ConfigurationService from 'Modules/Configuration/ConfigurationService'
 
-import { OptionalJWTVerifiedData } from './VerifyJWT'
+import { JWTVerifiedData } from './VerifyJWT'
 
 class RateLimiter extends Middleware {
 	static ipRateLimiter: RateLimiterMemory
@@ -45,7 +45,7 @@ class RateLimiter extends Middleware {
 	}
 
 	public override async index(
-		data: EmptyObject | OptionalJWTVerifiedData,
+		data: EmptyObject | Partial<JWTVerifiedData>,
 		request: CelosiaRequest,
 		response: CelosiaResponse,
 		next: NextFunction,

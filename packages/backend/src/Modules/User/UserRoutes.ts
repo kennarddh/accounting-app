@@ -7,22 +7,26 @@ import { IsSameUser } from 'Modules/Auth/AccessControl/ResourceAccessPolicies'
 import { UserResourceContextGetter } from 'Modules/Auth/AccessControl/ResourceContextGetters'
 
 import UserSessionRouter from '../UserSession/UserSessionRoutes'
-import { CreateUser, FindManyUsers, FindUserById, UpdateUser } from './Controllers'
+import CreateUser from './Controllers/CreateUser'
+import FindManyUsers from './Controllers/FindManyUsers'
+import FindUserById from './Controllers/FindUserById'
+import UpdateUser from './Controllers/UpdateUser'
 
 const UserRouter = new CelosiaRouter({ strict: true })
 
 UserRouter.useRouters('/', UserSessionRouter)
 
-UserRouter.get('/', [new VerifyJWT(false)], new FindManyUsers())
-UserRouter.post('/', [new VerifyJWT(false)], new CreateUser())
+// TODO: When having permission make admin can get patch /:id
+UserRouter.get('/', [new VerifyJWT()], new FindManyUsers())
+UserRouter.post('/', [new VerifyJWT()], new CreateUser())
 UserRouter.patch(
 	'/:id',
-	[new VerifyJWT(false), new HandleAccess([new IsSameUser()], new UserResourceContextGetter())],
+	[new VerifyJWT(), new HandleAccess([new IsSameUser()], new UserResourceContextGetter())],
 	new UpdateUser(),
 )
 UserRouter.get(
 	'/:id',
-	[new VerifyJWT(false), new HandleAccess([new IsSameUser()], new UserResourceContextGetter())],
+	[new VerifyJWT(), new HandleAccess([new IsSameUser()], new UserResourceContextGetter())],
 	new FindUserById(),
 )
 

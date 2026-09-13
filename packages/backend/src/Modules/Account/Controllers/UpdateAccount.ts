@@ -3,7 +3,9 @@ import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from 
 import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import z from 'zod/v4'
 
-import { InvalidStateError, ResourceNotFoundError } from 'Errors'
+import { InvalidStateError } from 'Errors'
+
+import { ConflictError, NotFoundError } from 'Modules/Database/PrismaUtils'
 
 import AccountService from '../AccountService'
 
@@ -21,50 +23,42 @@ class UpdateAccount extends Controller {
 		const { id } = request.params
 
 		try {
-			await this.accountService.update(id, {
-				code,
-				name,
-			})
+			await this.accountService.update(id, { code, name })
 
 			return response.sendStatus(204)
 		} catch (error) {
-			if (error instanceof ResourceNotFoundError) {
-				if (error.resource === 'account') {
-					return response.status(404).json({
-						errors: {
-							others: [
-								{
-									resource: ApiErrorResource.Account,
-									kind: ApiErrorKind.NotFound,
-								},
-							],
-						},
-						data: {},
-					})
-				}
-			} else if (
-				error instanceof InvalidStateError &&
-				error.operation === 'update' &&
-				error.state === 'duplicateAccountCode'
+			if (error instanceof NotFoundError && error.resource === 'account') {
+				return response.status(404).json({
+					errors: {
+						others: [
+							{ resource: ApiErrorResource.Account, kind: ApiErrorKind.NotFound },
+						],
+					},
+					data: {},
+				})
+			}
+
+			if (
+				error instanceof ConflictError &&
+				error.field === 'code' &&
+				error.resource === 'account'
 			) {
 				return response.status(400).json({
 					errors: {
 						others: [{ resource: ApiErrorResource.Account, kind: ApiErrorKind.Taken }],
 					},
-					data: null,
+					data: {},
 				})
-			} else if (
-				error instanceof InvalidStateError &&
-				error.operation === 'update' &&
-				error.state === 'disabled'
-			) {
+			}
+
+			if (error instanceof InvalidStateError && error.state === 'disabled') {
 				return response.status(400).json({
 					errors: {
 						others: [
 							{ resource: ApiErrorResource.Account, kind: ApiErrorKind.Disabled },
 						],
 					},
-					data: null,
+					data: {},
 				})
 			}
 

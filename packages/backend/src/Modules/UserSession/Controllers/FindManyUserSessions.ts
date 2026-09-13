@@ -31,11 +31,27 @@ class FindManyUserSessions extends Controller {
 		}) satisfies UserSessionFindManyOptions
 
 		try {
-			const data = await this.userSessionService.list(options)
+			const { pagination: resultPagination, items } =
+				await this.userSessionService.findMany(options)
 
 			return response.status(200).json({
 				errors: {},
-				data,
+				data: {
+					pagination: resultPagination,
+					list: items.map(userSession => ({
+						id: userSession.id.toString(),
+						ipAddress: userSession.ipAddress,
+						user: {
+							id: userSession.user.id.toString(),
+							name: userSession.user.name,
+						},
+						createdAt: userSession.createdAt.getTime(),
+						loggedOutAt: userSession.loggedOutAt?.getTime() ?? null,
+						revokedAt: userSession.revokedAt?.getTime() ?? null,
+						expireAt: userSession.expireAt.getTime(),
+						lastRefreshAt: userSession.lastRefreshAt.getTime(),
+					})),
+				},
 			})
 		} catch (error) {
 			this.logger.error('Other.', error)

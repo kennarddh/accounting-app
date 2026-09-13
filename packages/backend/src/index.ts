@@ -20,7 +20,7 @@ try {
 
 Logger.info('Lazy imports.')
 
-const { default: DatabaseRepository } = await import('Repositories/DatabaseRepository')
+const { default: DatabaseService } = await import('Modules/Database/DatabaseService')
 
 let Instance: CelosiaInstance<true>
 
@@ -38,7 +38,7 @@ const { default: OnShutdown } = await import('Utils/OnShutdown/OnShutdown')
 
 Logger.info('Lazy imports completed.')
 
-await Promise.all([DI.get(DatabaseRepository).connect()])
+await Promise.all([DI.get(DatabaseService).connect()])
 
 Logger.info('Setup completed.')
 

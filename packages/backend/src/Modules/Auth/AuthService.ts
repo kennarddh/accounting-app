@@ -1,10 +1,10 @@
 import { DI, Injectable, Service } from '@celosiajs/core'
 
-import UnitOfWork from 'Repositories/UnitOfWork/UnitOfWork'
-
 import { ResourceNotFoundError, UnauthorizedError } from 'Errors'
 
 import ConfigurationService from 'Modules/Configuration/ConfigurationService'
+import DatabaseService from 'Modules/Database/DatabaseService'
+import { handlePrismaError } from 'Modules/Database/PrismaUtils'
 import UserService from 'Modules/User/UserService'
 import UserSessionService from 'Modules/UserSession/UserSessionService'
 
@@ -17,7 +17,7 @@ import RefreshTokenService, { RefreshTokenJWTPayload } from './Token/RefreshToke
 @Injectable()
 class AuthService extends Service {
 	constructor(
-		private unitOfWork = DI.get(UnitOfWork),
+		private db = DI.get(DatabaseService),
 		private userService = DI.get(UserService),
 		private userSessionService = DI.get(UserSessionService),
 		private passwordHashService = DI.get(PasswordHashService),
@@ -51,48 +51,47 @@ class AuthService extends Service {
 	}
 
 	async login(username: string, password: string, ipAddress: string) {
-		return await this.unitOfWork.execute(async () => {
-			const user = await this.userService.findByUsername(username)
+		const user = await this.userService.findByUsername(username)
 
-			if (user === null) throw new UnauthorizedError()
+		if (user === null) throw new UnauthorizedError()
 
-			const isPasswordCorrect = await this.passwordHashService.verify(user.password, password)
+		const isPasswordCorrect = await this.passwordHashService.verify(user.password, password)
 
-			if (!isPasswordCorrect) throw new UnauthorizedError()
+		if (!isPasswordCorrect) throw new UnauthorizedError()
 
-			const currentTime = Math.floor(new Date().getTime() / 1000)
-			const expireAt =
-				currentTime + this.configurationService.configurations.tokens.refresh.expire
+		const currentTime = Math.floor(new Date().getTime() / 1000)
+		const expireAt =
+			currentTime + this.configurationService.configurations.tokens.refresh.expire
 
-			const userSession = await this.userSessionService.create({
-				userId: user.id,
-				ipAddress,
-				expireAt: new Date(expireAt * 1000),
-			})
-
-			const tokens = await this.createTokens(userSession, currentTime, expireAt)
-
-			return {
-				tokens: {
-					accessToken: `Bearer ${tokens.accessToken}`,
-					refreshToken: tokens.refreshToken,
-				},
-				user: {
-					id: user.id,
-					name: user.name,
-					username: user.username,
-				},
-			}
+		const userSession = await this.userSessionService.create({
+			userId: user.id,
+			ipAddress,
+			expireAt: new Date(expireAt * 1000),
 		})
+
+		const tokens = await this.createTokens(userSession, currentTime, expireAt)
+
+		return {
+			tokens: {
+				accessToken: `Bearer ${tokens.accessToken}`,
+				refreshToken: tokens.refreshToken,
+			},
+			user: {
+				id: user.id,
+				name: user.name,
+				username: user.username,
+			},
+		}
 	}
 
 	async refresh(refreshToken: string) {
 		const currentRefreshTokenPayload = await this.refreshTokenService.verify(refreshToken)
 
-		return await this.unitOfWork.execute(async () => {
-			const userSession = await this.userSessionService.findByRefreshTokenJti(
-				currentRefreshTokenPayload.jti,
-			)
+		try {
+			const userSession = await this.db.client.userSession.findUnique({
+				where: { refreshTokenJti: currentRefreshTokenPayload.jti },
+				include: { user: true },
+			})
 
 			if (userSession === null) {
 				this.logger.warn('User session not found while refresh.', {
@@ -110,8 +109,12 @@ class AuthService extends Service {
 				currentRefreshTokenPayload.iat <
 				userSession.lastRefreshAt.getTime() / 1000 -
 					this.configurationService.configurations.tokens.refresh.clockTolerance
-			)
+			) {
+				this.logger.warn('Potential token replay/compromise detected.', {
+					sessionId: userSession.id,
+				})
 				throw new UnauthorizedError()
+			}
 
 			const currentTime = Math.floor(new Date().getTime() / 1000)
 			const expireAt =
@@ -128,6 +131,7 @@ class AuthService extends Service {
 
 				throw new UnauthorizedError()
 			}
+
 			const tokens = await this.createTokens(
 				{
 					...newUserSession,
@@ -141,15 +145,30 @@ class AuthService extends Service {
 				accessToken: `Bearer ${tokens.accessToken}`,
 				refreshToken: tokens.refreshToken,
 			}
-		})
+		} catch (error) {
+			handlePrismaError(error, 'userSession')
+		}
 	}
 
 	async verifyAccessToken(accessToken: string) {
 		const currentAccessTokenPayload = await this.accessTokenService.verify(accessToken)
 
-		const userSession = await this.userSessionService.findByAccessTokenJti(
-			currentAccessTokenPayload.jti,
-		)
+		const userSession = await this.db.client.userSession.findUnique({
+			where: { accessTokenJti: currentAccessTokenPayload.jti },
+			include: {
+				user: {
+					select: {
+						id: true,
+						name: true,
+						username: true,
+						password: true,
+						createdAt: true,
+						updatedAt: true,
+						createdBy: { select: { id: true, name: true } },
+					},
+				},
+			},
+		})
 
 		if (userSession === null) {
 			this.logger.warn('User session not found while verify.', {
@@ -161,27 +180,21 @@ class AuthService extends Service {
 
 		if (!this.userSessionService.isSessionActive(userSession)) throw new UnauthorizedError()
 
-		const user = await this.userService.findById(userSession.user.id)
-
-		if (user === null) throw new ResourceNotFoundError('user')
-
-		return { userSession, user }
+		return { userSession, user: userSession.user }
 	}
 
 	async findUserForGetSession(userId: bigint) {
-		return await this.unitOfWork.execute(async () => {
-			const user = await this.userService.findById(userId)
+		const user = await this.userService.findById(userId)
 
-			if (user === null) throw new ResourceNotFoundError('user')
+		if (user === null) throw new ResourceNotFoundError('user')
 
-			return {
-				user: {
-					id: user.id,
-					name: user.name,
-					username: user.username,
-				},
-			}
-		})
+		return {
+			user: {
+				id: user.id,
+				name: user.name,
+				username: user.username,
+			},
+		}
 	}
 }
 

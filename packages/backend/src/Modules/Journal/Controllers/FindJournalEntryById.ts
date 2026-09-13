@@ -6,7 +6,7 @@ import z from 'zod/v4'
 import JournalService from '../JournalService'
 
 class FindJournalEntryById extends Controller {
-	constructor(private accountService = DI.get(JournalService)) {
+	constructor(private journalService = DI.get(JournalService)) {
 		super('FindJournalEntryById')
 	}
 
@@ -18,9 +18,9 @@ class FindJournalEntryById extends Controller {
 		const { id } = request.params
 
 		try {
-			const account = await this.accountService.findById(id)
+			const journalEntry = await this.journalService.findById(id)
 
-			if (!account)
+			if (!journalEntry)
 				return response.status(404).json({
 					errors: {
 						others: [
@@ -36,16 +36,15 @@ class FindJournalEntryById extends Controller {
 			return response.status(200).json({
 				errors: {},
 				data: {
-					id: account.id.toString(),
-					entryNumber: account.entryNumber,
-					date: account.date.getTime(),
-					description: account.description,
+					id: journalEntry.id.toString(),
+					entryNumber: journalEntry.entryNumber,
+					date: journalEntry.date.getTime(),
+					description: journalEntry.description,
 					createdBy: {
-						id: account.createdBy.id.toString(),
-						name: account.createdBy.name,
+						id: journalEntry.createdBy.id.toString(),
+						name: journalEntry.createdBy.name,
 					},
-					createdAt: account.createdAt.getTime(),
-					lines: account.lines.map(line => ({
+					lines: journalEntry.lines.map(line => ({
 						id: line.id.toString(),
 						account: {
 							id: line.account.id.toString(),
@@ -56,6 +55,8 @@ class FindJournalEntryById extends Controller {
 						credit: line.credit.toString(),
 						description: line.description,
 					})),
+					createdAt: journalEntry.createdAt.getTime(),
+					updatedAt: journalEntry.updatedAt.getTime(),
 				},
 			})
 		} catch (error) {

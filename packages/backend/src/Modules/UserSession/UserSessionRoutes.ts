@@ -9,19 +9,19 @@ import {
 	UserSessionResourceContextGetter,
 } from 'Modules/Auth/AccessControl/ResourceContextGetters'
 
-import {
-	FindManyUserSessions,
-	FindUserSessionById,
-	RevokeAllUserSessionsByUserId,
-	RevokeUserSession,
-} from './Controllers'
+import FindManyUserSessions from './Controllers/FindManyUserSessions'
+import FindUserSessionById from './Controllers/FindUserSessionById'
+import RevokeAllUserSessionsByUserId from './Controllers/RevokeAllUserSessionsByUserId'
+import RevokeUserSession from './Controllers/RevokeUserSession'
 
 const UserSessionRouter = new CelosiaRouter({ strict: true })
+
+// TODO: When having permission make admin can get patch /:id
 
 UserSessionRouter.get(
 	'/session/:id',
 	[
-		new VerifyJWT(false),
+		new VerifyJWT(),
 		new HandleAccess([new IsSameUserBySession()], new UserSessionResourceContextGetter()),
 	],
 	new FindUserSessionById(),
@@ -29,16 +29,16 @@ UserSessionRouter.get(
 UserSessionRouter.delete(
 	'/session/:id',
 	[
-		new VerifyJWT(false),
+		new VerifyJWT(),
 		new HandleAccess([new IsSameUserBySession()], new UserSessionResourceContextGetter()),
 	],
 	new RevokeUserSession(),
 )
 UserSessionRouter.delete(
 	'/:id/session/',
-	[new VerifyJWT(false), new HandleAccess([new IsSameUser()], new UserResourceContextGetter())],
+	[new VerifyJWT(), new HandleAccess([new IsSameUser()], new UserResourceContextGetter())],
 	new RevokeAllUserSessionsByUserId(),
 )
-UserSessionRouter.get('/session', [new VerifyJWT(false)], new FindManyUserSessions())
+UserSessionRouter.get('/session', [new VerifyJWT()], new FindManyUserSessions())
 
 export default UserSessionRouter

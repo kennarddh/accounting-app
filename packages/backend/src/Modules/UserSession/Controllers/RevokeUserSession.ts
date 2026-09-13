@@ -1,9 +1,6 @@
 import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from '@celosiajs/core'
 
-import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import z from 'zod/v4'
-
-import { InvalidStateError, ResourceNotFoundError } from 'Errors'
 
 import UserSessionService from '../UserSessionService'
 
@@ -24,36 +21,6 @@ class RevokeUserSession extends Controller {
 
 			return response.sendStatus(204)
 		} catch (error) {
-			if (error instanceof ResourceNotFoundError) {
-				return response.status(404).json({
-					errors: {
-						others: [
-							{
-								resource: ApiErrorResource.UserSession,
-								kind: ApiErrorKind.NotFound,
-							},
-						],
-					},
-					data: {},
-				})
-			} else if (
-				error instanceof InvalidStateError &&
-				error.operation === 'revoke' &&
-				error.state === 'sessionInactive'
-			) {
-				return response.status(409).json({
-					errors: {
-						others: [
-							{
-								resource: ApiErrorResource.UserSession,
-								kind: ApiErrorKind.Inactive,
-							},
-						],
-					},
-					data: {},
-				})
-			}
-
 			this.logger.error('Other.', error)
 
 			return response.sendInternalServerError()

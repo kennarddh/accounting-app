@@ -5,7 +5,7 @@ import z from 'zod/v4'
 
 import { JWTVerifiedData } from 'Middlewares/VerifyJWT'
 
-import { InvalidStateError } from 'Errors'
+import { ConflictError } from 'Modules/Database/PrismaUtils'
 
 import UserService from '../UserService'
 
@@ -38,9 +38,9 @@ class CreateUser extends Controller {
 			})
 		} catch (error) {
 			if (
-				error instanceof InvalidStateError &&
-				error.operation === 'create' &&
-				error.state === 'userAlreadyExists'
+				error instanceof ConflictError &&
+				error.field === 'username' &&
+				error.resource === 'user'
 			) {
 				return response.status(409).json({
 					errors: {

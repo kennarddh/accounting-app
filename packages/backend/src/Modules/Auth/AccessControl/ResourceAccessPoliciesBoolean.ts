@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { User } from '../../User/UserService'
+import { User } from 'Modules/User/UserService'
+
 import ResourceAccessPolicy from './ResourceAccessPolicy'
 
 type ValidatePolicies<
