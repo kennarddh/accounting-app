@@ -209,7 +209,7 @@ class UserSessionService extends Service {
 
 	async refresh(id: bigint, expireAt: Date) {
 		try {
-			await this.db.client.userSession.update({
+			return await this.db.client.userSession.update({
 				where: { id },
 				data: {
 					lastRefreshAt: new Date(),

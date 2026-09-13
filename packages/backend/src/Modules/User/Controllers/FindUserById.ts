@@ -24,14 +24,14 @@ class FindUserById extends Controller {
 			return response.status(200).json({
 				errors: {},
 				data: {
-					id: user.id.toString(),
+					id: user.id,
 					username: user.username,
 					name: user.name,
 					createdBy:
 						user.createdBy === null
 							? null
 							: {
-									id: user.createdBy.id.toString(),
+									id: user.createdBy.id,
 									name: user.createdBy.name,
 								},
 					createdAt: user.createdAt.getTime(),

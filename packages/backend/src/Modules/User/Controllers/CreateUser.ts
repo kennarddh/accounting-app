@@ -32,7 +32,7 @@ class CreateUser extends Controller {
 			return response.status(200).json({
 				errors: {},
 				data: {
-					id: user.id.toString(),
+					id: user.id,
 				},
 			})
 		} catch (error) {

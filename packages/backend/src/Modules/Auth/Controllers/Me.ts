@@ -11,11 +11,7 @@ class Me extends Controller {
 		super('UserMe')
 	}
 
-	public async index(
-		data: JWTVerifiedData,
-		_: ControllerRequest<Me>,
-		response: CelosiaResponse,
-	) {
+	public async index(data: JWTVerifiedData, _: ControllerRequest<Me>, response: CelosiaResponse) {
 		const id = data.user.id
 
 		try {
@@ -24,7 +20,7 @@ class Me extends Controller {
 			return response.status(200).json({
 				errors: {},
 				data: {
-					id: user.id.toString(),
+					id: user.id,
 					username: user.username,
 					name: user.name,
 					createdAt: user.createdAt.getTime(),

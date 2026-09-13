@@ -22,9 +22,9 @@ class Session extends Controller {
 			return response.status(200).json({
 				errors: {},
 				data: {
-					id: session.id.toString(),
+					id: session.id,
 					user: {
-						id: session.user.id.toString(),
+						id: session.user.id,
 						name: session.user.name,
 						username: session.user.username,
 					},

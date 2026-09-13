@@ -36,14 +36,14 @@ class FindManyUsers extends Controller {
 				data: {
 					pagination: resultPagination,
 					list: items.map(user => ({
-						id: user.id.toString(),
+						id: user.id,
 						name: user.name,
 						username: user.username,
 						createdBy:
 							user.createdBy === null
 								? null
 								: {
-										id: user.createdBy.id.toString(),
+										id: user.createdBy.id,
 										name: user.createdBy.name,
 									},
 						createdAt: user.createdAt.getTime(),

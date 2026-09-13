@@ -43,18 +43,18 @@ class FindManyJournalEntries extends Controller {
 				data: {
 					pagination: resultPagination,
 					list: items.map(journalEntry => ({
-						id: journalEntry.id.toString(),
+						id: journalEntry.id,
 						entryNumber: journalEntry.entryNumber,
 						date: journalEntry.date.getTime(),
 						description: journalEntry.description,
 						createdBy: {
-							id: journalEntry.createdBy.id.toString(),
+							id: journalEntry.createdBy.id,
 							name: journalEntry.createdBy.name,
 						},
 						lines: journalEntry.lines.map(line => ({
-							id: line.id.toString(),
+							id: line.id,
 							account: {
-								id: line.account.id.toString(),
+								id: line.account.id,
 								code: line.account.code,
 								name: line.account.name,
 							},

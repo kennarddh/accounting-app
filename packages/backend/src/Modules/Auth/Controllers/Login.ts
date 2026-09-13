@@ -46,7 +46,7 @@ class Login extends Controller {
 				data: {
 					token: tokens.accessToken,
 					user: {
-						id: user.id.toString(),
+						id: user.id,
 						name: user.name,
 						username: user.username,
 					},

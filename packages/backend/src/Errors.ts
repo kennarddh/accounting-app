@@ -2,7 +2,7 @@ import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 
 export interface ErrorOptions {
 	field?: string
-	meta?: Record<string, string | number> | undefined
+	meta?: Record<string, string | number | bigint> | undefined
 }
 
 export abstract class DomainError extends Error {

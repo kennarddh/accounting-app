@@ -40,10 +40,10 @@ class FindManyUserSessions extends Controller {
 				data: {
 					pagination: resultPagination,
 					list: items.map(userSession => ({
-						id: userSession.id.toString(),
+						id: userSession.id,
 						ipAddress: userSession.ipAddress,
 						user: {
-							id: userSession.user.id.toString(),
+							id: userSession.user.id,
 							name: userSession.user.name,
 						},
 						createdAt: userSession.createdAt.getTime(),

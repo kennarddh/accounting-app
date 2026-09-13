@@ -42,7 +42,7 @@ class FindManyAccounts extends Controller {
 				data: {
 					pagination: resultPagination,
 					list: items.map(account => ({
-						id: account.id.toString(),
+						id: account.id,
 						code: account.code,
 						name: account.name,
 						type: account.type,

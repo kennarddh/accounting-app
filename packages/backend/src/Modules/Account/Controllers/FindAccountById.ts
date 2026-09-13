@@ -24,7 +24,7 @@ class FindAccountById extends Controller {
 			return response.status(200).json({
 				errors: {},
 				data: {
-					id: account.id.toString(),
+					id: account.id,
 					code: account.code,
 					name: account.name,
 					type: account.type,

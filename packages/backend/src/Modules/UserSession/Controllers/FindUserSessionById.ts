@@ -24,9 +24,9 @@ class FindUserSessionById extends Controller {
 			return response.status(200).json({
 				errors: {},
 				data: {
-					id: userSession.id.toString(),
+					id: userSession.id,
 					user: {
-						id: userSession.user.id.toString(),
+						id: userSession.user.id,
 						name: userSession.user.name,
 					},
 					ipAddress: userSession.ipAddress,

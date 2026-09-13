@@ -128,22 +128,15 @@ class AuthService extends Service {
 			const expireAt =
 				currentTime + this.configurationService.configurations.tokens.refresh.expire
 
-			await this.userSessionService.refresh(userSession.id, new Date(expireAt * 1000))
-
-			const newUserSession = await this.userSessionService.findById(userSession.id)
-
-			if (newUserSession === null) {
-				this.logger.warn('User session not found after refresh.', {
-					userSessionId: userSession.id,
-				})
-
-				throw new UnauthorizedError()
-			}
+			const newUserSession = await this.userSessionService.refresh(
+				userSession.id,
+				new Date(expireAt * 1000),
+			)
 
 			const tokens = await this.createTokens(
 				{
 					...newUserSession,
-					userId: newUserSession.user.id,
+					userId: userSession.user.id,
 				},
 				currentTime,
 				expireAt,

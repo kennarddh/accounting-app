@@ -237,7 +237,7 @@ class JournalService extends Service {
 					throw new ResourceDisabledError(ApiErrorResource.Account, {
 						field: 'accountId',
 						meta: {
-							id: disabledAccount.id.toString(),
+							id: disabledAccount.id,
 							code: disabledAccount.code,
 							name: disabledAccount.name,
 						},

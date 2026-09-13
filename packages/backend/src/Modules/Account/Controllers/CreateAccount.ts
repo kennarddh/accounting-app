@@ -29,7 +29,7 @@ class CreateAccount extends Controller {
 			return response.status(200).json({
 				errors: {},
 				data: {
-					id: account.id.toString(),
+					id: account.id,
 				},
 			})
 		} catch (error) {

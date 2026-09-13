@@ -41,7 +41,7 @@ class CreateJournalEntry extends Controller {
 			return response.status(200).json({
 				errors: {},
 				data: {
-					id: journalEntry.id.toString(),
+					id: journalEntry.id,
 				},
 			})
 		} catch (error) {
