@@ -23,7 +23,10 @@ services:
         secrets:
             - database-postgres-user
             - database-postgres-password
-
+        command: >
+            postgres
+            -c log_destination=jsonlog
+            -c logging_collector=off
     database-migration:
         build:
             context: .
