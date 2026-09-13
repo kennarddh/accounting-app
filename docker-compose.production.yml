@@ -58,7 +58,7 @@ services:
             PORT: 8080
 
             ACCESS_TOKEN_SECRET_FILE: /run/secrets/backend-access-token-secret
-            ACCESS_TOKEN_EXPIRE: 60 # 1 Minute
+            ACCESS_TOKEN_EXPIRE: 600 # 10 Minute
             ACCESS_TOKEN_CLOCK_TOLERANCE: 5 # 5 Second
 
             REFRESH_TOKEN_SECRET_FILE: /run/secrets/backend-refresh-token-secret
