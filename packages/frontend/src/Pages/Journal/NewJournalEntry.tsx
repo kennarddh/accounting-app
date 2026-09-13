@@ -93,7 +93,7 @@ const NewJournalEntry: FC = () => {
 	const handleAddLine = () => {
 		setLines(prev => [
 			...prev,
-			{ id: Math.random().toString(), accountId: '', debit: '', credit: '', description: '' },
+			{ id: crypto.randomUUID(), accountId: '', debit: '', credit: '', description: '' },
 		])
 	}
 
