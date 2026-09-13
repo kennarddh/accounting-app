@@ -1,6 +1,8 @@
 import { CelosiaRequest, DI, EmptyObject } from '@celosiajs/core'
 
-import { ResourceNotFoundError } from 'Errors'
+import { ApiErrorResource } from '@accounting-app/common'
+
+import { NotFoundError } from 'Errors'
 
 import UserService, { User } from '../../../User/UserService'
 import ResourceContextGetter from '../ResourceContextGetter'
@@ -13,7 +15,7 @@ class UserResourceContextGetter extends ResourceContextGetter<User> {
 
 		const user = await userService.findById(userId)
 
-		if (user === null) throw new ResourceNotFoundError('user')
+		if (user === null) throw new NotFoundError(ApiErrorResource.User)
 
 		return user
 	}

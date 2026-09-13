@@ -1,11 +1,8 @@
 import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from '@celosiajs/core'
 
-import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import z from 'zod/v4'
 
-import { InvalidStateError } from 'Errors'
-
-import { ConflictError, NotFoundError } from 'Modules/Database/PrismaUtils'
+import handleControllerError from 'Utils/HandleControllerError'
 
 import AccountService from '../AccountService'
 
@@ -27,44 +24,7 @@ class UpdateAccount extends Controller {
 
 			return response.sendStatus(204)
 		} catch (error) {
-			if (error instanceof NotFoundError && error.resource === 'account') {
-				return response.status(404).json({
-					errors: {
-						others: [
-							{ resource: ApiErrorResource.Account, kind: ApiErrorKind.NotFound },
-						],
-					},
-					data: {},
-				})
-			}
-
-			if (
-				error instanceof ConflictError &&
-				error.field === 'code' &&
-				error.resource === 'account'
-			) {
-				return response.status(400).json({
-					errors: {
-						others: [{ resource: ApiErrorResource.Account, kind: ApiErrorKind.Taken }],
-					},
-					data: {},
-				})
-			}
-
-			if (error instanceof InvalidStateError && error.state === 'disabled') {
-				return response.status(400).json({
-					errors: {
-						others: [
-							{ resource: ApiErrorResource.Account, kind: ApiErrorKind.Disabled },
-						],
-					},
-					data: {},
-				})
-			}
-
-			this.logger.error('Other.', error)
-
-			return response.sendInternalServerError()
+			return handleControllerError(error, response, this.logger)
 		}
 	}
 

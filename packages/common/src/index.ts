@@ -35,6 +35,8 @@ export enum ApiErrorKind {
 export interface ApiOtherError {
 	resource: ApiErrorResource | null
 	kind: ApiErrorKind
+	field?: string // The exact input or array field (e.g., "entryNumber", "lines[2].accountId")
+	meta?: Record<string, string | number> // Dynamic values for i18n interpolation (e.g., { code: "101", name: "Cash" })
 }
 
 export enum UserSessionSortField {

@@ -1,9 +1,8 @@
 import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from '@celosiajs/core'
 
-import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import z from 'zod/v4'
 
-import { NotFoundError } from 'Modules/Database/PrismaUtils'
+import handleControllerError from 'Utils/HandleControllerError'
 
 import AccountService from '../AccountService'
 
@@ -24,20 +23,7 @@ class DisableAccount extends Controller {
 
 			return response.sendStatus(204)
 		} catch (error) {
-			if (error instanceof NotFoundError && error.resource === 'account') {
-				return response.status(404).json({
-					errors: {
-						others: [
-							{ resource: ApiErrorResource.Account, kind: ApiErrorKind.NotFound },
-						],
-					},
-					data: {},
-				})
-			}
-
-			this.logger.error('Other.', error)
-
-			return response.sendInternalServerError()
+			return handleControllerError(error, response, this.logger)
 		}
 	}
 

@@ -1,7 +1,8 @@
 import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from '@celosiajs/core'
 
-import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import z from 'zod/v4'
+
+import handleControllerError from 'Utils/HandleControllerError'
 
 import UserSessionService from '../UserSessionService'
 
@@ -20,19 +21,6 @@ class FindUserSessionById extends Controller {
 		try {
 			const userSession = await this.userSessionService.findById(id)
 
-			if (!userSession)
-				return response.status(404).json({
-					errors: {
-						others: [
-							{
-								resource: ApiErrorResource.UserSession,
-								kind: ApiErrorKind.NotFound,
-							},
-						],
-					},
-					data: {},
-				})
-
 			return response.status(200).json({
 				errors: {},
 				data: {
@@ -50,9 +38,7 @@ class FindUserSessionById extends Controller {
 				},
 			})
 		} catch (error) {
-			this.logger.error('Other.', error)
-
-			return response.sendInternalServerError()
+			return handleControllerError(error, response, this.logger)
 		}
 	}
 

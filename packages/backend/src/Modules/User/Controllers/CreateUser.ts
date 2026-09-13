@@ -1,11 +1,10 @@
 import { CelosiaResponse, Controller, ControllerRequest, DI } from '@celosiajs/core'
 
-import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import z from 'zod/v4'
 
-import { JWTVerifiedData } from 'Middlewares/VerifyJWT'
+import handleControllerError from 'Utils/HandleControllerError'
 
-import { ConflictError } from 'Modules/Database/PrismaUtils'
+import { JWTVerifiedData } from 'Middlewares/VerifyJWT'
 
 import UserService from '../UserService'
 
@@ -37,27 +36,7 @@ class CreateUser extends Controller {
 				},
 			})
 		} catch (error) {
-			if (
-				error instanceof ConflictError &&
-				error.field === 'username' &&
-				error.resource === 'user'
-			) {
-				return response.status(409).json({
-					errors: {
-						others: [
-							{
-								resource: ApiErrorResource.Username,
-								kind: ApiErrorKind.Taken,
-							},
-						],
-					},
-					data: {},
-				})
-			}
-
-			this.logger.error('Other.', error)
-
-			return response.sendInternalServerError()
+			return handleControllerError(error, response, this.logger)
 		}
 	}
 

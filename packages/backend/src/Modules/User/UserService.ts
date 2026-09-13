@@ -1,6 +1,6 @@
 import { DI, Injectable, Service } from '@celosiajs/core'
 
-import { SortOrder, UserSortField } from '@accounting-app/common'
+import { ApiErrorResource, SortOrder, UserSortField } from '@accounting-app/common'
 
 import { DeepPartialAndUndefined } from 'Types/Types'
 
@@ -94,10 +94,14 @@ class UserService extends Service {
 	}
 
 	async findById(id: bigint) {
-		return await this.db.client.user.findUnique({
-			where: { id },
-			select: this.dataSelect,
-		})
+		try {
+			return await this.db.client.user.findUniqueOrThrow({
+				where: { id },
+				select: this.dataSelect,
+			})
+		} catch (error) {
+			handlePrismaError(error, ApiErrorResource.User)
+		}
 	}
 
 	async findByUsername(username: string) {
@@ -154,7 +158,7 @@ class UserService extends Service {
 				},
 			})
 		} catch (error) {
-			handlePrismaError(error, 'user')
+			handlePrismaError(error, ApiErrorResource.User)
 		}
 	}
 
@@ -168,7 +172,7 @@ class UserService extends Service {
 				data: { password: passwordDigest },
 			})
 		} catch (error) {
-			handlePrismaError(error, 'user')
+			handlePrismaError(error, ApiErrorResource.User)
 		}
 	}
 
@@ -181,7 +185,7 @@ class UserService extends Service {
 				data: updateData,
 			})
 		} catch (error) {
-			handlePrismaError(error, 'user')
+			handlePrismaError(error, ApiErrorResource.User)
 		}
 	}
 }

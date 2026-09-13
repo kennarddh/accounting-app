@@ -1,13 +1,10 @@
 import { CelosiaResponse, Controller, ControllerRequest, DI } from '@celosiajs/core'
 
-import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import z from 'zod/v4'
 
+import handleControllerError from 'Utils/HandleControllerError'
+
 import { JWTVerifiedData } from 'Middlewares/VerifyJWT'
-
-import { InvalidStateError } from 'Errors'
-
-import { ConflictError, NotFoundError } from 'Modules/Database/PrismaUtils'
 
 import JournalService from '../JournalService'
 
@@ -20,12 +17,12 @@ class CreateJournalEntry extends Controller {
 	}
 
 	public async index(
-		input: JWTVerifiedData,
+		data: JWTVerifiedData,
 		request: ControllerRequest<CreateJournalEntry>,
 		response: CelosiaResponse,
 	) {
 		const { entryNumber, date, description, lines } = request.body
-		const createdById = input.user.id
+		const createdById = data.user.id
 
 		try {
 			const journalEntry = await this.journalService.create({
@@ -48,83 +45,7 @@ class CreateJournalEntry extends Controller {
 				},
 			})
 		} catch (error) {
-			if (
-				error instanceof ConflictError &&
-				error.field === 'entryNumber' &&
-				error.resource === 'journalEntry'
-			) {
-				return response.status(400).json({
-					errors: {
-						others: [
-							{ resource: ApiErrorResource.JournalEntry, kind: ApiErrorKind.Taken },
-						],
-					},
-					data: {},
-				})
-			}
-
-			if (error instanceof NotFoundError && error.resource === 'account') {
-				return response.status(404).json({
-					errors: {
-						others: [
-							{ resource: ApiErrorResource.Account, kind: ApiErrorKind.NotFound },
-						],
-					},
-					data: {},
-				})
-			}
-
-			if (error instanceof InvalidStateError) {
-				if (error.state === 'journalEntryUnbalanced') {
-					return response.status(400).json({
-						errors: {
-							others: [
-								{
-									resource: ApiErrorResource.JournalEntry,
-									kind: ApiErrorKind.Invalid,
-								},
-							],
-						},
-						data: {},
-					})
-				}
-
-				if (
-					[
-						'lineMustHaveDebitOrCredit',
-						'negativeAmountNotAllowed',
-						'minimumLinesRequired',
-					].includes(error.state)
-				) {
-					return response.status(400).json({
-						errors: {
-							others: [
-								{
-									resource: ApiErrorResource.JournalEntry,
-									kind: ApiErrorKind.Invalid,
-								},
-							],
-						},
-						message: error.state,
-						data: {},
-					})
-				}
-
-				if (error.state === 'accountDisabled') {
-					return response.status(400).json({
-						errors: {
-							others: [
-								{ resource: ApiErrorResource.Account, kind: ApiErrorKind.Disabled },
-							],
-						},
-						data: {},
-					})
-				}
-			}
-
-			this.logger.error('Other.', error)
-
-			return response.sendInternalServerError()
+			return handleControllerError(error, response, this.logger)
 		}
 	}
 

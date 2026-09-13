@@ -3,6 +3,7 @@ import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from 
 import { JournalEntrySortField, SortOrder } from '@accounting-app/common'
 import z from 'zod/v4'
 
+import handleControllerError from 'Utils/HandleControllerError'
 import RemoveUndefinedValueFromObject from 'Utils/RemoveUndefinedValueFromObject'
 
 import ZodPagination from 'Validations/Zod/ZodPagination'
@@ -67,9 +68,7 @@ class FindManyJournalEntries extends Controller {
 				},
 			})
 		} catch (error) {
-			this.logger.error('Other.', error)
-
-			return response.sendInternalServerError()
+			return handleControllerError(error, response, this.logger)
 		}
 	}
 

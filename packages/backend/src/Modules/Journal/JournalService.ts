@@ -1,15 +1,11 @@
 import { DI, Injectable, Service } from '@celosiajs/core'
 
-import { JournalEntrySortField, SortOrder } from '@accounting-app/common'
+import { ApiErrorResource, JournalEntrySortField, SortOrder } from '@accounting-app/common'
 
-import { InvalidStateError } from 'Errors'
+import { BusinessRuleError, NotFoundError, ResourceDisabledError } from 'Errors'
 
 import DatabaseService from 'Modules/Database/DatabaseService'
-import {
-	NotFoundError,
-	buildPrismaPagination,
-	handlePrismaError,
-} from 'Modules/Database/PrismaUtils'
+import { buildPrismaPagination, handlePrismaError } from 'Modules/Database/PrismaUtils'
 
 import { Prisma } from 'PrismaGenerated/client'
 
@@ -118,10 +114,14 @@ class JournalService extends Service {
 	}
 
 	async findById(id: bigint) {
-		return await this.db.client.journalEntry.findUnique({
-			where: { id },
-			select: this.dataSelect,
-		})
+		try {
+			return await this.db.client.journalEntry.findUniqueOrThrow({
+				where: { id },
+				select: this.dataSelect,
+			})
+		} catch (error) {
+			handlePrismaError(error, ApiErrorResource.User)
+		}
 	}
 
 	async findMany(options: JournalFindManyOptions = {}) {
@@ -159,7 +159,13 @@ class JournalService extends Service {
 
 	async create(data: JournalCreateData) {
 		if (data.lines.length < 2) {
-			throw new InvalidStateError('create', 'minimumLinesRequired')
+			throw new BusinessRuleError(
+				ApiErrorResource.JournalEntry,
+				'At least two lines are required.',
+				{
+					field: 'lines',
+				},
+			)
 		}
 
 		let totalDebit = new Prisma.Decimal(0)
@@ -174,12 +180,24 @@ class JournalService extends Service {
 			const hasCredit = credit.greaterThan(0)
 
 			if ((hasDebit && hasCredit) || (!hasDebit && !hasCredit)) {
-				throw new InvalidStateError('create', 'lineMustHaveDebitOrCredit')
+				throw new BusinessRuleError(
+					ApiErrorResource.JournalEntry,
+					'Debits and credits must be either both positive or both negative.',
+					{
+						field: 'lines',
+					},
+				)
 			}
 
 			// Amounts must never be negative
 			if (debit.isNegative() || credit.isNegative()) {
-				throw new InvalidStateError('create', 'negativeAmountNotAllowed')
+				throw new BusinessRuleError(
+					ApiErrorResource.JournalEntry,
+					'Debits and credits cannot be negative.',
+					{
+						field: 'lines',
+					},
+				)
 			}
 
 			totalDebit = totalDebit.plus(debit)
@@ -187,7 +205,18 @@ class JournalService extends Service {
 		}
 
 		if (!totalDebit.equals(totalCredit)) {
-			throw new InvalidStateError('create', 'journalEntryUnbalanced')
+			throw new BusinessRuleError(
+				ApiErrorResource.JournalEntry,
+				'Debits and credits must be equal.',
+				{
+					field: 'lines',
+					meta: {
+						debitTotal: totalDebit.toString(),
+						creditTotal: totalCredit.toString(),
+						difference: totalDebit.minus(totalCredit).abs().toString(),
+					},
+				},
+			)
 		}
 
 		try {
@@ -199,11 +228,20 @@ class JournalService extends Service {
 				})
 
 				if (accounts.length !== accountIds.length) {
-					throw new NotFoundError('account')
+					throw new NotFoundError(ApiErrorResource.Account)
 				}
 
-				if (accounts.some(acc => acc.disabledAt !== null)) {
-					throw new InvalidStateError('create', 'accountDisabled')
+				const disabledAccount = accounts.find(acc => acc.disabledAt !== null)
+
+				if (disabledAccount) {
+					throw new ResourceDisabledError(ApiErrorResource.Account, {
+						field: 'accountId',
+						meta: {
+							id: disabledAccount.id.toString(),
+							code: disabledAccount.code,
+							name: disabledAccount.name,
+						},
+					})
 				}
 
 				return await tx.journalEntry.create({
@@ -224,7 +262,7 @@ class JournalService extends Service {
 				})
 			})
 		} catch (error) {
-			handlePrismaError(error, 'journalEntry')
+			handlePrismaError(error, ApiErrorResource.JournalEntry)
 		}
 	}
 }

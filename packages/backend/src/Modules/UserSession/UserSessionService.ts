@@ -1,6 +1,8 @@
 import { DI, Injectable, Service } from '@celosiajs/core'
 
-import { SortOrder, UserSessionSortField } from '@accounting-app/common'
+import { ApiErrorResource, SortOrder, UserSessionSortField } from '@accounting-app/common'
+
+import { UnauthorizedError } from 'Errors'
 
 import DatabaseService from 'Modules/Database/DatabaseService'
 import { buildPrismaPagination, handlePrismaError } from 'Modules/Database/PrismaUtils'
@@ -85,10 +87,14 @@ class UserSessionService extends Service {
 	}
 
 	async findById(id: bigint) {
-		return await this.db.client.userSession.findUnique({
-			where: { id },
-			select: this.dataSelect,
-		})
+		try {
+			return await this.db.client.userSession.findUniqueOrThrow({
+				where: { id },
+				select: this.dataSelect,
+			})
+		} catch (error) {
+			handlePrismaError(error, ApiErrorResource.User)
+		}
 	}
 
 	async findMany(options: UserSessionFindManyOptions = {}) {
@@ -134,7 +140,7 @@ class UserSessionService extends Service {
 				},
 			})
 		} catch (error) {
-			handlePrismaError(error, 'userSession')
+			handlePrismaError(error, ApiErrorResource.UserSession)
 		}
 	}
 
@@ -145,7 +151,7 @@ class UserSessionService extends Service {
 				data: { revokedAt: new Date() },
 			})
 		} catch (error) {
-			handlePrismaError(error, 'userSession')
+			handlePrismaError(error, ApiErrorResource.UserSession)
 		}
 	}
 
@@ -163,18 +169,24 @@ class UserSessionService extends Service {
 				},
 			})
 		} catch (error) {
-			handlePrismaError(error, 'userSession')
+			handlePrismaError(error, ApiErrorResource.UserSession)
 		}
 	}
 
 	async logout(id: bigint) {
 		try {
 			await this.db.client.userSession.update({
-				where: { id },
-				data: { loggedOutAt: new Date() },
+				where: {
+					id,
+					loggedOutAt: null,
+					revokedAt: null,
+				},
+				data: {
+					loggedOutAt: new Date(),
+				},
 			})
 		} catch (error) {
-			handlePrismaError(error, 'userSession')
+			handlePrismaError(error, ApiErrorResource.UserSession)
 		}
 	}
 
@@ -207,8 +219,21 @@ class UserSessionService extends Service {
 				},
 			})
 		} catch (error) {
-			handlePrismaError(error, 'userSession')
+			handlePrismaError(error, ApiErrorResource.UserSession)
 		}
+	}
+
+	async getSessionDetails(id: bigint) {
+		const session = await this.db.client.userSession.findUnique({
+			where: { id },
+			include: { user: true },
+		})
+
+		if (!session || !this.isSessionActive(session)) {
+			throw new UnauthorizedError('Session is invalid or expired.')
+		}
+
+		return session
 	}
 }
 

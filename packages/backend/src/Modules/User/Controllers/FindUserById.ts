@@ -1,7 +1,8 @@
 import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from '@celosiajs/core'
 
-import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import z from 'zod/v4'
+
+import handleControllerError from 'Utils/HandleControllerError'
 
 import UserService from '../UserService'
 
@@ -19,19 +20,6 @@ class FindUserById extends Controller {
 
 		try {
 			const user = await this.userService.findById(id)
-
-			if (!user)
-				return response.status(404).json({
-					errors: {
-						others: [
-							{
-								resource: ApiErrorResource.User,
-								kind: ApiErrorKind.NotFound,
-							},
-						],
-					},
-					data: {},
-				})
 
 			return response.status(200).json({
 				errors: {},
@@ -51,9 +39,7 @@ class FindUserById extends Controller {
 				},
 			})
 		} catch (error) {
-			this.logger.error('Other.', error)
-
-			return response.sendInternalServerError()
+			return handleControllerError(error, response, this.logger)
 		}
 	}
 

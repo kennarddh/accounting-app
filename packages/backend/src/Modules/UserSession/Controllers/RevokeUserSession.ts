@@ -2,6 +2,8 @@ import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from 
 
 import z from 'zod/v4'
 
+import handleControllerError from 'Utils/HandleControllerError'
+
 import UserSessionService from '../UserSessionService'
 
 class RevokeUserSession extends Controller {
@@ -21,9 +23,7 @@ class RevokeUserSession extends Controller {
 
 			return response.sendStatus(204)
 		} catch (error) {
-			this.logger.error('Other.', error)
-
-			return response.sendInternalServerError()
+			return handleControllerError(error, response, this.logger)
 		}
 	}
 

@@ -2,26 +2,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { ApiErrorResource } from '@accounting-app/common'
+
+import { BusinessRuleError, ConflictError, NotFoundError } from 'Errors'
+
 import { Prisma } from 'PrismaGenerated/client'
-
-export class ConflictError extends Error {
-	constructor(
-		public field: string,
-		public resource: string,
-	) {
-		super(`${resource} with this ${field} already exists.`)
-
-		this.name = 'ConflictError'
-	}
-}
-
-export class NotFoundError extends Error {
-	constructor(public resource: string) {
-		super(`${resource} not found.`)
-
-		this.name = 'NotFoundError'
-	}
-}
 
 export class ForeignKeyError extends Error {
 	constructor(public relation: string) {
@@ -31,15 +16,7 @@ export class ForeignKeyError extends Error {
 	}
 }
 
-export class DatabaseError extends Error {
-	constructor(message: string) {
-		super(message)
-
-		this.name = 'DatabaseError'
-	}
-}
-
-export function handlePrismaError(error: unknown, resourceName: string): never {
+export function handlePrismaError(error: unknown, resource: ApiErrorResource): never {
 	if (error instanceof Prisma.PrismaClientKnownRequestError) {
 		const meta = error.meta as any
 
@@ -53,22 +30,35 @@ export function handlePrismaError(error: unknown, resourceName: string): never {
 				(Array.isArray(meta?.target) ? meta.target.join(', ') : 'field')
 
 			const field = constraintName
-				.replace(`${resourceName.toLowerCase()}s_`, '')
+				.replace(`${resource.toLowerCase()}s_`, '')
 				.replace('_key', '')
 
-			throw new ConflictError(field, resourceName)
+			throw new ConflictError(resource, { field })
 		}
 
 		// Record not found (P2025)
 		if (error.code === 'P2025') {
-			throw new NotFoundError(resourceName)
+			throw new NotFoundError(resource)
 		}
 
 		// Foreign key constraint failure (P2003 or Postgres 23503)
 		if (error.code === 'P2003' || pgCause?.code === '23503') {
-			const constraintName: string = pgCause?.constraint ?? meta?.field_name ?? 'relation'
+			const rawConstraint: string = pgCause?.constraint ?? meta?.field_name ?? ''
+			const fieldMatch = /_([a-zA-Z0-9]+)_fkey/.exec(rawConstraint)
+			const field = fieldMatch ? fieldMatch[1] : (meta?.field_name ?? undefined)
 
-			throw new ForeignKeyError(constraintName)
+			// Case A: Deleting a record that is still in use by other tables
+			if (pgCause?.detail?.includes('is still referenced from table')) {
+				throw new BusinessRuleError(
+					resource,
+					`Cannot delete ${resource} because other records depend on it.`,
+					{ field },
+				)
+			}
+
+			// Case B: Inserting/updating with a foreign ID that doesn't exist
+			// We throw NotFoundError on the CURRENT resource pointing to the bad field!
+			throw new NotFoundError(resource, { field })
 		}
 	}
 

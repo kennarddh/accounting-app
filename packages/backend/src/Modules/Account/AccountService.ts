@@ -3,6 +3,7 @@ import { DI, Injectable, Service } from '@celosiajs/core'
 import {
 	AccountSortField,
 	AccountType,
+	ApiErrorResource,
 	FilterEnableDisable,
 	SortOrder,
 } from '@accounting-app/common'
@@ -11,14 +12,10 @@ import { DeepPartialAndUndefined } from 'Types/Types'
 
 import RemoveUndefinedValueFromObject from 'Utils/RemoveUndefinedValueFromObject'
 
-import { InvalidStateError } from 'Errors'
+import { ResourceDisabledError } from 'Errors'
 
 import DatabaseService from 'Modules/Database/DatabaseService'
-import {
-	NotFoundError,
-	buildPrismaPagination,
-	handlePrismaError,
-} from 'Modules/Database/PrismaUtils'
+import { buildPrismaPagination, handlePrismaError } from 'Modules/Database/PrismaUtils'
 
 import { Prisma } from 'PrismaGenerated/client'
 
@@ -100,10 +97,14 @@ class AccountService extends Service {
 	}
 
 	async findById(id: bigint) {
-		return await this.db.client.account.findUnique({
-			where: { id },
-			select: this.dataSelect,
-		})
+		try {
+			return await this.db.client.account.findUniqueOrThrow({
+				where: { id },
+				select: this.dataSelect,
+			})
+		} catch (error) {
+			handlePrismaError(error, ApiErrorResource.User)
+		}
 	}
 
 	async findMany(options: AccountFindManyOptions = {}) {
@@ -150,7 +151,7 @@ class AccountService extends Service {
 				select: { id: true },
 			})
 		} catch (error) {
-			handlePrismaError(error, 'account')
+			handlePrismaError(error, ApiErrorResource.Account)
 		}
 	}
 
@@ -159,13 +160,13 @@ class AccountService extends Service {
 
 		try {
 			await this.db.transaction(async tx => {
-				const account = await tx.account.findUnique({
+				const account = await tx.account.findUniqueOrThrow({
 					where: { id },
 					select: { id: true, disabledAt: true },
 				})
 
-				if (account === null) throw new NotFoundError('account')
-				if (account.disabledAt !== null) throw new InvalidStateError('update', 'disabled')
+				if (account.disabledAt !== null)
+					throw new ResourceDisabledError(ApiErrorResource.Account)
 
 				await tx.account.update({
 					where: { id },
@@ -173,7 +174,7 @@ class AccountService extends Service {
 				})
 			})
 		} catch (error) {
-			handlePrismaError(error, 'account')
+			handlePrismaError(error, ApiErrorResource.Account)
 		}
 	}
 
@@ -184,7 +185,7 @@ class AccountService extends Service {
 				data: { disabledAt: new Date() },
 			})
 		} catch (error) {
-			handlePrismaError(error, 'account')
+			handlePrismaError(error, ApiErrorResource.Account)
 		}
 	}
 
@@ -195,7 +196,7 @@ class AccountService extends Service {
 				data: { disabledAt: null },
 			})
 		} catch (error) {
-			handlePrismaError(error, 'account')
+			handlePrismaError(error, ApiErrorResource.Account)
 		}
 	}
 }

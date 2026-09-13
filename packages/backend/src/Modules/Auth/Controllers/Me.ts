@@ -1,5 +1,7 @@
 import { CelosiaResponse, Controller, ControllerRequest, DI } from '@celosiajs/core'
 
+import handleControllerError from 'Utils/HandleControllerError'
+
 import { JWTVerifiedData } from 'Middlewares/VerifyJWT'
 
 import UserService from '../../User/UserService'
@@ -11,19 +13,13 @@ class Me extends Controller {
 
 	public async index(
 		data: JWTVerifiedData,
-		request: ControllerRequest<Me>,
+		_: ControllerRequest<Me>,
 		response: CelosiaResponse,
 	) {
 		const id = data.user.id
 
 		try {
 			const user = await this.userService.findById(id)
-
-			if (!user) {
-				this.logger.error("Can't find user.", { id, requestId: request.id })
-
-				return response.sendInternalServerError()
-			}
 
 			return response.status(200).json({
 				errors: {},
@@ -36,9 +32,7 @@ class Me extends Controller {
 				},
 			})
 		} catch (error) {
-			this.logger.error('Other.', error)
-
-			return response.sendInternalServerError()
+			return handleControllerError(error, response, this.logger)
 		}
 	}
 }

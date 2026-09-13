@@ -1,5 +1,7 @@
 import { DI, Injectable, Service } from '@celosiajs/core'
 
+import { ApiErrorResource } from '@accounting-app/common'
+
 import { UnauthorizedError } from 'Errors'
 
 import ConfigurationService from 'Modules/Configuration/ConfigurationService'
@@ -152,7 +154,7 @@ class AuthService extends Service {
 				refreshToken: tokens.refreshToken,
 			}
 		} catch (error) {
-			handlePrismaError(error, 'userSession')
+			handlePrismaError(error, ApiErrorResource.UserSession)
 		}
 	}
 
@@ -167,26 +169,6 @@ class AuthService extends Service {
 				},
 			},
 		}
-	}
-
-	async findUserForGetSession(userSessionId: bigint) {
-		return await this.db.client.userSession.findUnique({
-			where: { id: userSessionId },
-			select: {
-				id: true,
-				ipAddress: true,
-				createdAt: true,
-				expireAt: true,
-				lastRefreshAt: true,
-				user: {
-					select: {
-						id: true,
-						name: true,
-						username: true,
-					},
-				},
-			},
-		})
 	}
 }
 

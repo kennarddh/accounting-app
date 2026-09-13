@@ -2,11 +2,14 @@ import jwt from 'jsonwebtoken'
 
 import { JSONObject, Service } from '@celosiajs/core'
 
+import { ApiErrorResource } from '@accounting-app/common'
+
 import { TokenExpiredError, TokenSignError, TokenVerifyError } from './Errors'
 
 abstract class TokenService<T extends JSONObject> extends Service {
 	constructor(
 		loggingSource: string,
+		private tokenResource: ApiErrorResource.AccessToken | ApiErrorResource.RefreshToken,
 		private secret: jwt.Secret,
 		private signOptions: jwt.SignOptions,
 		private verifyOptions: jwt.VerifyOptions,
@@ -39,9 +42,9 @@ abstract class TokenService<T extends JSONObject> extends Service {
 			jwt.verify(token, this.secret, this.verifyOptions, (error, decoded) => {
 				if (error) {
 					if (error instanceof jwt.TokenExpiredError) {
-						return reject(new TokenExpiredError(error.expiredAt))
+						return reject(new TokenExpiredError(this.tokenResource, error.expiredAt))
 					} else {
-						return reject(new TokenVerifyError())
+						return reject(new TokenVerifyError(this.tokenResource))
 					}
 				}
 

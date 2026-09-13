@@ -1,9 +1,9 @@
 import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from '@celosiajs/core'
 
-import { AccountType, ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
+import { AccountType } from '@accounting-app/common'
 import z from 'zod/v4'
 
-import { ConflictError } from 'Modules/Database/PrismaUtils'
+import handleControllerError from 'Utils/HandleControllerError'
 
 import AccountService from '../AccountService'
 
@@ -33,22 +33,7 @@ class CreateAccount extends Controller {
 				},
 			})
 		} catch (error) {
-			if (
-				error instanceof ConflictError &&
-				error.field === 'code' &&
-				error.resource === 'account'
-			) {
-				return response.status(400).json({
-					errors: {
-						others: [{ resource: ApiErrorResource.Account, kind: ApiErrorKind.Taken }],
-					},
-					data: null,
-				})
-			}
-
-			this.logger.error('Other.', error)
-
-			return response.sendInternalServerError()
+			return handleControllerError(error, response, this.logger)
 		}
 	}
 
