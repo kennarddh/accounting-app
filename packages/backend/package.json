@@ -23,9 +23,9 @@
 	"author": "kennarddh",
 	"dependencies": {
 		"@accounting-app/common": "^1.0.0",
-		"@celosiajs/core": "^0.0.2",
-		"@celosiajs/file-upload": "^0.0.2",
-		"@celosiajs/logging": "^0.0.2",
+		"@celosiajs/core": "^0.0.3",
+		"@celosiajs/file-upload": "^0.0.3",
+		"@celosiajs/logging": "^0.0.3",
 		"@prisma/adapter-pg": "^7.10.0",
 		"@prisma/client": "^7.10.0",
 		"argon2": "^0.45.1",
