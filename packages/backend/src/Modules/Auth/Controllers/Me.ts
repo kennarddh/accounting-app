@@ -14,7 +14,7 @@ class Me extends Controller {
 		request: ControllerRequest<Me>,
 		response: CelosiaResponse,
 	) {
-		const id = data.user.session.user.id
+		const id = data.user.id
 
 		try {
 			const user = await this.userService.findById(id)

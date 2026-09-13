@@ -1,6 +1,6 @@
 import { DI, Injectable, Service } from '@celosiajs/core'
 
-import { ResourceNotFoundError, UnauthorizedError } from 'Errors'
+import { UnauthorizedError } from 'Errors'
 
 import ConfigurationService from 'Modules/Configuration/ConfigurationService'
 import DatabaseService from 'Modules/Database/DatabaseService'
@@ -32,6 +32,12 @@ class AuthService extends Service {
 		const accessTokenPayload = {
 			jti: userSession.accessTokenJti,
 			iat: currentTime,
+			user: {
+				id: userSession.userId.toString(),
+				session: {
+					id: userSession.id.toString(),
+				},
+			},
 		} satisfies AccessTokenJWTPayload
 
 		const accessToken = await this.accessTokenService.sign(accessTokenPayload)
@@ -153,48 +159,34 @@ class AuthService extends Service {
 	async verifyAccessToken(accessToken: string) {
 		const currentAccessTokenPayload = await this.accessTokenService.verify(accessToken)
 
-		const userSession = await this.db.client.userSession.findUnique({
-			where: { accessTokenJti: currentAccessTokenPayload.jti },
-			include: {
+		return {
+			user: {
+				id: BigInt(currentAccessTokenPayload.user.id),
+				session: {
+					id: BigInt(currentAccessTokenPayload.user.session.id),
+				},
+			},
+		}
+	}
+
+	async findUserForGetSession(userSessionId: bigint) {
+		return await this.db.client.userSession.findUnique({
+			where: { id: userSessionId },
+			select: {
+				id: true,
+				ipAddress: true,
+				createdAt: true,
+				expireAt: true,
+				lastRefreshAt: true,
 				user: {
 					select: {
 						id: true,
 						name: true,
 						username: true,
-						password: true,
-						createdAt: true,
-						updatedAt: true,
-						createdBy: { select: { id: true, name: true } },
 					},
 				},
 			},
 		})
-
-		if (userSession === null) {
-			this.logger.warn('User session not found while verify.', {
-				accessTokenJti: currentAccessTokenPayload.jti,
-			})
-
-			throw new UnauthorizedError()
-		}
-
-		if (!this.userSessionService.isSessionActive(userSession)) throw new UnauthorizedError()
-
-		return { userSession, user: userSession.user }
-	}
-
-	async findUserForGetSession(userId: bigint) {
-		const user = await this.userService.findById(userId)
-
-		if (user === null) throw new ResourceNotFoundError('user')
-
-		return {
-			user: {
-				id: user.id,
-				name: user.name,
-				username: user.username,
-			},
-		}
 	}
 }
 

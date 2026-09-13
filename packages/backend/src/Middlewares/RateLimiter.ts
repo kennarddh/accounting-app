@@ -53,7 +53,7 @@ class RateLimiter extends Middleware {
 		if ('user' in data && this.useUserRateLimiterIfPossible) {
 			try {
 				const rateLimiterRes = await RateLimiter.userRateLimiter.consume(
-					data.user.session.user.id.toString(),
+					data.user.id.toString(),
 					this.pointsToConsume,
 				)
 

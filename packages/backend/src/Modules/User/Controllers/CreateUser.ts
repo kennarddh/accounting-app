@@ -27,7 +27,7 @@ class CreateUser extends Controller {
 				name,
 				username,
 				password,
-				createdById: data.user.data.id,
+				createdById: data.user.id,
 			})
 
 			return response.status(200).json({

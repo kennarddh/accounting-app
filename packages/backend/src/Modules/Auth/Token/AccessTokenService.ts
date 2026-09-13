@@ -7,6 +7,12 @@ import TokenService from './TokenService'
 export type AccessTokenJWTPayload = {
 	jti: string
 	iat: number
+	user: {
+		id: string
+		session: {
+			id: string
+		}
+	}
 }
 
 @Injectable()

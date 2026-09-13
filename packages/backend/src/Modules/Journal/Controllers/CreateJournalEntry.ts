@@ -25,7 +25,7 @@ class CreateJournalEntry extends Controller {
 		response: CelosiaResponse,
 	) {
 		const { entryNumber, date, description, lines } = request.body
-		const createdById = input.user.data.id
+		const createdById = input.user.id
 
 		try {
 			const journalEntry = await this.journalService.create({

@@ -13,13 +13,11 @@ import { UnauthorizedError } from 'Errors'
 
 import AuthService from 'Modules/Auth/AuthService'
 import { TokenExpiredError, TokenVerifyError } from 'Modules/Auth/Token/Errors'
-import { User } from 'Modules/User/UserService'
-import { UserSession } from 'Modules/UserSession/UserSessionService'
 
 export interface JWTVerifiedData {
 	user: {
-		session: UserSession
-		data: User
+		id: bigint
+		session: { id: bigint }
 	}
 }
 
@@ -80,13 +78,10 @@ class VerifyJWT extends Middleware<CelosiaRequest, CelosiaResponse, EmptyObject,
 			})
 
 		try {
-			const { userSession, user } = await this.authService.verifyAccessToken(accessToken)
+			const { user } = await this.authService.verifyAccessToken(accessToken)
 
 			next({
-				user: {
-					data: user,
-					session: userSession,
-				},
+				user,
 			})
 		} catch (error) {
 			if (error instanceof TokenExpiredError) {

@@ -31,7 +31,7 @@ class HandleAccess<
 		response: CelosiaResponse,
 		next: NextFunction,
 	) {
-		const userId = data.user.session.user.id
+		const userId = data.user.id
 
 		try {
 			const hasAccess = await this.accessControlService.hasAccess(
