@@ -46,8 +46,6 @@ services:
             dockerfile: ./packages/backend/Dockerfile
         stop_signal: SIGTERM
         stop_grace_period: 30s
-        volumes:
-            - backend-logs:/app/Logs/
         networks:
             - backend
             - app
@@ -75,10 +73,8 @@ services:
             CORS_ORIGIN: "*"
 
             LOG_LEVEL: info
-            LOG_PATH: /app/Logs/
 
             BASE_URL: http://localhost:8080
-
         depends_on:
             database-migration:
                 condition: service_completed_successfully
@@ -88,6 +84,11 @@ services:
             - backend-access-token-secret
             - backend-refresh-token-secret
             - backend-password-hash-secret
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "10m"
+                max-file: "5"
 
     frontend:
         build:
@@ -108,7 +109,6 @@ services:
 
 volumes:
     database:
-    backend-logs:
     frontend-logs:
 
 networks:

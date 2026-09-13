@@ -1,78 +1,61 @@
-import path from 'path'
-
 import winston from 'winston'
-import WinstonDailyRotateFile from 'winston-daily-rotate-file'
 
 import { Globals } from '@celosiajs/core'
-import { CelosiaFormat, FilterLevel } from '@celosiajs/logging'
+import { CelosiaFormat } from '@celosiajs/logging'
+
+import { SPLAT } from 'triple-beam'
 
 // This file use process.env because the ConfigurationService itself require Logger.
 // Preventing cyclical import.
 
-const logsRootDirectory = path.resolve(process.env.LOG_PATH)
+const developmentLoggerFormat = [
+	winston.format.ms(),
+	winston.format(info => {
+		if (info.level === 'http') {
+			// eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+			info.message = `${info.method} ${info.url} ${(info.response as any).statusCode} - ${Math.round(info.processingTime as number)}ms`
 
-const LoggerFormat = [winston.format.ms(), CelosiaFormat({ inspectOptions: { depth: Infinity } })]
+			delete info.requestId
+			delete info.processingTime
+			delete info.headers
+			delete info.httpVersion
+			delete info.method
+			delete info.remoteFamily
+			delete info.url
+			delete info.response
+
+			// eslint-disable-next-line security/detect-object-injection, @typescript-eslint/no-dynamic-delete
+			delete info[SPLAT]
+		}
+
+		return info
+	})(),
+	CelosiaFormat({ inspectOptions: { depth: Infinity } }),
+]
+const productionLoggerFormat = [
+	winston.format.timestamp(),
+	winston.format.errors({ stack: true }),
+	winston.format.json(),
+]
+
+const loggerFormat =
+	process.env.NODE_ENV === 'development' ? developmentLoggerFormat : productionLoggerFormat
 
 const transports = []
 
-if (process.env.NODE_ENV === 'development') {
-	transports.push(
-		new WinstonDailyRotateFile({
-			dirname: path.resolve(logsRootDirectory, 'Debug'),
-			level: 'debug',
-			filename: 'Debug.log-%DATE%.log',
-			zippedArchive: true,
-			maxSize: '1m',
-			maxFiles: '14d',
-			format: winston.format.combine(
-				FilterLevel({ list: ['http'], isWhitelist: false }),
-				...LoggerFormat,
-			),
-			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-			silent: process.env.NODE_ENV !== 'development',
-		}),
-	)
-}
-
 if (process.env.NODE_ENV !== 'test') {
 	transports.push(
-		new WinstonDailyRotateFile({
-			dirname: path.resolve(logsRootDirectory, 'Application'),
-			filename: 'Application-%DATE%.log',
-			zippedArchive: true,
-			maxSize: '1m',
-			maxFiles: '14d',
-		}),
-		new WinstonDailyRotateFile({
-			dirname: path.resolve(logsRootDirectory, 'Error'),
-			level: 'error',
-			filename: 'Error.log-%DATE%.log',
-			zippedArchive: true,
-			maxSize: '1m',
-			maxFiles: '14d',
+		new winston.transports.Console({
 			handleExceptions: true,
 			handleRejections: true,
 		}),
-		new WinstonDailyRotateFile({
-			dirname: path.resolve(logsRootDirectory, 'Http'),
-			level: 'http',
-			filename: 'Http.log-%DATE%.log',
-			zippedArchive: true,
-			maxSize: '1m',
-			maxFiles: '14d',
-			format: winston.format.combine(
-				FilterLevel({ list: ['http'], isWhitelist: true }),
-				...LoggerFormat,
-			),
-		}),
-		new winston.transports.Console(),
 	)
 }
 
 const Logger = winston.createLogger({
-	level: process.env.LOG_LEVEL || 'info',
+	level: process.env.LOG_LEVEL || 'http',
 	silent: process.env.NODE_ENV === 'test',
-	format: winston.format.combine(...LoggerFormat),
+	format: winston.format.combine(...loggerFormat),
 	transports,
 })
 

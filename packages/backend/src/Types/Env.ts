@@ -26,7 +26,6 @@ export interface ProcessEnvVariables {
 	CORS_ORIGIN: string
 
 	LOG_LEVEL: string
-	LOG_PATH: string
 
 	BASE_URL: string
 

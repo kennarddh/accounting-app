@@ -14,6 +14,26 @@ const FilterHeaders = (headers: IncomingHttpHeaders | OutgoingHttpHeaders) => {
 	return newHeaders
 }
 
+const FilterResponseHeaders = (headers: OutgoingHttpHeaders) => {
+	const {
+		'content-security-policy': _,
+		'cross-origin-opener-policy': __,
+		'cross-origin-resource-policy': ___,
+		'origin-agent-cluster': ____,
+		'referrer-policy': _____,
+		'strict-transport-security': ______,
+		'x-content-type-options': _______,
+		'x-dns-prefetch-control': ________,
+		'x-download-options': _________,
+		'x-frame-options': __________,
+		'x-permitted-cross-domain-policies': ___________,
+		'x-xss-protection': ____________,
+		...cleanHeaders
+	} = headers
+
+	return cleanHeaders
+}
+
 class LogHTTPRequest extends Middleware {
 	constructor() {
 		super('LogHTTPRequest')
@@ -33,7 +53,6 @@ class LogHTTPRequest extends Middleware {
 				httpVersion,
 				method,
 				socket: { remoteFamily },
-				url,
 			} = request
 
 			const { statusCode, statusMessage } = response
@@ -41,20 +60,31 @@ class LogHTTPRequest extends Middleware {
 			const requestEnd = process.hrtime.bigint()
 
 			// Nanoseconds to milliseconds
-			const requestProcessingTime = (requestEnd - requestStart) / 1_000_000n
+			const requestProcessingTime = Number(requestEnd - requestStart) / 1_000_000
 
-			this.logger.http('Incoming request.', {
+			const rawUrl = (request.expressRequest.originalUrl || request.url) ?? ''
+
+			let decodedUrl = rawUrl
+
+			try {
+				decodedUrl = decodeURIComponent(rawUrl)
+			} catch {
+				// Fall back to raw URL if decoding fails
+				decodedUrl = rawUrl
+			}
+
+			this.logger.http('Incoming request', {
 				requestId: request.id,
 				processingTime: requestProcessingTime,
 				headers: FilterHeaders(headers),
 				httpVersion,
 				method,
 				remoteFamily,
-				url,
+				url: decodedUrl,
 				response: {
 					statusCode,
 					statusMessage,
-					headers: FilterHeaders(response.headers),
+					headers: FilterResponseHeaders(response.headers),
 				},
 			})
 		})

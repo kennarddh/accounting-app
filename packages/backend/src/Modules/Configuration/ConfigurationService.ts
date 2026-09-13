@@ -35,7 +35,6 @@ export const ApplicationConfigurationSchema = z.object({
 	corsOrigin: z.string().array(),
 	logging: z.object({
 		level: z.string(),
-		path: z.string(),
 	}),
 	baseUrl: z.string(),
 	pagination: z.object({

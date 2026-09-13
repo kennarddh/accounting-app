@@ -76,7 +76,6 @@ class EnvironmentConfigurationProvider extends ConfigurationProvider<
 			corsOrigin: process.env.CORS_ORIGIN.split(','),
 			logging: {
 				level: process.env.LOG_LEVEL,
-				path: process.env.LOG_PATH,
 			},
 			baseUrl: process.env.BASE_URL,
 			pagination: {
