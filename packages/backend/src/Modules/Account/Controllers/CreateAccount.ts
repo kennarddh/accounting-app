@@ -3,8 +3,6 @@ import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from 
 import { AccountType } from '@accounting-app/common'
 import z from 'zod/v4'
 
-import handleControllerError from 'Utils/HandleControllerError'
-
 import AccountService from '../AccountService'
 
 class CreateAccount extends Controller {
@@ -19,22 +17,18 @@ class CreateAccount extends Controller {
 	) {
 		const { code, name, type } = request.body
 
-		try {
-			const account = await this.accountService.create({
-				code,
-				name,
-				type,
-			})
+		const account = await this.accountService.create({
+			code,
+			name,
+			type,
+		})
 
-			return response.status(200).json({
-				errors: {},
-				data: {
-					id: account.id,
-				},
-			})
-		} catch (error) {
-			return handleControllerError(error, response, this.logger)
-		}
+		response.status(200).json({
+			errors: {},
+			data: {
+				id: account.id,
+			},
+		})
 	}
 
 	public override get body() {

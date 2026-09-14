@@ -2,8 +2,6 @@ import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from 
 
 import z from 'zod/v4'
 
-import handleControllerError from 'Utils/HandleControllerError'
-
 import AccountService from '../AccountService'
 
 class UpdateAccount extends Controller {
@@ -19,13 +17,9 @@ class UpdateAccount extends Controller {
 		const { code, name } = request.body
 		const { id } = request.params
 
-		try {
-			await this.accountService.update(id, { code, name })
+		await this.accountService.update(id, { code, name })
 
-			return response.sendStatus(204)
-		} catch (error) {
-			return handleControllerError(error, response, this.logger)
-		}
+		response.sendStatus(204)
 	}
 
 	public override get body() {

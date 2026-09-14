@@ -3,7 +3,6 @@ import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from 
 import { SortOrder, UserSessionSortField } from '@accounting-app/common'
 import z from 'zod/v4'
 
-import handleControllerError from 'Utils/HandleControllerError'
 import RemoveUndefinedValueFromObject from 'Utils/RemoveUndefinedValueFromObject'
 
 import ZodPagination from 'Validations/Zod/ZodPagination'
@@ -31,32 +30,28 @@ class FindManyUserSessions extends Controller {
 			sort,
 		}) satisfies UserSessionFindManyOptions
 
-		try {
-			const { pagination: resultPagination, items } =
-				await this.userSessionService.findMany(options)
+		const { pagination: resultPagination, items } =
+			await this.userSessionService.findMany(options)
 
-			return response.status(200).json({
-				errors: {},
-				data: {
-					pagination: resultPagination,
-					list: items.map(userSession => ({
-						id: userSession.id,
-						ipAddress: userSession.ipAddress,
-						user: {
-							id: userSession.user.id,
-							name: userSession.user.name,
-						},
-						createdAt: userSession.createdAt.getTime(),
-						loggedOutAt: userSession.loggedOutAt?.getTime() ?? null,
-						revokedAt: userSession.revokedAt?.getTime() ?? null,
-						expireAt: userSession.expireAt.getTime(),
-						lastRefreshAt: userSession.lastRefreshAt.getTime(),
-					})),
-				},
-			})
-		} catch (error) {
-			return handleControllerError(error, response, this.logger)
-		}
+		response.status(200).json({
+			errors: {},
+			data: {
+				pagination: resultPagination,
+				list: items.map(userSession => ({
+					id: userSession.id,
+					ipAddress: userSession.ipAddress,
+					user: {
+						id: userSession.user.id,
+						name: userSession.user.name,
+					},
+					createdAt: userSession.createdAt.getTime(),
+					loggedOutAt: userSession.loggedOutAt?.getTime() ?? null,
+					revokedAt: userSession.revokedAt?.getTime() ?? null,
+					expireAt: userSession.expireAt.getTime(),
+					lastRefreshAt: userSession.lastRefreshAt.getTime(),
+				})),
+			},
+		})
 	}
 
 	public override get query() {

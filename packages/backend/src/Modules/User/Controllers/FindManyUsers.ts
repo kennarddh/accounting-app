@@ -3,7 +3,6 @@ import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from 
 import { SortOrder, UserSortField } from '@accounting-app/common'
 import z from 'zod/v4'
 
-import handleControllerError from 'Utils/HandleControllerError'
 import RemoveUndefinedValueFromObject from 'Utils/RemoveUndefinedValueFromObject'
 
 import ZodPagination from 'Validations/Zod/ZodPagination'
@@ -28,32 +27,28 @@ class FindManyUsers extends Controller {
 			sort,
 		}) satisfies UserFindManyOptions
 
-		try {
-			const { pagination: resultPagination, items } = await this.userService.findMany(options)
+		const { pagination: resultPagination, items } = await this.userService.findMany(options)
 
-			return response.status(200).json({
-				errors: {},
-				data: {
-					pagination: resultPagination,
-					list: items.map(user => ({
-						id: user.id,
-						name: user.name,
-						username: user.username,
-						createdBy:
-							user.createdBy === null
-								? null
-								: {
-										id: user.createdBy.id,
-										name: user.createdBy.name,
-									},
-						createdAt: user.createdAt.getTime(),
-						updatedAt: user.updatedAt.getTime(),
-					})),
-				},
-			})
-		} catch (error) {
-			return handleControllerError(error, response, this.logger)
-		}
+		response.status(200).json({
+			errors: {},
+			data: {
+				pagination: resultPagination,
+				list: items.map(user => ({
+					id: user.id,
+					name: user.name,
+					username: user.username,
+					createdBy:
+						user.createdBy === null
+							? null
+							: {
+									id: user.createdBy.id,
+									name: user.createdBy.name,
+								},
+					createdAt: user.createdAt.getTime(),
+					updatedAt: user.updatedAt.getTime(),
+				})),
+			},
+		})
 	}
 
 	public override get query() {

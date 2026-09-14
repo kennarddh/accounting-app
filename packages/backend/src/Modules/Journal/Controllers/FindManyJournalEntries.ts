@@ -3,7 +3,6 @@ import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from 
 import { JournalEntrySortField, SortOrder } from '@accounting-app/common'
 import z from 'zod/v4'
 
-import handleControllerError from 'Utils/HandleControllerError'
 import RemoveUndefinedValueFromObject from 'Utils/RemoveUndefinedValueFromObject'
 
 import ZodPagination from 'Validations/Zod/ZodPagination'
@@ -34,42 +33,37 @@ class FindManyJournalEntries extends Controller {
 			sort,
 		}) satisfies JournalFindManyOptions
 
-		try {
-			const { pagination: resultPagination, items } =
-				await this.journalService.findMany(options)
+		const { pagination: resultPagination, items } = await this.journalService.findMany(options)
 
-			return response.status(200).json({
-				errors: {},
-				data: {
-					pagination: resultPagination,
-					list: items.map(journalEntry => ({
-						id: journalEntry.id,
-						entryNumber: journalEntry.entryNumber,
-						date: journalEntry.date.getTime(),
-						description: journalEntry.description,
-						createdBy: {
-							id: journalEntry.createdBy.id,
-							name: journalEntry.createdBy.name,
+		response.status(200).json({
+			errors: {},
+			data: {
+				pagination: resultPagination,
+				list: items.map(journalEntry => ({
+					id: journalEntry.id,
+					entryNumber: journalEntry.entryNumber,
+					date: journalEntry.date.getTime(),
+					description: journalEntry.description,
+					createdBy: {
+						id: journalEntry.createdBy.id,
+						name: journalEntry.createdBy.name,
+					},
+					lines: journalEntry.lines.map(line => ({
+						id: line.id,
+						account: {
+							id: line.account.id,
+							code: line.account.code,
+							name: line.account.name,
 						},
-						lines: journalEntry.lines.map(line => ({
-							id: line.id,
-							account: {
-								id: line.account.id,
-								code: line.account.code,
-								name: line.account.name,
-							},
-							debit: line.debit.toString(),
-							credit: line.credit.toString(),
-							description: line.description,
-						})),
-						createdAt: journalEntry.createdAt.getTime(),
-						updatedAt: journalEntry.updatedAt.getTime(),
+						debit: line.debit.toString(),
+						credit: line.credit.toString(),
+						description: line.description,
 					})),
-				},
-			})
-		} catch (error) {
-			return handleControllerError(error, response, this.logger)
-		}
+					createdAt: journalEntry.createdAt.getTime(),
+					updatedAt: journalEntry.updatedAt.getTime(),
+				})),
+			},
+		})
 	}
 
 	public override get query() {

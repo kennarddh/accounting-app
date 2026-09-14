@@ -2,8 +2,6 @@ import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from 
 
 import z from 'zod/v4'
 
-import handleControllerError from 'Utils/HandleControllerError'
-
 import UserSessionService from '../UserSessionService'
 
 class FindUserSessionById extends Controller {
@@ -18,28 +16,24 @@ class FindUserSessionById extends Controller {
 	) {
 		const { id } = request.params
 
-		try {
-			const userSession = await this.userSessionService.findById(id)
+		const userSession = await this.userSessionService.findById(id)
 
-			return response.status(200).json({
-				errors: {},
-				data: {
-					id: userSession.id,
-					user: {
-						id: userSession.user.id,
-						name: userSession.user.name,
-					},
-					ipAddress: userSession.ipAddress,
-					createdAt: userSession.createdAt.getTime(),
-					expireAt: userSession.expireAt.getTime(),
-					lastRefreshAt: userSession.lastRefreshAt.getTime(),
-					loggedOutAt: userSession.loggedOutAt?.getTime() ?? null,
-					revokedAt: userSession.revokedAt?.getTime() ?? null,
+		response.status(200).json({
+			errors: {},
+			data: {
+				id: userSession.id,
+				user: {
+					id: userSession.user.id,
+					name: userSession.user.name,
 				},
-			})
-		} catch (error) {
-			return handleControllerError(error, response, this.logger)
-		}
+				ipAddress: userSession.ipAddress,
+				createdAt: userSession.createdAt.getTime(),
+				expireAt: userSession.expireAt.getTime(),
+				lastRefreshAt: userSession.lastRefreshAt.getTime(),
+				loggedOutAt: userSession.loggedOutAt?.getTime() ?? null,
+				revokedAt: userSession.revokedAt?.getTime() ?? null,
+			},
+		})
 	}
 
 	public override get params() {

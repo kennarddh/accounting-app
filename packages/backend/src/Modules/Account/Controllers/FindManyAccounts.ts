@@ -8,7 +8,6 @@ import {
 } from '@accounting-app/common'
 import z from 'zod/v4'
 
-import handleControllerError from 'Utils/HandleControllerError'
 import RemoveUndefinedValueFromObject from 'Utils/RemoveUndefinedValueFromObject'
 
 import ZodPagination from 'Validations/Zod/ZodPagination'
@@ -33,28 +32,23 @@ class FindManyAccounts extends Controller {
 			sort,
 		}) satisfies AccountFindManyOptions
 
-		try {
-			const { pagination: resultPagination, items } =
-				await this.accountService.findMany(options)
+		const { pagination: resultPagination, items } = await this.accountService.findMany(options)
 
-			return response.status(200).json({
-				errors: {},
-				data: {
-					pagination: resultPagination,
-					list: items.map(account => ({
-						id: account.id,
-						code: account.code,
-						name: account.name,
-						type: account.type,
-						createdAt: account.createdAt.getTime(),
-						updatedAt: account.updatedAt.getTime(),
-						disabledAt: account.disabledAt?.getTime() ?? null,
-					})),
-				},
-			})
-		} catch (error) {
-			return handleControllerError(error, response, this.logger)
-		}
+		response.status(200).json({
+			errors: {},
+			data: {
+				pagination: resultPagination,
+				list: items.map(account => ({
+					id: account.id,
+					code: account.code,
+					name: account.name,
+					type: account.type,
+					createdAt: account.createdAt.getTime(),
+					updatedAt: account.updatedAt.getTime(),
+					disabledAt: account.disabledAt?.getTime() ?? null,
+				})),
+			},
+		})
 	}
 
 	public override get query() {

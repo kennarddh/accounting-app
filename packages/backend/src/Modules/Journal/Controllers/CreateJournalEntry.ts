@@ -2,8 +2,6 @@ import { CelosiaResponse, Controller, ControllerRequest, DI } from '@celosiajs/c
 
 import z from 'zod/v4'
 
-import handleControllerError from 'Utils/HandleControllerError'
-
 import { JWTVerifiedData } from 'Middlewares/VerifyJWT'
 
 import JournalService from '../JournalService'
@@ -24,29 +22,25 @@ class CreateJournalEntry extends Controller {
 		const { entryNumber, date, description, lines } = request.body
 		const createdById = data.user.id
 
-		try {
-			const journalEntry = await this.journalService.create({
-				entryNumber,
-				date: new Date(date),
-				description,
-				createdById,
-				lines: lines.map(line => ({
-					accountId: line.accountId,
-					debit: line.debit,
-					credit: line.credit,
-					description: line.description,
-				})),
-			})
+		const journalEntry = await this.journalService.create({
+			entryNumber,
+			date: new Date(date),
+			description,
+			createdById,
+			lines: lines.map(line => ({
+				accountId: line.accountId,
+				debit: line.debit,
+				credit: line.credit,
+				description: line.description,
+			})),
+		})
 
-			return response.status(200).json({
-				errors: {},
-				data: {
-					id: journalEntry.id,
-				},
-			})
-		} catch (error) {
-			return handleControllerError(error, response, this.logger)
-		}
+		response.status(200).json({
+			errors: {},
+			data: {
+				id: journalEntry.id,
+			},
+		})
 	}
 
 	public override get body() {

@@ -2,8 +2,6 @@ import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from 
 
 import z from 'zod/v4'
 
-import handleControllerError from 'Utils/HandleControllerError'
-
 import JournalService from '../JournalService'
 
 class FindJournalEntryById extends Controller {
@@ -18,38 +16,34 @@ class FindJournalEntryById extends Controller {
 	) {
 		const { id } = request.params
 
-		try {
-			const journalEntry = await this.journalService.findById(id)
+		const journalEntry = await this.journalService.findById(id)
 
-			return response.status(200).json({
-				errors: {},
-				data: {
-					id: journalEntry.id,
-					entryNumber: journalEntry.entryNumber,
-					date: journalEntry.date.getTime(),
-					description: journalEntry.description,
-					createdBy: {
-						id: journalEntry.createdBy.id,
-						name: journalEntry.createdBy.name,
-					},
-					lines: journalEntry.lines.map(line => ({
-						id: line.id,
-						account: {
-							id: line.account.id,
-							code: line.account.code,
-							name: line.account.name,
-						},
-						debit: line.debit.toString(),
-						credit: line.credit.toString(),
-						description: line.description,
-					})),
-					createdAt: journalEntry.createdAt.getTime(),
-					updatedAt: journalEntry.updatedAt.getTime(),
+		response.status(200).json({
+			errors: {},
+			data: {
+				id: journalEntry.id,
+				entryNumber: journalEntry.entryNumber,
+				date: journalEntry.date.getTime(),
+				description: journalEntry.description,
+				createdBy: {
+					id: journalEntry.createdBy.id,
+					name: journalEntry.createdBy.name,
 				},
-			})
-		} catch (error) {
-			return handleControllerError(error, response, this.logger)
-		}
+				lines: journalEntry.lines.map(line => ({
+					id: line.id,
+					account: {
+						id: line.account.id,
+						code: line.account.code,
+						name: line.account.name,
+					},
+					debit: line.debit.toString(),
+					credit: line.credit.toString(),
+					description: line.description,
+				})),
+				createdAt: journalEntry.createdAt.getTime(),
+				updatedAt: journalEntry.updatedAt.getTime(),
+			},
+		})
 	}
 
 	public override get params() {

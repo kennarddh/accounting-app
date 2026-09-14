@@ -2,8 +2,6 @@ import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from 
 
 import z from 'zod/v4'
 
-import handleControllerError from 'Utils/HandleControllerError'
-
 import AccountService from '../AccountService'
 
 class EnableAccount extends Controller {
@@ -18,13 +16,9 @@ class EnableAccount extends Controller {
 	) {
 		const { id } = request.params
 
-		try {
-			await this.accountService.enable(id)
+		await this.accountService.enable(id)
 
-			return response.sendStatus(204)
-		} catch (error) {
-			return handleControllerError(error, response, this.logger)
-		}
+		response.sendStatus(204)
 	}
 
 	public override get params() {

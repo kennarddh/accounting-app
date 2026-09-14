@@ -9,7 +9,7 @@ export abstract class DomainError extends Error {
 	abstract readonly resource: ApiErrorResource | null
 	abstract readonly kind: ApiErrorKind
 	readonly field: string | undefined
-	readonly meta: Record<string, string | number> | undefined
+	readonly meta: Record<string, string | number | bigint> | undefined
 
 	constructor(message: string, options?: ErrorOptions) {
 		super(message)

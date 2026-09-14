@@ -8,7 +8,7 @@ class HealthController extends Controller {
 	}
 
 	public override async index(_: EmptyObject, __: CelosiaRequest, response: CelosiaResponse) {
-		if (await this.healthService.isHealthy()) return response.sendStatus(204)
+		if (await this.healthService.isHealthy()) return void response.sendStatus(204)
 
 		response.sendStatus(503)
 	}

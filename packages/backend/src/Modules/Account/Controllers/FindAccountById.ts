@@ -2,8 +2,6 @@ import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from 
 
 import z from 'zod/v4'
 
-import handleControllerError from 'Utils/HandleControllerError'
-
 import AccountService from '../AccountService'
 
 class FindAccountById extends Controller {
@@ -18,24 +16,20 @@ class FindAccountById extends Controller {
 	) {
 		const { id } = request.params
 
-		try {
-			const account = await this.accountService.findById(id)
+		const account = await this.accountService.findById(id)
 
-			return response.status(200).json({
-				errors: {},
-				data: {
-					id: account.id,
-					code: account.code,
-					name: account.name,
-					type: account.type,
-					createdAt: account.createdAt.getTime(),
-					updatedAt: account.updatedAt.getTime(),
-					disabledAt: account.disabledAt?.getTime() ?? null,
-				},
-			})
-		} catch (error) {
-			return handleControllerError(error, response, this.logger)
-		}
+		response.status(200).json({
+			errors: {},
+			data: {
+				id: account.id,
+				code: account.code,
+				name: account.name,
+				type: account.type,
+				createdAt: account.createdAt.getTime(),
+				updatedAt: account.updatedAt.getTime(),
+				disabledAt: account.disabledAt?.getTime() ?? null,
+			},
+		})
 	}
 
 	public override get params() {

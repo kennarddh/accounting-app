@@ -1,7 +1,5 @@
 import { CelosiaResponse, Controller, ControllerRequest, DI } from '@celosiajs/core'
 
-import handleControllerError from 'Utils/HandleControllerError'
-
 import { JWTVerifiedData } from 'Middlewares/VerifyJWT'
 
 import UserSessionService from '../../UserSession/UserSessionService'
@@ -16,13 +14,9 @@ class Logout extends Controller {
 		_: ControllerRequest<Logout>,
 		response: CelosiaResponse,
 	) {
-		try {
-			await this.userSessionService.logout(data.user.session.id)
+		await this.userSessionService.logout(data.user.session.id)
 
-			return response.status(204).send()
-		} catch (error) {
-			return handleControllerError(error, response, this.logger)
-		}
+		response.status(204).send()
 	}
 }
 

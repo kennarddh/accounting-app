@@ -2,8 +2,6 @@ import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from 
 
 import z from 'zod/v4'
 
-import handleControllerError from 'Utils/HandleControllerError'
-
 import ConfigurationService from '../../Configuration/ConfigurationService'
 import AuthService from '../AuthService'
 
@@ -22,29 +20,23 @@ class Refresh extends Controller {
 	) {
 		const { refreshToken: currentRefreshToken } = request.cookies
 
-		try {
-			const { accessToken, refreshToken } =
-				await this.authService.refresh(currentRefreshToken)
+		const { accessToken, refreshToken } = await this.authService.refresh(currentRefreshToken)
 
-			response.cookie('refreshToken', refreshToken, {
-				secure: this.configurationService.configurations.nodeEnv === 'production',
-				httpOnly: true,
-				sameSite: 'lax',
-				expires: new Date(
-					Date.now() +
-						this.configurationService.configurations.tokens.refresh.expire * 1000,
-				),
-			})
+		response.cookie('refreshToken', refreshToken, {
+			secure: this.configurationService.configurations.nodeEnv === 'production',
+			httpOnly: true,
+			sameSite: 'lax',
+			expires: new Date(
+				Date.now() + this.configurationService.configurations.tokens.refresh.expire * 1000,
+			),
+		})
 
-			return response.status(200).json({
-				errors: {},
-				data: {
-					token: accessToken,
-				},
-			})
-		} catch (error) {
-			return handleControllerError(error, response, this.logger)
-		}
+		response.status(200).json({
+			errors: {},
+			data: {
+				token: accessToken,
+			},
+		})
 	}
 
 	public override get cookies() {

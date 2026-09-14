@@ -2,8 +2,6 @@ import { CelosiaResponse, Controller, ControllerRequest, DI } from '@celosiajs/c
 
 import z from 'zod/v4'
 
-import handleControllerError from 'Utils/HandleControllerError'
-
 import { JWTVerifiedData } from 'Middlewares/VerifyJWT'
 
 import UserService from '../UserService'
@@ -20,24 +18,20 @@ class CreateUser extends Controller {
 	) {
 		const { name, username, password } = request.body
 
-		try {
-			// TODO: Add disabled/enabled user.
-			const user = await this.userService.create({
-				name,
-				username,
-				password,
-				createdById: data.user.id,
-			})
+		// TODO: Add disabled/enabled user.
+		const user = await this.userService.create({
+			name,
+			username,
+			password,
+			createdById: data.user.id,
+		})
 
-			return response.status(200).json({
-				errors: {},
-				data: {
-					id: user.id,
-				},
-			})
-		} catch (error) {
-			return handleControllerError(error, response, this.logger)
-		}
+		response.status(200).json({
+			errors: {},
+			data: {
+				id: user.id,
+			},
+		})
 	}
 
 	public override get body() {

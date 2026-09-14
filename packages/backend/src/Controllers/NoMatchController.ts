@@ -7,7 +7,7 @@ class NoMatchController extends Controller {
 		super('NoMatchController')
 	}
 
-	public override index(_: EmptyObject, __: CelosiaRequest, response: CelosiaResponse): void {
+	public override async index(_: EmptyObject, __: CelosiaRequest, response: CelosiaResponse) {
 		response.status(404).json({
 			errors: {
 				others: [

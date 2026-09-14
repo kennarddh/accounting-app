@@ -2,8 +2,6 @@ import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from 
 
 import z from 'zod/v4'
 
-import handleControllerError from 'Utils/HandleControllerError'
-
 import ConfigurationService from '../../Configuration/ConfigurationService'
 import AuthService from '../AuthService'
 
@@ -22,39 +20,30 @@ class Login extends Controller {
 	) {
 		const { username, password } = request.body
 
-		if (request.ip === undefined) {
-			this.logger.warn('Missing IP address.', { requestId: request.id })
+		if (request.ip === undefined) throw new Error('Missing client IP address')
 
-			return response.sendInternalServerError()
-		}
+		const { tokens, user } = await this.authService.login(username, password, request.ip)
 
-		try {
-			const { tokens, user } = await this.authService.login(username, password, request.ip)
+		response.cookie('refreshToken', tokens.refreshToken, {
+			secure: this.configurationService.configurations.nodeEnv === 'production',
+			httpOnly: true,
+			sameSite: 'lax',
+			expires: new Date(
+				Date.now() + this.configurationService.configurations.tokens.refresh.expire * 1000,
+			),
+		})
 
-			response.cookie('refreshToken', tokens.refreshToken, {
-				secure: this.configurationService.configurations.nodeEnv === 'production',
-				httpOnly: true,
-				sameSite: 'lax',
-				expires: new Date(
-					Date.now() +
-						this.configurationService.configurations.tokens.refresh.expire * 1000,
-				),
-			})
-
-			return response.status(200).json({
-				errors: {},
-				data: {
-					token: tokens.accessToken,
-					user: {
-						id: user.id,
-						name: user.name,
-						username: user.username,
-					},
+		response.status(200).json({
+			errors: {},
+			data: {
+				token: tokens.accessToken,
+				user: {
+					id: user.id,
+					name: user.name,
+					username: user.username,
 				},
-			})
-		} catch (error) {
-			return handleControllerError(error, response, this.logger)
-		}
+			},
+		})
 	}
 
 	public override get body() {

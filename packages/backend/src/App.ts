@@ -9,6 +9,8 @@ import {
 
 import { ApiErrorKind } from '@accounting-app/common'
 
+import handleControllerError from 'Utils/HandleControllerError'
+
 import CORS from 'Middlewares/CORS'
 import LogHTTPRequest from 'Middlewares/LogHTTPRequest'
 
@@ -30,6 +32,9 @@ const Instance = new CelosiaInstance({
 			},
 			data: {},
 		},
+	},
+	errorHandler: (error, _, response, controller) => {
+		return handleControllerError(error, response, controller.logger)
 	},
 })
 
