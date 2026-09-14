@@ -4,7 +4,6 @@ import { ApiErrorResource, SortOrder, UserSortField } from '@accounting-app/comm
 
 import { DeepPartialAndUndefined } from 'Types/Types'
 
-import RemoveKeyFromObjectImmutable from 'Utils/RemoveKeyFromObjectImmutable'
 import RemoveUndefinedValueFromObject from 'Utils/RemoveUndefinedValueFromObject'
 
 import DatabaseService from 'Modules/Database/DatabaseService'
@@ -147,7 +146,7 @@ class UserService extends Service {
 	async create(data: UserCreateData) {
 		const passwordDigest = await this.passwordHashService.hash(data.password)
 
-		const newData = RemoveKeyFromObjectImmutable(data, ['password'])
+		const { password: _, ...newData } = data
 
 		try {
 			// If the username is taken, the DB will reject it instantly.
