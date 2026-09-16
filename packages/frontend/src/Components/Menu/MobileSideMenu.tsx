@@ -1,6 +1,4 @@
-import { FC, useCallback, useState } from 'react'
-
-import { useNavigate } from 'react-router'
+import { FC } from 'react'
 
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
 
@@ -16,14 +14,12 @@ import {
 	drawerClasses,
 } from '@mui/material'
 
-import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import useAuthStore from 'Stores/AuthStore'
 import { useTranslation } from 'react-i18next'
 
 import MenuContent from 'Components/Menu/MenuContent'
 
-import AuthLogoutApi from 'Api/Auth/AuthLogoutApi'
-import { IsApiResponseError } from 'Api/index'
+import { useLogout } from 'Hooks/useLogout'
 
 import LanguageSelector from './LanguageSelector'
 
@@ -34,40 +30,10 @@ export interface MobileSideMenuProps {
 
 const MobileSideMenu: FC<MobileSideMenuProps> = ({ open, toggleDrawer }) => {
 	const user = useAuthStore(state => state.user)
-	const completeLogout = useAuthStore(state => state.completeLogout)
-	const [ErrorSnackbarText, SetErrorSnackbarText] = useState<string | null>(null)
-
-	const Navigate = useNavigate()
 
 	const { t } = useTranslation()
 
-	const OnLogout = useCallback(async () => {
-		try {
-			await AuthLogoutApi()
-
-			completeLogout()
-
-			await Navigate('/login')
-		} catch (error) {
-			if (IsApiResponseError(error)) {
-				if (error.apiErrorResponse.errors.others) {
-					if (
-						error.apiErrorResponse.errors.others[0]?.resource ===
-							ApiErrorResource.UserSession &&
-						error.apiErrorResponse.errors.others[0].kind === ApiErrorKind.Inactive
-					) {
-						SetErrorSnackbarText(t('auth.errors.sessionInactive'))
-					}
-				} else {
-					console.error('Unknown logout error occured.', error)
-
-					SetErrorSnackbarText(t('errors.unknown.text'))
-				}
-			} else {
-				SetErrorSnackbarText(t('errors.network.text'))
-			}
-		}
-	}, [Navigate, completeLogout, t])
+	const { logout, errorText, clearError } = useLogout()
 
 	if (user === null) return null
 
@@ -118,7 +84,7 @@ const MobileSideMenu: FC<MobileSideMenuProps> = ({ open, toggleDrawer }) => {
 							variant='outlined'
 							fullWidth
 							startIcon={<LogoutRoundedIcon />}
-							onClick={OnLogout}
+							onClick={logout}
 						>
 							{t('auth.logoutButton')}
 						</Button>
@@ -126,10 +92,10 @@ const MobileSideMenu: FC<MobileSideMenuProps> = ({ open, toggleDrawer }) => {
 				</Stack>
 			</Drawer>
 			<Snackbar
-				open={ErrorSnackbarText !== null}
+				open={errorText !== null}
 				autoHideDuration={6000}
-				onClose={() => SetErrorSnackbarText(null)}
-				message={ErrorSnackbarText}
+				onClose={clearError}
+				message={errorText}
 				slotProps={{
 					clickAwayListener: {
 						onClickAway: event => {
@@ -141,12 +107,12 @@ const MobileSideMenu: FC<MobileSideMenuProps> = ({ open, toggleDrawer }) => {
 				}}
 			>
 				<Alert
-					onClose={() => SetErrorSnackbarText(null)}
+					onClose={clearError}
 					severity='error'
 					variant='filled'
 					sx={{ width: '100%' }}
 				>
-					{ErrorSnackbarText}
+					{errorText}
 				</Alert>
 			</Snackbar>
 		</>

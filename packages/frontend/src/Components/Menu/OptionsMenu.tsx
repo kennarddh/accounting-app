@@ -1,6 +1,6 @@
 import { FC, MouseEvent, useCallback, useState } from 'react'
 
-import { Link, useNavigate } from 'react-router'
+import { Link } from 'react-router'
 
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded'
@@ -19,22 +19,16 @@ import {
 	paperClasses,
 } from '@mui/material'
 
-import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
-import useAuthStore from 'Stores/AuthStore'
 import { useTranslation } from 'react-i18next'
 
 import MenuButton from 'Components/Menu/MenuButton'
 
-import AuthLogoutApi from 'Api/Auth/AuthLogoutApi'
-import { IsApiResponseError } from 'Api/index'
+import { useLogout } from 'Hooks/useLogout'
 
 const OptionsMenu: FC = () => {
 	const [AnchorElement, SetAnchorElement] = useState<HTMLElement | null>(null)
-	const [ErrorSnackbarText, SetErrorSnackbarText] = useState<string | null>(null)
 
-	const completeLogout = useAuthStore(state => state.completeLogout)
-
-	const Navigate = useNavigate()
+	const { logout, errorText, clearError } = useLogout()
 
 	const { t } = useTranslation()
 
@@ -45,34 +39,6 @@ const OptionsMenu: FC = () => {
 	const OnClose = useCallback(() => {
 		SetAnchorElement(null)
 	}, [])
-
-	const OnLogout = useCallback(async () => {
-		try {
-			await AuthLogoutApi()
-
-			completeLogout()
-
-			await Navigate('/login')
-		} catch (error) {
-			if (IsApiResponseError(error)) {
-				if (error.apiErrorResponse.errors.others) {
-					if (
-						error.apiErrorResponse.errors.others[0]?.resource ===
-							ApiErrorResource.UserSession &&
-						error.apiErrorResponse.errors.others[0].kind === ApiErrorKind.Inactive
-					) {
-						SetErrorSnackbarText(t('auth.errors.sessionInactive'))
-					}
-				} else {
-					console.error('Unknown logout error occured.', error)
-
-					SetErrorSnackbarText(t('errors.unknown.text'))
-				}
-			} else {
-				SetErrorSnackbarText(t('errors.network.text'))
-			}
-		}
-	}, [Navigate, completeLogout, t])
 
 	return (
 		<>
@@ -102,12 +68,12 @@ const OptionsMenu: FC = () => {
 					},
 				}}
 			>
-				<MenuItem component={Link} to='/admin/profile'>
+				<MenuItem component={Link} to='/profile'>
 					<ListItemText>{t('navigations.links.profile')}</ListItemText>
 				</MenuItem>
 				<Divider />
 				<MenuItem
-					onClick={OnLogout}
+					onClick={logout}
 					sx={{
 						[`& .${listItemIconClasses.root}`]: {
 							ml: 'auto',
@@ -122,10 +88,10 @@ const OptionsMenu: FC = () => {
 				</MenuItem>
 			</Menu>
 			<Snackbar
-				open={ErrorSnackbarText !== null}
+				open={errorText !== null}
 				autoHideDuration={10000}
-				onClose={() => SetErrorSnackbarText(null)}
-				message={ErrorSnackbarText}
+				onClose={clearError}
+				message={errorText}
 				slotProps={{
 					clickAwayListener: {
 						onClickAway: event => {
@@ -137,12 +103,12 @@ const OptionsMenu: FC = () => {
 				}}
 			>
 				<Alert
-					onClose={() => SetErrorSnackbarText(null)}
+					onClose={clearError}
 					severity='error'
 					variant='filled'
 					sx={{ width: '100%' }}
 				>
-					{ErrorSnackbarText}
+					{errorText}
 				</Alert>
 			</Snackbar>
 		</>

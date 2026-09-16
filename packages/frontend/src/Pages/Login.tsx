@@ -52,7 +52,7 @@ const Login: FC = () => {
 
 					completeLogin(result.token, result.user)
 
-					await Navigate('/admin')
+					await Navigate('/')
 				} catch (error) {
 					if (IsApiResponseError(error)) {
 						if (error.apiErrorResponse.errors.parsing) {
