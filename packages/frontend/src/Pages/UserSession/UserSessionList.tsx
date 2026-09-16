@@ -52,9 +52,7 @@ const UserSessionList: FC = () => {
 		try {
 			await UserSessionRevokeApi({ id })
 		} catch (error) {
-			const errorText = await HandleApiError(error)
-
-			ListPageTemplateRef.current?.setError(errorText)
+			ListPageTemplateRef.current?.setError(HandleApiError(error))
 		} finally {
 			ListPageTemplateRef.current?.setLoading(false)
 			ListPageTemplateRef.current?.refresh()

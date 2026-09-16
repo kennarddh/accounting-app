@@ -40,9 +40,7 @@ const SelectAccount: FC<SelectResourceProps> = props => {
 			try {
 				return await AccountFindByIdApi({ id })
 			} catch (error) {
-				const errorText = await HandleApiError(error)
-
-				props.onError(errorText)
+				props.onError(HandleApiError(error))
 			}
 		},
 		[props],

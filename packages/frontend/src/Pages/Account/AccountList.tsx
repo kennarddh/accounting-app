@@ -97,9 +97,7 @@ const AccountList: FC = () => {
 			if (enable) await AccountEnableApi({ id })
 			else await AccountDisableApi({ id })
 		} catch (error) {
-			const errorText = await HandleApiError(error)
-
-			ListPageTemplateRef.current?.setError(errorText)
+			ListPageTemplateRef.current?.setError(HandleApiError(error))
 		} finally {
 			ListPageTemplateRef.current?.setLoading(false)
 			ListPageTemplateRef.current?.refresh()

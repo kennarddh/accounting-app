@@ -63,7 +63,7 @@ const EditUser: FC = () => {
 
 					await Navigate('../../')
 				} catch (error) {
-					SetErrorText(await HandleApiError(error))
+					SetErrorText(HandleApiError(error))
 				}
 			})
 		},

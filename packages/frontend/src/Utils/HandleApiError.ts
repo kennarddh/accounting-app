@@ -3,7 +3,7 @@ import { t } from 'i18next'
 
 import { FormatParsingError, IsApiResponseError } from 'Api/index'
 
-const HandleApiError = async (error: unknown): Promise<string> => {
+const HandleApiError = (error: unknown): string => {
 	if (IsApiResponseError(error)) {
 		const { parsing, others } = error.apiErrorResponse.errors
 

@@ -154,7 +154,7 @@ const NewJournalEntry: FC = () => {
 
 					await Navigate('../')
 				} catch (thrownError) {
-					SetErrorText(await HandleApiError(thrownError))
+					SetErrorText(HandleApiError(thrownError))
 				}
 			})
 		},
