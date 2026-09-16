@@ -8,9 +8,8 @@
 		"start": "cross-env NODE_ENV=development tsx watch --env-file=.env ./src/index.ts",
 		"build": "npm run clean:build && tsx ./scripts/build.ts",
 		"prod": "cross-env NODE_ENV=production node --env-file=.env ./build/index.js",
-		"clean": "concurrently \"npm run clean:build\" \"npm run clean:logs\"",
-		"clean:build": "rimraf ./build",
-		"clean:logs": "rimraf ./Logs"
+		"clean": "concurrently \"npm run clean:build\"",
+		"clean:build": "rimraf ./build"
 	},
 	"repository": {
 		"type": "git",

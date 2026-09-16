@@ -1,4 +1,3 @@
 /packages/frontend/build
 /packages/backend/build
-/packages/backend/Logs
 /packages/backend/prisma/generated
