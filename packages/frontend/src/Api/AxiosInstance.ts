@@ -48,9 +48,12 @@ AuthenticatedAxiosInstance.interceptors.response.use(undefined, async error => {
 					})
 
 				try {
-					await refreshTokenPromise
+					const newToken = await refreshTokenPromise
 
-					return await AuthenticatedAxiosInstance.request(response.config)
+					const newConfig = { ...response.config }
+					newConfig.headers['Access-Token'] = `Bearer ${newToken}`
+
+					return await AuthenticatedAxiosInstance.request(newConfig)
 				} catch (refreshError) {
 					console.error('Unknown error during auth refresh api request.', refreshError)
 
