@@ -10,7 +10,7 @@ import {
 	GridGetRowsResponse,
 } from '@mui/x-data-grid'
 
-import { AccountSortField, ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
+import { AccountSortField } from '@accounting-app/common'
 import { useTranslation } from 'react-i18next'
 
 import HandleApiError from 'Utils/HandleApiError'
@@ -40,19 +40,12 @@ const SelectAccount: FC<SelectResourceProps> = props => {
 			try {
 				return await AccountFindByIdApi({ id })
 			} catch (error) {
-				const errorText = await HandleApiError(error, async error => {
-					if (
-						error.resource === ApiErrorResource.Account &&
-						error.kind === ApiErrorKind.NotFound
-					) {
-						return t('accounts.errors.notFound')
-					}
-				})
+				const errorText = await HandleApiError(error)
 
 				props.onError(errorText)
 			}
 		},
-		[props, t],
+		[props],
 	)
 
 	const Columns = useMemo<GridColDef<AccountFindManySingleOutput>[]>(

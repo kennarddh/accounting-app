@@ -15,7 +15,6 @@ import {
 	TextField,
 } from '@mui/material'
 
-import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import { useTranslation } from 'react-i18next'
 
 import PageContainer from 'Components/PageContainer'
@@ -52,20 +51,11 @@ const NewUser: FC = () => {
 
 					await Navigate('../')
 				} catch (error) {
-					SetErrorText(
-						await HandleApiError(error, async error => {
-							if (
-								error.resource === ApiErrorResource.Username &&
-								error.kind === ApiErrorKind.Taken
-							) {
-								return t('users.errors.usernameTaken')
-							}
-						}),
-					)
+					SetErrorText(await HandleApiError(error))
 				}
 			})
 		},
-		[Name, Navigate, Password, Username, t],
+		[Name, Navigate, Password, Username],
 	)
 
 	return (

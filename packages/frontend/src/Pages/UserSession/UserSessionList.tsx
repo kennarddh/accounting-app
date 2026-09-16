@@ -14,12 +14,7 @@ import {
 	GridGetRowsResponse,
 } from '@mui/x-data-grid'
 
-import {
-	ApiErrorKind,
-	ApiErrorResource,
-	UserSessionSortField,
-	UserSortField,
-} from '@accounting-app/common'
+import { UserSessionSortField, UserSortField } from '@accounting-app/common'
 import { useTranslation } from 'react-i18next'
 
 import ListPageTemplate, { ListPageTemplateHandle } from 'Components/ListPageTemplate'
@@ -51,35 +46,20 @@ const UserSessionList: FC = () => {
 		SetFilterIncludeInactive(false)
 	}, [])
 
-	const RevokeSession = useCallback(
-		async (id: string) => {
-			ListPageTemplateRef.current?.setLoading(true)
+	const RevokeSession = useCallback(async (id: string) => {
+		ListPageTemplateRef.current?.setLoading(true)
 
-			try {
-				await UserSessionRevokeApi({ id })
-			} catch (error) {
-				const errorText = await HandleApiError(error, async error => {
-					if (
-						error.resource === ApiErrorResource.UserSession &&
-						error.kind === ApiErrorKind.NotFound
-					) {
-						return t('userSessions.errors.notFound')
-					} else if (
-						error.resource === ApiErrorResource.UserSession &&
-						error.kind === ApiErrorKind.Inactive
-					) {
-						return t('userSessions.errors.inactive')
-					}
-				})
+		try {
+			await UserSessionRevokeApi({ id })
+		} catch (error) {
+			const errorText = await HandleApiError(error)
 
-				ListPageTemplateRef.current?.setError(errorText)
-			} finally {
-				ListPageTemplateRef.current?.setLoading(false)
-				ListPageTemplateRef.current?.refresh()
-			}
-		},
-		[t],
-	)
+			ListPageTemplateRef.current?.setError(errorText)
+		} finally {
+			ListPageTemplateRef.current?.setLoading(false)
+			ListPageTemplateRef.current?.refresh()
+		}
+	}, [])
 
 	const Columns = useMemo<GridColDef<UserSessionFindManySingleOutput>[]>(
 		() => [

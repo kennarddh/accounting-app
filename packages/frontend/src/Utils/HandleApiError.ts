@@ -1,58 +1,63 @@
-import { ApiErrorKind, ApiOtherError } from '@accounting-app/common'
+import { ApiErrorKind } from '@accounting-app/common'
 import { t } from 'i18next'
 
 import { FormatParsingError, IsApiResponseError } from 'Api/index'
 
-const HandleApiError = async (
-	error: unknown,
-	handleOtherOtherError?: (error: ApiOtherError) => Promise<string | undefined>,
-): Promise<string> => {
+const HandleApiError = async (error: unknown): Promise<string> => {
 	if (IsApiResponseError(error)) {
-		if (error.apiErrorResponse.errors.parsing) {
-			const formattedParsingErrors = FormatParsingError(error.apiErrorResponse.errors.parsing)
+		const { parsing, others } = error.apiErrorResponse.errors
 
-			const formattedParsingError = formattedParsingErrors.join('\n')
+		// 2. Request Body/Query Validation Errors (Zod)
+		if (parsing) {
+			const formattedParsingErrors = FormatParsingError(parsing)
 
-			return formattedParsingError
-		} else if (error.apiErrorResponse.errors.others) {
-			const firstOtherError = error.apiErrorResponse.errors.others[0]
-
-			if (!firstOtherError) {
-				console.error('Empty error during api request.', error)
-
-				return t('errors.unknown.text')
-			}
-
-			if (
-				firstOtherError.resource === null &&
-				firstOtherError.kind === ApiErrorKind.Unauthorized
-			)
-				return t('errors.accessDenied.text')
-
-			if (
-				firstOtherError.resource === null &&
-				firstOtherError.kind === ApiErrorKind.InternalServerError
-			) {
-				return t('errors.unknown.text')
-			}
-
-			if (handleOtherOtherError) {
-				const errorText = await handleOtherOtherError(firstOtherError)
-
-				if (errorText !== undefined) return errorText
-			}
-
-			console.error('Not handled error during api request.', error)
-
-			return t('errors.unknown.text')
-		} else {
-			console.error('Unknown api request error occured.', error)
-
-			return t('errors.unknown.text')
+			return formattedParsingErrors.join('\n')
 		}
-	} else {
-		return t('errors.network.text')
+
+		// 3. Domain & Business Errors (With automatic i18n fallback & interpolation)
+		if (others && others.length > 0) {
+			const firstError = others[0]
+
+			if (!firstError) return t('errors.unknown.text')
+
+			// Specific check for unauthorized / access denied
+			if (firstError.kind === ApiErrorKind.Unauthorized) {
+				return t('errors.accessDenied.text')
+			}
+
+			// Build fallback key cascade from MOST specific to LEAST specific:
+			const candidateKeys: string[] = []
+
+			if (firstError.resource && firstError.field) {
+				// e.g. "errors.JournalEntry.entryNumber.Taken"
+				candidateKeys.push(
+					`errors.${firstError.resource}.${firstError.field}.${firstError.kind}`,
+				)
+			}
+
+			if (firstError.resource) {
+				// e.g. "errors.Account.Disabled"
+				candidateKeys.push(`errors.${firstError.resource}.${firstError.kind}`)
+			}
+
+			// e.g. "errors.kinds.Disabled" (Generic fallback)
+			candidateKeys.push(`errors.kinds.${firstError.kind}`)
+
+			// Universal fallback
+			candidateKeys.push('errors.unknown.text')
+
+			// Combine meta, field, and resource for translation interpolation!
+			const interpolationParams = {
+				...firstError.meta,
+				field: firstError.field ?? '',
+				resource: firstError.resource ?? '',
+			}
+
+			return t(candidateKeys, interpolationParams)
+		}
 	}
+
+	return t('errors.network.text')
 }
 
 export default HandleApiError

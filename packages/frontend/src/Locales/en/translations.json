@@ -65,11 +65,35 @@
 		},
 		"network": {
 			"title": "Network Error",
-			"text": "We could not connect to the server. Please check your internet connection. If the problem persists, please try again later."
+			"text": "We could not connect to the server. Please check your internet connection."
 		},
 		"accessDenied": {
 			"title": "Access Denied",
 			"text": "You do not have permission to access this resource."
+		},
+		"kinds": {
+			"NotFound": "The requested item was not found.",
+			"Taken": "This value is already taken.",
+			"Disabled": "This item is disabled and cannot be used.",
+			"Invalid": "Invalid data provided.",
+			"Inactive": "This item is inactive."
+		},
+		"Account": {
+			"NotFound": "The account does not exist.",
+			"Taken": "An account with code '{{code}}' already exists.",
+			"Disabled": "The account '{{name}}' ({{code}}) is disabled and cannot be used."
+		},
+		"JournalEntry": {
+			"Taken": "The entry number is already taken.",
+			"Invalid": "Debits ({{debitTotal}}) and credits ({{creditTotal}}) must match."
+		},
+		"User": {
+			"NotFound": "The user was not found.",
+			"Taken": "The username is already taken."
+		},
+		"UserSession": {
+			"NotFound": "The session was not found.",
+			"Inactive": "The session is inactive."
 		}
 	},
 	"pwa": {

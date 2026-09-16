@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router'
 
 import { Alert, Box, Button, FormControl, MenuItem, TextField } from '@mui/material'
 
-import { AccountType, ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
+import { AccountType } from '@accounting-app/common'
 import { useTranslation } from 'react-i18next'
 
 import PageContainer from 'Components/PageContainer'
@@ -63,30 +63,11 @@ const EditAccount: FC = () => {
 
 					await Navigate('../../')
 				} catch (thrownError) {
-					SetErrorText(
-						await HandleApiError(thrownError, async error => {
-							if (
-								error.resource === ApiErrorResource.Account &&
-								error.kind === ApiErrorKind.NotFound
-							) {
-								return t('accounts.errors.notFound')
-							} else if (
-								error.resource === ApiErrorResource.Account &&
-								error.kind === ApiErrorKind.Taken
-							) {
-								return t('accounts.errors.codeTaken')
-							} else if (
-								error.resource === ApiErrorResource.Account &&
-								error.kind === ApiErrorKind.Disabled
-							) {
-								return t('accounts.errors.disabled')
-							}
-						}),
-					)
+					SetErrorText(await HandleApiError(thrownError))
 				}
 			})
 		},
-		[HasLoaded, Name, Navigate, code, id, t],
+		[HasLoaded, Name, Navigate, code, id],
 	)
 
 	return (

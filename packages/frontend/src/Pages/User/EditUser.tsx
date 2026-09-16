@@ -4,7 +4,6 @@ import { useNavigate, useParams } from 'react-router'
 
 import { Alert, Box, Button, FormControl, TextField } from '@mui/material'
 
-import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import { useTranslation } from 'react-i18next'
 
 import PageContainer from 'Components/PageContainer'
@@ -64,20 +63,11 @@ const EditUser: FC = () => {
 
 					await Navigate('../../')
 				} catch (error) {
-					SetErrorText(
-						await HandleApiError(error, async error => {
-							if (
-								error.resource === ApiErrorResource.User &&
-								error.kind === ApiErrorKind.NotFound
-							) {
-								return t('users.errors.notFound')
-							}
-						}),
-					)
+					SetErrorText(await HandleApiError(error))
 				}
 			})
 		},
-		[HasLoaded, Name, Navigate, id, t],
+		[HasLoaded, Name, Navigate, id],
 	)
 
 	return (

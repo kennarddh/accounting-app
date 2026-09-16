@@ -29,12 +29,7 @@ import {
 	GridGetRowsResponse,
 } from '@mui/x-data-grid'
 
-import {
-	AccountSortField,
-	AccountType,
-	ApiErrorKind,
-	FilterEnableDisable,
-} from '@accounting-app/common'
+import { AccountSortField, AccountType, FilterEnableDisable } from '@accounting-app/common'
 import { useTranslation } from 'react-i18next'
 
 import ListPageTemplate, { ListPageTemplateHandle } from 'Components/ListPageTemplate'
@@ -95,28 +90,21 @@ const AccountList: FC = () => {
 		setSelectedTypes([])
 	}, [])
 
-	const EnableDisable = useCallback(
-		async (id: string, enable: boolean) => {
-			ListPageTemplateRef.current?.setLoading(true)
+	const EnableDisable = useCallback(async (id: string, enable: boolean) => {
+		ListPageTemplateRef.current?.setLoading(true)
 
-			try {
-				if (enable) await AccountEnableApi({ id })
-				else await AccountDisableApi({ id })
-			} catch (error) {
-				const errorText = await HandleApiError(error, async error => {
-					if (error.kind === ApiErrorKind.NotFound) {
-						return t('products:errors.notFound')
-					}
-				})
+		try {
+			if (enable) await AccountEnableApi({ id })
+			else await AccountDisableApi({ id })
+		} catch (error) {
+			const errorText = await HandleApiError(error)
 
-				ListPageTemplateRef.current?.setError(errorText)
-			} finally {
-				ListPageTemplateRef.current?.setLoading(false)
-				ListPageTemplateRef.current?.refresh()
-			}
-		},
-		[t],
-	)
+			ListPageTemplateRef.current?.setError(errorText)
+		} finally {
+			ListPageTemplateRef.current?.setLoading(false)
+			ListPageTemplateRef.current?.refresh()
+		}
+	}, [])
 
 	const Columns = useMemo<GridColDef<AccountFindManySingleOutput>[]>(
 		() => [

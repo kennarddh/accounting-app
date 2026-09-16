@@ -26,7 +26,6 @@ import {
 } from '@mui/material'
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker'
 
-import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import dayjs, { Dayjs } from 'dayjs'
 import { Decimal } from 'decimal.js'
 import { useTranslation } from 'react-i18next'
@@ -155,23 +154,7 @@ const NewJournalEntry: FC = () => {
 
 					await Navigate('../')
 				} catch (thrownError) {
-					SetErrorText(
-						await HandleApiError(thrownError, async error => {
-							if (error.resource === ApiErrorResource.JournalEntry) {
-								if (error.kind === ApiErrorKind.Invalid) {
-									return t('journal.errors.invalid')
-								} else if (error.kind === ApiErrorKind.Taken) {
-									return t('journal.errors.entryNumberTaken')
-								}
-							} else if (error.resource === ApiErrorResource.Account) {
-								if (error.kind === ApiErrorKind.NotFound) {
-									return t('accounts.errors.notFound')
-								} else if (error.kind === ApiErrorKind.Disabled) {
-									return t('accounts.errors.disabled')
-								}
-							}
-						}),
-					)
+					SetErrorText(await HandleApiError(thrownError))
 				}
 			})
 		},
