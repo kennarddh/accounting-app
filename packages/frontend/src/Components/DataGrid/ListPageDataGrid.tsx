@@ -95,8 +95,6 @@ const ListPageDataGrid: FC<ListPageDataGridProps> = props => {
 		})
 	}, [SortModel, SetSearchParams])
 
-	console.log({ DataSourceError })
-
 	const noRowsOverlay = useCallback(
 		() => <CustomNoRowsOverlay errorKind={DataSourceError} />,
 		[DataSourceError],
@@ -121,14 +119,4 @@ const ListPageDataGrid: FC<ListPageDataGridProps> = props => {
 	)
 }
 
-export default memo(ListPageDataGrid, (a, b) => {
-	if (Object.keys(a).length !== Object.keys(b).length) return false
-
-	for (const key of Object.keys(a)) {
-		if (a[key as keyof ListPageDataGridProps] !== b[key as keyof ListPageDataGridProps]) {
-			return false
-		}
-	}
-
-	return true
-})
+export default memo(ListPageDataGrid)
