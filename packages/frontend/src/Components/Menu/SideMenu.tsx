@@ -7,6 +7,8 @@ import useAuthStore from 'Stores/AuthStore'
 import MenuContent from './MenuContent'
 import OptionsMenu from './OptionsMenu'
 
+export const DRAWER_WIDTH = 260
+
 const SideMenu: FC = () => {
 	const user = useAuthStore(state => state.user)
 
@@ -18,10 +20,10 @@ const SideMenu: FC = () => {
 			anchor='left'
 			sx={{
 				display: { xs: 'none', md: 'block' },
-				width: '20%',
+				width: DRAWER_WIDTH,
 				[`& .${drawerClasses.paper}`]: {
 					backgroundColor: 'background.paper',
-					width: '20%',
+					width: DRAWER_WIDTH,
 				},
 			}}
 		>
