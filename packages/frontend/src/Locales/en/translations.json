@@ -46,12 +46,7 @@
 			"title": "Login",
 			"submit": "Login"
 		},
-		"haveAccountLoginLink": "Already have an account? Login",
-		"errors": {
-			"sessionInactive": "Session is inactive.",
-			"unauthorized": "Unauthorized.",
-			"usernameTaken": "Username is already taken."
-		}
+		"haveAccountLoginLink": "Already have an account? Login"
 	},
 	"errors": {
 		"noData": "No data.",
@@ -145,17 +140,6 @@
 		},
 		"detail": {
 			"title": "User Detail"
-		},
-		"errors": {
-			"notFound": "The user you are looking for does not exist.",
-			"usernameTaken": "The username is already taken.",
-			"roleRequired": "Role is required."
-		},
-		"enums": {
-			"role": {
-				"Admin": "Admin",
-				"Member": "Member"
-			}
 		}
 	},
 	"userSessions": {
@@ -172,10 +156,6 @@
 		},
 		"detail": {
 			"title": "User Session Detail"
-		},
-		"errors": {
-			"notFound": "The user session you are looking for does not exist.",
-			"inactive": "The user session is inactive."
 		}
 	},
 	"navigations": {
@@ -222,11 +202,6 @@
 				"Revenue": "Revenue",
 				"Expense": "Expense"
 			}
-		},
-		"errors": {
-			"notFound": "The account you are looking for does not exist.",
-			"codeTaken": "The code is already taken.",
-			"disabled": "The account is disabled."
 		}
 	},
 	"journal": {
@@ -249,13 +224,6 @@
 		},
 		"list": {
 			"title": "Journal"
-		},
-		"errors": {
-			"notFound": "The journal entry you are looking for does not exist.",
-			"invalid": "The journal entry is invalid.",
-			"entryNumberTaken": "The entry number is already taken.",
-			"unbalanced": "The journal entry is unbalanced.",
-			"incomplete": "The journal entry is incomplete."
 		}
 	}
 }

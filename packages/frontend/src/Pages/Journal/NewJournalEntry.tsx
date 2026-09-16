@@ -134,10 +134,6 @@ const NewJournalEntry: FC = () => {
 		(event: SubmitEvent<HTMLFormElement>) => {
 			event.preventDefault()
 
-			if (!isBalanced) return SetErrorText(t('journal.errors.unbalanced'))
-			if (lines.some(l => (l.debit === '' && l.credit === '') || l.accountId === ''))
-				return SetErrorText(t('journal.errors.incomplete'))
-
 			startTransition(async () => {
 				try {
 					await JournalEntryCreateApi({
@@ -158,7 +154,14 @@ const NewJournalEntry: FC = () => {
 				}
 			})
 		},
-		[Navigate, t, lines, date, description, isBalanced, entryNumber],
+		[Navigate, lines, date, description, entryNumber],
+	)
+
+	const canSubmit = useMemo(
+		() =>
+			!isBalanced ||
+			lines.some(l => (l.debit === '' && l.credit === '') || l.accountId === ''),
+		[isBalanced, lines],
 	)
 
 	return (
@@ -352,7 +355,7 @@ const NewJournalEntry: FC = () => {
 					variant='outlined'
 					fullWidth
 					loading={isPending}
-					disabled={!isBalanced}
+					disabled={canSubmit}
 				>
 					{t('common.submit')}
 				</Button>
