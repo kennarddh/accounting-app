@@ -25,9 +25,7 @@ const AccountDetail: FC = () => {
 			if (!id) return await Navigate('../../')
 
 			try {
-				const team = await AccountFindByIdApi({ id })
-
-				SetAccount(team)
+				SetAccount(await AccountFindByIdApi({ id }))
 			} catch {
 				await Navigate('../../')
 			}

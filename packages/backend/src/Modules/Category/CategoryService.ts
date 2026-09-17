@@ -126,7 +126,7 @@ class CategoryService extends Service {
 				select: { id: true },
 			})
 		} catch (error) {
-			handlePrismaError(error, ApiErrorResource.Category)
+			handlePrismaError(error, ApiErrorResource.Category, { name: data.name })
 		}
 	}
 
@@ -149,7 +149,7 @@ class CategoryService extends Service {
 				})
 			})
 		} catch (error) {
-			handlePrismaError(error, ApiErrorResource.Category)
+			handlePrismaError(error, ApiErrorResource.Category, { name: data.name })
 		}
 	}
 

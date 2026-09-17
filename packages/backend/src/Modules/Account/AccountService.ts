@@ -151,7 +151,7 @@ class AccountService extends Service {
 				select: { id: true },
 			})
 		} catch (error) {
-			handlePrismaError(error, ApiErrorResource.Account)
+			handlePrismaError(error, ApiErrorResource.Account, { code: data.code })
 		}
 	}
 
@@ -174,7 +174,7 @@ class AccountService extends Service {
 				})
 			})
 		} catch (error) {
-			handlePrismaError(error, ApiErrorResource.Account)
+			handlePrismaError(error, ApiErrorResource.Account, { code: data.code })
 		}
 	}
 

@@ -4,6 +4,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { ApiErrorResource } from '@accounting-app/common'
 
+import RemoveUndefinedValueFromObject from 'Utils/RemoveUndefinedValueFromObject'
+
 import { BusinessRuleError, ConflictError, NotFoundError } from 'Errors'
 
 import { Prisma } from 'PrismaGenerated/client'
@@ -16,7 +18,11 @@ export class ForeignKeyError extends Error {
 	}
 }
 
-export function handlePrismaError(error: unknown, resource: ApiErrorResource): never {
+export function handlePrismaError(
+	error: unknown,
+	resource: ApiErrorResource,
+	contextData?: Record<string, string | number | bigint | undefined>,
+): never {
 	if (error instanceof Prisma.PrismaClientKnownRequestError) {
 		const meta = error.meta as any
 
@@ -29,11 +35,12 @@ export function handlePrismaError(error: unknown, resource: ApiErrorResource): n
 				pgCause?.constraint ??
 				(Array.isArray(meta?.target) ? meta.target.join(', ') : 'field')
 
-			const field = constraintName
-				.replace(`${resource.toLowerCase()}s_`, '')
-				.replace('_key', '')
+			const field = constraintName.replace(`${pgCause.table}_`, '').replace('_key', '')
 
-			throw new ConflictError(resource, { field })
+			throw new ConflictError(resource, {
+				field,
+				meta: contextData !== undefined ? RemoveUndefinedValueFromObject(contextData) : {},
+			})
 		}
 
 		// Record not found (P2025)

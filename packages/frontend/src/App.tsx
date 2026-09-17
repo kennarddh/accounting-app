@@ -122,6 +122,32 @@ const router = createBrowserRouter([
 									},
 								],
 							},
+							{
+								path: 'category',
+								children: [
+									{
+										index: true,
+										lazy: () => import('Pages/Category/CategoryList'),
+									},
+									{
+										path: 'new',
+										lazy: () => import('Pages/Category/NewCategory'),
+									},
+									{
+										path: ':id',
+										children: [
+											{
+												index: true,
+												lazy: () => import('Pages/Category/CategoryDetail'),
+											},
+											{
+												path: 'edit',
+												lazy: () => import('Pages/Category/EditCategory'),
+											},
+										],
+									},
+								],
+							},
 						],
 					},
 				],

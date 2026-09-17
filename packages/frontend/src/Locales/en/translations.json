@@ -89,6 +89,11 @@
 		"UserSession": {
 			"NotFound": "The session was not found.",
 			"Inactive": "The session is inactive."
+		},
+		"Category": {
+			"NotFound": "The category does not exist.",
+			"Taken": "A category with name '{{name}}' already exists.",
+			"Disabled": "The category '{{name}}' is disabled and cannot be used."
 		}
 	},
 	"pwa": {
@@ -169,7 +174,8 @@
 			"users": "Users",
 			"userSessions": "User Sessions",
 			"accounts": "Accounts",
-			"journal": "Journal"
+			"journal": "Journal",
+			"categories": "Categories"
 		}
 	},
 	"accounts": {
@@ -224,6 +230,27 @@
 		},
 		"list": {
 			"title": "Journal"
+		}
+	},
+	"categories": {
+		"name": "Name",
+		"status": "Status",
+		"createdAt": "Created At",
+		"new": {
+			"title": "New Category"
+		},
+		"edit": {
+			"title": "Edit Category"
+		},
+		"detail": {
+			"title": "Category Detail"
+		},
+		"list": {
+			"title": "Categories"
+		},
+		"select": {
+			"button": "Select Category",
+			"title": "Select Category"
 		}
 	}
 }
