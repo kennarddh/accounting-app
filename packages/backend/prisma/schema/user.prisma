@@ -7,9 +7,11 @@ model User {
     createdById BigInt?
     createdBy   User?   @relation("CreatedByUser", fields: [createdById], references: [id])
 
-    userSessions   UserSession[]  @relation("User")
-    createdUsers   User[]         @relation("CreatedByUser")
-    journalEntries JournalEntry[] @relation("JournalEntryCreator")
+    userSessions   UserSession[]   @relation("User")
+    createdUsers   User[]          @relation("CreatedByUser")
+    journalEntries JournalEntry[]  @relation("JournalEntryCreator")
+    stockMovements StockMovement[] @relation("StockMovementCreator")
+    orders         Order[]         @relation("OrderCashier")
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

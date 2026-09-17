@@ -1,0 +1,108 @@
+model Category {
+    id       BigInt    @id @default(autoincrement())
+    name     String    @unique(map: "categories_name_key")
+    products Product[]
+
+    createdAt  DateTime  @default(now())
+    disabledAt DateTime?
+
+    @@map("categories")
+}
+
+model Product {
+    id   BigInt @id @default(autoincrement())
+    sku  String @unique(map: "products_sku_key")
+    name String
+
+    price     Decimal @db.Decimal(28, 4) // Selling price
+    costPrice Decimal @default(0) @db.Decimal(28, 4)
+
+    currentStock Decimal @default(0) @db.Decimal(28, 4) // Cached current stock for fast reads
+
+    categoryId BigInt
+    category   Category @relation(fields: [categoryId], references: [id])
+
+    orderItems     OrderItem[]
+    stockMovements StockMovement[]
+
+    disabledAt DateTime?
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
+
+    @@map("products")
+}
+
+model StockMovement {
+    id BigInt @id @default(autoincrement())
+
+    productId BigInt
+    product   Product @relation(fields: [productId], references: [id])
+
+    type        String  @db.VarChar(50)
+    quantity    Decimal @db.Decimal(28, 4) // Positive (+5 in), Negative (-2 out)
+    costPerUnit Decimal @default(0) @db.Decimal(28, 4)
+
+    reason String
+
+    // Optional link if the movement was caused by a POS Sale
+    orderId BigInt?
+    order   Order?  @relation(fields: [orderId], references: [id])
+
+    // Optional link to accounting journal (e.g. for write-offs/spoilage entries)
+    journalEntryId BigInt?
+    journalEntry   JournalEntry? @relation("JournalEntryStockMovement", fields: [journalEntryId], references: [id])
+
+    createdById BigInt
+    createdBy   User   @relation("StockMovementCreator", fields: [createdById], references: [id])
+
+    createdAt DateTime @default(now())
+
+    @@index([productId])
+    @@index([type])
+    @@index([createdAt])
+    @@map("stock_movements")
+}
+
+model Order {
+    id          BigInt   @id @default(autoincrement())
+    orderNumber String   @unique(map: "orders_orderNumber_key")
+    date        DateTime @default(now())
+    status      String   @db.VarChar(50)
+
+    paymentMethod String  @db.VarChar(50)
+    totalAmount   Decimal @db.Decimal(28, 4) // Total paid by customer
+    totalCost     Decimal @default(0) @db.Decimal(28, 4) // Total COGS cost
+
+    createdById BigInt
+    cashier     User   @relation("OrderCashier", fields: [createdById], references: [id])
+
+    items          OrderItem[]
+    stockMovements StockMovement[]
+
+    journalEntryId BigInt?       @unique(map: "orders_journalEntryId_key")
+    journalEntry   JournalEntry? @relation("OrderJournalEntry", fields: [journalEntryId], references: [id])
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("orders")
+}
+
+model OrderItem {
+    id BigInt @id @default(autoincrement())
+
+    orderId BigInt
+    order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+    productId BigInt
+    product   Product @relation(fields: [productId], references: [id])
+
+    quantity  Decimal @db.Decimal(28, 4)
+    unitPrice Decimal @db.Decimal(28, 4) // Historical price at time of sale
+    unitCost  Decimal @db.Decimal(28, 4) // Historical cost at time of sale
+    subtotal  Decimal @db.Decimal(28, 4) // quantity * unitPrice
+
+    @@index([orderId])
+    @@index([productId])
+    @@map("order_items")
+}

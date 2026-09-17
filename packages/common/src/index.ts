@@ -75,3 +75,24 @@ export enum JournalEntrySortField {
 	CreatedAt = 'createdAt',
 	EntryNumber = 'entryNumber',
 }
+
+export enum PosOrderStatus {
+	Completed = 'Completed',
+	Cancelled = 'Cancelled',
+	Refunded = 'Refunded',
+}
+
+export enum PaymentMethod {
+	Cash = 'Cash',
+	BankTransfer = 'BankTransfer',
+	Card = 'Card',
+	QRIS = 'QRIS',
+}
+
+export enum StockMovementType {
+	Sale = 'Sale',
+	Purchase = 'Purchase',
+	Waste = 'Waste',
+	Correction = 'Correction',
+	Return = 'Return',
+}
