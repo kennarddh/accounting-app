@@ -15,6 +15,11 @@ export enum ApiErrorResource {
 	DateTime = 'DateTime',
 	Account = 'Account',
 	JournalEntry = 'JournalEntry',
+	Category = 'Category',
+	Product = 'Product',
+	Order = 'Order',
+	OrderItem = 'OrderItem',
+	StockMovement = 'StockMovement',
 }
 
 export enum ApiErrorKind {
@@ -76,7 +81,7 @@ export enum JournalEntrySortField {
 	EntryNumber = 'entryNumber',
 }
 
-export enum PosOrderStatus {
+export enum OrderStatus {
 	Completed = 'Completed',
 	Cancelled = 'Cancelled',
 	Refunded = 'Refunded',
@@ -95,4 +100,9 @@ export enum StockMovementType {
 	Waste = 'Waste',
 	Correction = 'Correction',
 	Return = 'Return',
+}
+
+export enum CategorySortField {
+	Name = 'name',
+	CreatedAt = 'createdAt',
 }
