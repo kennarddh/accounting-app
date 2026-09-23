@@ -252,5 +252,26 @@
 			"button": "Select Category",
 			"title": "Select Category"
 		}
+	},
+	"products": {
+		"sku": "SKU",
+		"name": "Name",
+		"price": "Price",
+		"costPrice": "Cost Price",
+		"currentStock": "Current Stock",
+		"category": "Category",
+		"createdAt": "Created At",
+		"new": {
+			"title": "New Product"
+		},
+		"edit": {
+			"title": "Edit Product"
+		},
+		"detail": {
+			"title": "Product Detail"
+		},
+		"list": {
+			"title": "Products"
+		}
 	}
 }
