@@ -106,3 +106,8 @@ export enum CategorySortField {
 	Name = 'name',
 	CreatedAt = 'createdAt',
 }
+
+export enum ProductSortField {
+	Name = 'name',
+	CreatedAt = 'createdAt',
+}

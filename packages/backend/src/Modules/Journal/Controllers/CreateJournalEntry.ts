@@ -2,12 +2,11 @@ import { CelosiaResponse, Controller, ControllerRequest, DI } from '@celosiajs/c
 
 import z from 'zod/v4'
 
+import { DecimalRegex } from 'Utils/Constants'
+
 import { JWTVerifiedData } from 'Middlewares/VerifyJWT'
 
 import JournalService from '../JournalService'
-
-// eslint-disable-next-line security/detect-unsafe-regex
-const moneyRegex = /^(0|[1-9]\d{0,23})(\.\d{1,4})?$/
 
 class CreateJournalEntry extends Controller {
 	constructor(private journalService = DI.get(JournalService)) {
@@ -52,8 +51,8 @@ class CreateJournalEntry extends Controller {
 				.array(
 					z.object({
 						accountId: z.coerce.bigint().min(1n),
-						debit: z.string().regex(moneyRegex, 'Must be a valid decimal string'),
-						credit: z.string().regex(moneyRegex, 'Must be a valid decimal string'),
+						debit: z.string().regex(DecimalRegex, 'Must be a valid decimal string'),
+						credit: z.string().regex(DecimalRegex, 'Must be a valid decimal string'),
 						description: z.string().trim().min(1),
 					}),
 				)
