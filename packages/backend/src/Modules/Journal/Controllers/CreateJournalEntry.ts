@@ -46,14 +46,14 @@ class CreateJournalEntry extends Controller {
 		return z.object({
 			entryNumber: z.string().trim().min(1).max(50),
 			date: z.number().int().positive(),
-			description: z.string().trim().min(1),
+			description: z.string().trim(),
 			lines: z
 				.array(
 					z.object({
 						accountId: z.coerce.bigint().min(1n),
 						debit: z.string().regex(DecimalRegex, 'Must be a valid decimal string'),
 						credit: z.string().regex(DecimalRegex, 'Must be a valid decimal string'),
-						description: z.string().trim().min(1),
+						description: z.string().trim(),
 					}),
 				)
 				.min(2),
