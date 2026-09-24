@@ -10,7 +10,7 @@ import {
 	GridGetRowsResponse,
 } from '@mui/x-data-grid'
 
-import { AccountSortField } from '@accounting-app/common'
+import { CategorySortField } from '@accounting-app/common'
 import { useTranslation } from 'react-i18next'
 
 import HandleApiError from 'Utils/HandleApiError'
@@ -18,27 +18,25 @@ import TransformGridGetRowsParams from 'Utils/TransformGridGetRowsParams'
 
 import useDebounce from 'Hooks/useDebounce'
 
-import AccountFindByIdApi from 'Api/Account/AccountFindByIdApi'
-import AccountFindManyApi, { AccountFindManySingleOutput } from 'Api/Account/AccountFindManyApi'
+import CategoryFindByIdApi from 'Api/Category/CategoryFindByIdApi'
+import CategoryFindManyApi, { CategoryFindManySingleOutput } from 'Api/Category/CategoryFindManyApi'
 
 import SelectTemplate from './SelectTemplate'
 import { SelectResourceProps } from './Types'
 
-const SelectAccount: FC<SelectResourceProps> = props => {
+const SelectCategory: FC<SelectResourceProps> = props => {
 	const [FilterSearch, SetFilterSearch] = useState('')
-	const [FilterAccountType, SetFilterAccountType] = useState('')
 
 	const { t } = useTranslation()
 
 	const OnFilterReset = useCallback(() => {
 		SetFilterSearch('')
-		SetFilterAccountType('')
 	}, [])
 
 	const GetRowById = useCallback(
 		async (id: string) => {
 			try {
-				return await AccountFindByIdApi({ id })
+				return await CategoryFindByIdApi({ id })
 			} catch (error) {
 				props.onError(HandleApiError(error))
 			}
@@ -46,39 +44,37 @@ const SelectAccount: FC<SelectResourceProps> = props => {
 		[props],
 	)
 
-	const Columns = useMemo<GridColDef<AccountFindManySingleOutput>[]>(
-		() => [{ field: 'name', headerName: t('accounts.name'), minWidth: 300, filterable: false }],
+	const Columns = useMemo<GridColDef<CategoryFindManySingleOutput>[]>(
+		() => [
+			{ field: 'name', headerName: t('categories.name'), minWidth: 300, filterable: false },
+		],
 		[t],
 	)
 
 	const debouncedFilterSearch = useDebounce(FilterSearch, 500)
-	const debouncedFilterAccountType = useDebounce(FilterAccountType, 500)
 
-	const AccountDataSource = useMemo<GridDataSource>(
+	const CategoryDataSource = useMemo<GridDataSource>(
 		() => ({
 			getRows: async (params: GridGetRowsParams): Promise<GridGetRowsResponse> => {
-				const result = await AccountFindManyApi({
-					...TransformGridGetRowsParams<AccountSortField>(params),
+				const result = await CategoryFindManyApi({
+					...TransformGridGetRowsParams<CategorySortField>(params),
 					search: debouncedFilterSearch,
-					...(debouncedFilterAccountType === ''
-						? {}
-						: { 'types[]': debouncedFilterAccountType }),
 				})
 
 				return { rows: result.list, rowCount: result.pagination.total }
 			},
 		}),
-		[debouncedFilterAccountType, debouncedFilterSearch],
+		[debouncedFilterSearch],
 	)
 
 	return (
 		<SelectTemplate
 			disabled={!!props.disabled}
-			getButtonLabel={selectedLabel => selectedLabel ?? t('accounts.select.button')}
-			title={t('accounts.select.title')}
-			dataSource={AccountDataSource}
+			getButtonLabel={selectedLabel => selectedLabel ?? t('categories.select.button')}
+			title={t('categories.select.title')}
+			dataSource={CategoryDataSource}
 			columns={Columns}
-			sortFieldEnum={AccountSortField}
+			sortFieldEnum={CategorySortField}
 			selectedRowId={props.value}
 			onRowSelected={props.onChange}
 			getRowLabel={row => row.name as string}
@@ -105,10 +101,9 @@ const SelectAccount: FC<SelectResourceProps> = props => {
 						},
 					}}
 				/>
-				// TODO: FILTERACCOUNT TYPE
 			}
 		/>
 	)
 }
 
-export default SelectAccount
+export default SelectCategory

@@ -54,6 +54,11 @@ const MenuContent: FC<{ onClickLink?: () => void }> = props => {
 				to: '/category',
 				icon: <Inventory2RoundedIcon />,
 			},
+			{
+				text: t('navigations.links.products'),
+				to: '/product',
+				icon: <Inventory2RoundedIcon />,
+			},
 		],
 		[t],
 	)

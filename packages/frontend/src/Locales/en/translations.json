@@ -94,6 +94,12 @@
 			"NotFound": "The category does not exist.",
 			"Taken": "A category with name '{{name}}' already exists.",
 			"Disabled": "The category '{{name}}' is disabled and cannot be used."
+		},
+		"Product": {
+			"NotFound": "The product does not exist.",
+			"Taken": "A product with name '{{name}}' already exists.",
+			"Disabled": "The product '{{name}}' is disabled and cannot be used.",
+			"CategoryRequired": "A category is required."
 		}
 	},
 	"pwa": {
@@ -175,7 +181,8 @@
 			"userSessions": "User Sessions",
 			"accounts": "Accounts",
 			"journal": "Journal",
-			"categories": "Categories"
+			"categories": "Categories",
+			"products": "Products"
 		}
 	},
 	"accounts": {
@@ -257,10 +264,11 @@
 		"sku": "SKU",
 		"name": "Name",
 		"price": "Price",
-		"costPrice": "Cost Price",
-		"currentStock": "Current Stock",
+		"costPrice": "Cost",
+		"currentStock": "Stock",
 		"category": "Category",
 		"createdAt": "Created At",
+		"status": "Status",
 		"new": {
 			"title": "New Product"
 		},
@@ -272,6 +280,10 @@
 		},
 		"list": {
 			"title": "Products"
+		},
+		"select": {
+			"button": "Select Product",
+			"title": "Select Product"
 		}
 	}
 }

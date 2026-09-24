@@ -148,6 +148,32 @@ const router = createBrowserRouter([
 									},
 								],
 							},
+							{
+								path: 'product',
+								children: [
+									{
+										index: true,
+										lazy: () => import('Pages/Product/ProductList'),
+									},
+									{
+										path: 'new',
+										lazy: () => import('Pages/Product/NewProduct'),
+									},
+									{
+										path: ':id',
+										children: [
+											{
+												index: true,
+												lazy: () => import('Pages/Product/ProductDetail'),
+											},
+											{
+												path: 'edit',
+												lazy: () => import('Pages/Product/EditProduct'),
+											},
+										],
+									},
+								],
+							},
 						],
 					},
 				],
