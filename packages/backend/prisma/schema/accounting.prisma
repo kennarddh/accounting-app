@@ -23,8 +23,8 @@ model JournalEntry {
 
     lines JournalLine[]
 
-    stockMovements StockMovement[] @relation("JournalEntryStockMovement")
-    order          Order?          @relation("OrderJournalEntry")
+    stockAdjustments StockAdjustment[] @relation("StockAdjustmentJournalEntry")
+    order            Order?            @relation("OrderJournalEntry")
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

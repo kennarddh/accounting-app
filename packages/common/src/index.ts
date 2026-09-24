@@ -102,6 +102,12 @@ export enum StockMovementType {
 	Return = 'Return',
 }
 
+export enum StockAdjustmentType {
+	Waste = 'Waste',
+	Correction = 'Correction',
+	Restock = 'Restock',
+}
+
 export enum CategorySortField {
 	Name = 'name',
 	CreatedAt = 'createdAt',

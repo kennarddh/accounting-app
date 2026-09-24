@@ -22,8 +22,9 @@ model Product {
     categoryId BigInt
     category   Category @relation(fields: [categoryId], references: [id])
 
-    orderItems     OrderItem[]
-    stockMovements StockMovement[]
+    orderItems       OrderItem[]
+    stockMovements   StockMovement[]
+    stockAdjustments StockAdjustmentItem[]
 
     disabledAt DateTime?
     createdAt  DateTime  @default(now())
@@ -44,13 +45,12 @@ model StockMovement {
 
     reason String
 
-    // Optional link if the movement was caused by a POS Sale
+    // Exactly one of these two is populated:
     orderId BigInt?
     order   Order?  @relation(fields: [orderId], references: [id])
 
-    // Optional link to accounting journal (e.g. for write-offs/spoilage entries)
-    journalEntryId BigInt?
-    journalEntry   JournalEntry? @relation("JournalEntryStockMovement", fields: [journalEntryId], references: [id])
+    stockAdjustmentId BigInt?
+    stockAdjustment   StockAdjustment? @relation(fields: [stockAdjustmentId], references: [id])
 
     createdById BigInt
     createdBy   User   @relation("StockMovementCreator", fields: [createdById], references: [id])
@@ -61,6 +61,46 @@ model StockMovement {
     @@index([type])
     @@index([createdAt])
     @@map("stock_movements")
+}
+
+model StockAdjustment {
+    id               BigInt   @id @default(autoincrement())
+    adjustmentNumber String   @unique(map: "stock_adjustments_adjustmentNumber_key") // e.g. "ADJ-20260910-001"
+    date             DateTime @default(now())
+    type             String   @db.VarChar(50)
+    reason           String
+
+    totalCost Decimal @default(0) @db.Decimal(28, 4)
+
+    createdById BigInt
+    createdBy   User   @relation("StockAdjustmentCreator", fields: [createdById], references: [id])
+
+    items          StockAdjustmentItem[]
+    stockMovements StockMovement[]
+
+    journalEntryId BigInt?       @unique(map: "stock_adjustments_journalEntryId_key")
+    journalEntry   JournalEntry? @relation("StockAdjustmentJournalEntry", fields: [journalEntryId], references: [id])
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("stock_adjustments")
+}
+
+model StockAdjustmentItem {
+    id BigInt @id @default(autoincrement())
+
+    stockAdjustmentId BigInt
+    stockAdjustment   StockAdjustment @relation(fields: [stockAdjustmentId], references: [id], onDelete: Cascade)
+
+    productId BigInt
+    product   Product @relation(fields: [productId], references: [id])
+
+    quantity     Decimal @db.Decimal(28, 4) // Positive (+5 received), Negative (-2 spoiled)
+    unitCost     Decimal @db.Decimal(28, 4)
+    subtotalCost Decimal @db.Decimal(28, 4) // quantity * unitCost
+
+    @@map("stock_adjustment_items")
 }
 
 model Order {
