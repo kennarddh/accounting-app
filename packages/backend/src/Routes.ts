@@ -10,6 +10,7 @@ import CategoryRouter from 'Modules/Category/CategoryRoutes'
 import HealthController from 'Modules/Health/HealthController'
 import JournalRouter from 'Modules/Journal/JournalRoutes'
 import ProductRouter from 'Modules/Product/ProductRoutes'
+import StockAdjustmentRouter from 'Modules/StockAdjustment/StockAdjustmentRoutes'
 import UserRouter from 'Modules/User/UserRoutes'
 
 const Router = new CelosiaRouter({ strict: true })
@@ -22,6 +23,7 @@ Router.useRouters('/account', AccountRouter)
 Router.useRouters('/journal', JournalRouter)
 Router.useRouters('/category', CategoryRouter)
 Router.useRouters('/product', ProductRouter)
+Router.useRouters('/stock-adjustment', StockAdjustmentRouter)
 
 Router.get('/health', [], new HealthController())
 Router.all('/*splat', [], new NoMatchController())

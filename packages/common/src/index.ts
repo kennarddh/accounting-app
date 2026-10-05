@@ -20,6 +20,7 @@ export enum ApiErrorResource {
 	Order = 'Order',
 	OrderItem = 'OrderItem',
 	StockMovement = 'StockMovement',
+	StockAdjustment = 'StockAdjustment',
 }
 
 export enum ApiErrorKind {
@@ -100,6 +101,12 @@ export enum StockMovementType {
 	Waste = 'Waste',
 	Correction = 'Correction',
 	Return = 'Return',
+}
+
+export enum StockAdjustmentSortField {
+	Date = 'date',
+	CreatedAt = 'createdAt',
+	AdjustmentNumber = 'adjustmentNumber',
 }
 
 export enum StockAdjustmentType {

@@ -43,8 +43,6 @@ model StockMovement {
     quantity    Decimal @db.Decimal(28, 4) // Positive (+5 in), Negative (-2 out)
     costPerUnit Decimal @default(0) @db.Decimal(28, 4)
 
-    reason String
-
     // Exactly one of these two is populated:
     orderId BigInt?
     order   Order?  @relation(fields: [orderId], references: [id])
@@ -82,7 +80,6 @@ model StockAdjustment {
     journalEntry   JournalEntry? @relation("StockAdjustmentJournalEntry", fields: [journalEntryId], references: [id])
 
     createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
 
     @@map("stock_adjustments")
 }
