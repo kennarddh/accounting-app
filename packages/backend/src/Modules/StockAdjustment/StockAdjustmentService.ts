@@ -42,6 +42,13 @@ export interface StockAdjustmentFindManyOptions extends FindManyOptions<StockAdj
 	filter?: StockAdjustmentFilterOptions
 }
 
+interface DynamicAccountMapping {
+	debitAccountId: bigint
+	creditAccountId: bigint
+	debitDescription: string
+	creditDescription: string
+}
+
 @Injectable()
 class StockAdjustmentService extends Service {
 	constructor(
@@ -130,20 +137,87 @@ class StockAdjustmentService extends Service {
 		}
 	}
 
+	/**
+	 * Dynamically resolves debit & credit accounts from the POS configuration
+	 * based on adjustment type and whether total cost is negative (loss) or positive (gain).
+	 */
+	private resolveJournalAccounts(
+		type: StockAdjustmentType,
+		isNegative: boolean,
+		config: {
+			inventoryAssetAccountId: bigint
+			spoilageExpenseAccountId: bigint
+			shrinkageExpenseAccountId: bigint
+			inventoryGainAccountId: bigint
+			accountsPayableAccountId: bigint
+		},
+	): DynamicAccountMapping {
+		// Case 1: WASTE (Always a stock reduction / expense)
+		if (type === StockAdjustmentType.Waste) {
+			return {
+				debitAccountId: config.spoilageExpenseAccountId,
+				creditAccountId: config.inventoryAssetAccountId,
+				debitDescription: 'Inventory Spoilage / Waste Expense',
+				creditDescription: 'Inventory Asset Reduction',
+			}
+		}
+
+		// Case 2: CORRECTION (Count Discrepancy)
+		if (type === StockAdjustmentType.Correction) {
+			if (isNegative) {
+				// Audit Shortage (Fewer items found -> Loss)
+				return {
+					debitAccountId: config.shrinkageExpenseAccountId,
+					creditAccountId: config.inventoryAssetAccountId,
+					debitDescription: 'Inventory Count Discrepancy (Shrinkage Loss)',
+					creditDescription: 'Inventory Asset Reduction',
+				}
+			} else {
+				// Audit Surplus (Extra items found -> Gain)
+				return {
+					debitAccountId: config.inventoryAssetAccountId,
+					creditAccountId: config.inventoryGainAccountId,
+					debitDescription: 'Inventory Asset Addition (Surplus)',
+					creditDescription: 'Inventory Count Discrepancy Gain',
+				}
+			}
+		}
+
+		// Case 3: RESTOCK (Supplier Delivery / Restock Inflow)
+		return {
+			debitAccountId: config.inventoryAssetAccountId,
+			creditAccountId: config.accountsPayableAccountId,
+			debitDescription: 'Inventory Restock Addition',
+			creditDescription: 'Accounts Payable for Supplier Goods',
+		}
+	}
+
 	async create(data: StockAdjustmentCreateData) {
 		const totalCostDec = new Prisma.Decimal(data.totalCost)
+		const isNegative = totalCostDec.isNegative()
 
 		try {
 			return await this.db.transaction(async tx => {
+				const config = await tx.posConfiguration.findFirst()
+
+				if (!config) {
+					// Throws a standard Error -> Skips handlePrismaError -> Triggers 500 Internal Server Error + Logs to Winston!
+					throw new Error(
+						'POS Configuration is not initialized. Please run database seed.',
+					)
+				}
+
 				// Verify all products exist and are active
 				const productIds = data.items.map(i => i.productId)
 				const products = await tx.product.findMany({
-					where: { id: { in: productIds } },
+					where: { id: { in: productIds }, disabledAt: null },
 				})
 
 				if (products.length !== productIds.length) {
 					throw new NotFoundError(ApiErrorResource.Product)
 				}
+
+				const mapping = this.resolveJournalAccounts(data.type, isNegative, config)
 
 				const journal = await tx.journalEntry.create({
 					data: {
@@ -154,17 +228,16 @@ class StockAdjustmentService extends Service {
 						lines: {
 							create: [
 								{
-									// TODO: FIX hardcoded account id
-									accountId: 1, // SPOILAGE_EXPENSE_ACCOUNT_ID, or dynamic based on type
-									debit: totalCostDec.abs(),
+									accountId: mapping.debitAccountId,
+									debit: totalCostDec.abs(), // Always positive in journal lines
 									credit: 0,
-									description: `Stock ${data.type} Expense`,
+									description: mapping.debitDescription,
 								},
 								{
-									accountId: 1, // INVENTORY_ASSET_ACCOUNT_ID,
+									accountId: mapping.creditAccountId,
 									debit: 0,
 									credit: totalCostDec.abs(),
-									description: 'Inventory Asset reduction',
+									description: mapping.creditDescription,
 								},
 							],
 						},
@@ -178,18 +251,9 @@ class StockAdjustmentService extends Service {
 						date: data.date,
 						type: data.type,
 						reason: data.reason,
-						totalCost: new Prisma.Decimal(data.totalCost),
+						totalCost: totalCostDec,
 						createdById: data.createdById,
 						journalEntryId: journal.id,
-						stockMovements: {
-							create: data.items.map(item => ({
-								productId: item.productId,
-								type: data.type, // TODO: Create mapping/lookup between stock movement type <-> stock adjustment
-								quantity: new Prisma.Decimal(item.quantity),
-								costPerUnit: new Prisma.Decimal(item.unitCost),
-								createdById: data.createdById,
-							})),
-						},
 						items: {
 							create: data.items.map(item => ({
 								productId: item.productId,
@@ -198,8 +262,16 @@ class StockAdjustmentService extends Service {
 								subtotalCost: new Prisma.Decimal(item.subtotalCost),
 							})),
 						},
+						stockMovements: {
+							create: data.items.map(item => ({
+								productId: item.productId,
+								type: data.type,
+								quantity: new Prisma.Decimal(item.quantity),
+								createdById: data.createdById,
+							})),
+						},
 					},
-					select: { id: true },
+					select: { id: true, adjustmentNumber: true },
 				})
 
 				await Promise.all(
@@ -208,7 +280,7 @@ class StockAdjustmentService extends Service {
 							where: { id: item.productId },
 							data: {
 								currentStock: {
-									increment: new Prisma.Decimal(item.quantity), // Negative quantity automatically decrements!
+									increment: new Prisma.Decimal(item.quantity), // Negative decrements, positive increments!
 								},
 							},
 						}),

@@ -9,6 +9,17 @@ model Account {
     disabledAt   DateTime?
     journalLines JournalLine[]
 
+    configCashAccounts             PosConfiguration[] @relation("ConfigCashAccount")
+    configBankAccounts             PosConfiguration[] @relation("ConfigBankAccount")
+    configSalesRevenueAccounts     PosConfiguration[] @relation("ConfigSalesRevenueAccount")
+    configInventoryAssetAccounts   PosConfiguration[] @relation("ConfigInventoryAssetAccount")
+    configCogsAccounts             PosConfiguration[] @relation("ConfigCogsAccount")
+    configSpoilageExpenseAccounts  PosConfiguration[] @relation("ConfigSpoilageExpenseAccount")
+    configShrinkageExpenseAccounts PosConfiguration[] @relation("ConfigShrinkageExpenseAccount")
+    configInventoryGainAccounts    PosConfiguration[] @relation("ConfigInventoryGainAccount")
+    configAccountsPayableAccounts  PosConfiguration[] @relation("ConfigAccountsPayableAccount")
+    configRoundingAccounts         PosConfiguration[] @relation("ConfigRoundingAccount")
+
     @@map("accounts")
 }
 

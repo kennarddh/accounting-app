@@ -66,9 +66,11 @@ const defaultAccounts = [
 ]
 
 const main = async () => {
+	// 1. Guard check: only seed if no users exist
 	if ((await prisma.user.count()) > 0) return
 
-	let passwordHashSecret
+	// 2. Read password secret
+	let passwordHashSecret: string | undefined
 
 	if (process.env.PASSWORD_HASH_SECRET_FILE) {
 		// eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -81,9 +83,10 @@ const main = async () => {
 		throw new Error('PASSWORD_HASH_SECRET is not set.')
 	}
 
+	// 3. Create Admin User
 	const password = await argon2.hash('password', {
 		hashLength: 64,
-		secret: Buffer.from(passwordHashSecret),
+		secret: Buffer.from(passwordHashSecret.trim()),
 	})
 
 	await prisma.user.create({
@@ -94,19 +97,64 @@ const main = async () => {
 		},
 	})
 
+	// 4. Create Default Chart of Accounts
 	await prisma.account.createMany({
 		data: defaultAccounts,
+	})
+
+	// 5. Fetch seeded accounts by their unique code to get their generated IDs
+	const requiredCodes = ['101', '202', '401', '103', '513', '524', '517', '41', '201']
+	const accounts = await prisma.account.findMany({
+		where: {
+			code: { in: requiredCodes },
+		},
+		select: {
+			id: true,
+			code: true,
+		},
+	})
+
+	const getAccountId = (code: string): bigint => {
+		const account = accounts.find(a => a.code === code)
+		if (!account) {
+			throw new Error(`Missing required default account with code: ${code}`)
+		}
+		return account.id
+	}
+
+	// 6. Create POS Configuration Singleton (Row ID 1)
+	await prisma.posConfiguration.create({
+		data: {
+			id: 1,
+
+			// A. Cash & Bank
+			cashAccountId: getAccountId('101'), // 101 - Cash
+			bankAccountId: getAccountId('202'), // 202 - Bank Payable / Bank
+
+			// B. Sales & Revenue
+			salesRevenueAccountId: getAccountId('401'), // 401 - Service Revenue
+
+			// C. Inventory & COGS
+			inventoryAssetAccountId: getAccountId('103'), // 103 - Supplies / Inventory Asset
+			cogsAccountId: getAccountId('513'), // 513 - Supplies Expense / COGS
+
+			// D. Stock Adjustments
+			spoilageExpenseAccountId: getAccountId('524'), // 524 - Sundries / Spoilage Expense
+			shrinkageExpenseAccountId: getAccountId('517'), // 517 - Bad Debt / Shrinkage Expense
+			inventoryGainAccountId: getAccountId('41'), // 41 - Others Income / Gain
+
+			// E. Payables & Rounding
+			accountsPayableAccountId: getAccountId('201'), // 201 - Account Payable
+			roundingAccountId: getAccountId('524'), // 524 - Sundries / Rounding Difference
+		},
 	})
 }
 
 try {
 	await main()
-
 	await prisma.$disconnect()
 } catch (error) {
 	console.error(error)
-
 	await prisma.$disconnect()
-
 	process.exit(1)
 }

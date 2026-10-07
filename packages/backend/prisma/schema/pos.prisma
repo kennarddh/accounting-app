@@ -143,3 +143,47 @@ model OrderItem {
     @@index([productId])
     @@map("order_items")
 }
+
+model PosConfiguration {
+    id Int @id @default(1) // Singleton: Always row ID 1
+
+    // ACCOUNTING GL ACCOUNT MAPPINGS
+    // A. Cash & Bank
+    cashAccountId BigInt
+    cashAccount   Account @relation("ConfigCashAccount", fields: [cashAccountId], references: [id])
+
+    bankAccountId BigInt
+    bankAccount   Account @relation("ConfigBankAccount", fields: [bankAccountId], references: [id])
+
+    // B. Sales & Revenue
+    salesRevenueAccountId BigInt
+    salesRevenueAccount   Account @relation("ConfigSalesRevenueAccount", fields: [salesRevenueAccountId], references: [id])
+
+    // C. Inventory & Cost of Goods Sold (COGS)
+    inventoryAssetAccountId BigInt
+    inventoryAssetAccount   Account @relation("ConfigInventoryAssetAccount", fields: [inventoryAssetAccountId], references: [id])
+
+    cogsAccountId BigInt
+    cogsAccount   Account @relation("ConfigCogsAccount", fields: [cogsAccountId], references: [id])
+
+    // D. Stock Adjustments (Waste, Shortage, Gain)
+    spoilageExpenseAccountId BigInt
+    spoilageExpenseAccount   Account @relation("ConfigSpoilageExpenseAccount", fields: [spoilageExpenseAccountId], references: [id])
+
+    shrinkageExpenseAccountId BigInt
+    shrinkageExpenseAccount   Account @relation("ConfigShrinkageExpenseAccount", fields: [shrinkageExpenseAccountId], references: [id])
+
+    inventoryGainAccountId BigInt
+    inventoryGainAccount   Account @relation("ConfigInventoryGainAccount", fields: [inventoryGainAccountId], references: [id])
+
+    // E. Payables & Adjustments
+    accountsPayableAccountId BigInt
+    accountsPayableAccount   Account @relation("ConfigAccountsPayableAccount", fields: [accountsPayableAccountId], references: [id])
+
+    roundingAccountId BigInt
+    roundingAccount   Account @relation("ConfigRoundingAccount", fields: [roundingAccountId], references: [id])
+
+    updatedAt DateTime @updatedAt
+
+    @@map("pos_configurations")
+}
