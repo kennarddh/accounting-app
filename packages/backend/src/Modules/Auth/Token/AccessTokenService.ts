@@ -7,7 +7,6 @@ import TokenService from './TokenService'
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type AccessTokenJWTPayload = {
-	jti: string
 	iat: number
 	user: {
 		id: string

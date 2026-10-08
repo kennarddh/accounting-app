@@ -15,7 +15,6 @@ import ConfigurationService from '../Configuration/ConfigurationService'
 export type UserSession = Prisma.UserSessionGetPayload<{
 	select: {
 		id: true
-		accessTokenJti: true
 		refreshTokenJti: true
 		ipAddress: true
 		user: { select: { id: true; name: true } }
@@ -70,7 +69,6 @@ class UserSessionService extends Service {
 	private get dataSelect() {
 		return {
 			id: true,
-			accessTokenJti: true,
 			refreshTokenJti: true,
 			ipAddress: true,
 			user: { select: { id: true, name: true } },
@@ -135,7 +133,6 @@ class UserSessionService extends Service {
 			return await this.db.client.userSession.create({
 				data: {
 					...data,
-					accessTokenJti: this.generateJti(),
 					refreshTokenJti: this.generateJti(),
 				},
 			})
@@ -213,7 +210,6 @@ class UserSessionService extends Service {
 				where: { id },
 				data: {
 					lastRefreshAt: new Date(),
-					accessTokenJti: this.generateJti(),
 					refreshTokenJti: this.generateJti(),
 					expireAt,
 				},

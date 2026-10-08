@@ -32,7 +32,6 @@ class AuthService extends Service {
 
 	async createTokens(userSession: UserSession, currentTime: number, expireAt: number) {
 		const accessTokenPayload = {
-			jti: userSession.accessTokenJti,
 			iat: currentTime,
 			user: {
 				id: userSession.userId.toString(),
