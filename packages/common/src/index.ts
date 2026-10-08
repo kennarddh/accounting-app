@@ -21,6 +21,7 @@ export enum ApiErrorResource {
 	OrderItem = 'OrderItem',
 	StockMovement = 'StockMovement',
 	StockAdjustment = 'StockAdjustment',
+	PosConfiguration = 'PosConfiguration',
 }
 
 export enum ApiErrorKind {

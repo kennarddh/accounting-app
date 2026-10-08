@@ -11,6 +11,9 @@ import { NotFoundError } from 'Errors'
 
 import DatabaseService from 'Modules/Database/DatabaseService'
 import { buildPrismaPagination, handlePrismaError } from 'Modules/Database/PrismaUtils'
+import PosConfigurationService, {
+	PosConfigurationData,
+} from 'Modules/PosConfiguration/PosConfigurationService'
 
 import { Prisma } from 'PrismaGenerated/client'
 
@@ -54,6 +57,7 @@ class StockAdjustmentService extends Service {
 	constructor(
 		private db = DI.get(DatabaseService),
 		private configurationService = DI.get(ConfigurationService),
+		private posConfigurationService = DI.get(PosConfigurationService),
 	) {
 		super('StockAdjustmentService')
 	}
@@ -144,13 +148,7 @@ class StockAdjustmentService extends Service {
 	private resolveJournalAccounts(
 		type: StockAdjustmentType,
 		isNegative: boolean,
-		config: {
-			inventoryAssetAccountId: bigint
-			spoilageExpenseAccountId: bigint
-			shrinkageExpenseAccountId: bigint
-			inventoryGainAccountId: bigint
-			accountsPayableAccountId: bigint
-		},
+		config: PosConfigurationData,
 	): DynamicAccountMapping {
 		// Case 1: WASTE (Always a stock reduction / expense)
 		if (type === StockAdjustmentType.Waste) {
@@ -198,14 +196,7 @@ class StockAdjustmentService extends Service {
 
 		try {
 			return await this.db.transaction(async tx => {
-				const config = await tx.posConfiguration.findFirst()
-
-				if (!config) {
-					// Throws a standard Error -> Skips handlePrismaError -> Triggers 500 Internal Server Error + Logs to Winston!
-					throw new Error(
-						'POS Configuration is not initialized. Please run database seed.',
-					)
-				}
+				const config = await this.posConfigurationService.get()
 
 				// Verify all products exist and are active
 				const productIds = data.items.map(i => i.productId)
