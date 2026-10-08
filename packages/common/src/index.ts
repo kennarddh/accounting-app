@@ -125,3 +125,10 @@ export enum ProductSortField {
 	Name = 'name',
 	CreatedAt = 'createdAt',
 }
+
+export enum OrderSortField {
+	Date = 'date',
+	CreatedAt = 'createdAt',
+	OrderNumber = 'orderNumber',
+	TotalAmount = 'totalAmount',
+}

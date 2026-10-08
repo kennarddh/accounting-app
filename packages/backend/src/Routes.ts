@@ -9,6 +9,7 @@ import AuthRouter from 'Modules/Auth/AuthRoutes'
 import CategoryRouter from 'Modules/Category/CategoryRoutes'
 import HealthController from 'Modules/Health/HealthController'
 import JournalRouter from 'Modules/Journal/JournalRoutes'
+import OrderRouter from 'Modules/Order/OrderRoutes'
 import ProductRouter from 'Modules/Product/ProductRoutes'
 import StockAdjustmentRouter from 'Modules/StockAdjustment/StockAdjustmentRoutes'
 import UserRouter from 'Modules/User/UserRoutes'
@@ -24,6 +25,7 @@ Router.useRouters('/journal', JournalRouter)
 Router.useRouters('/category', CategoryRouter)
 Router.useRouters('/product', ProductRouter)
 Router.useRouters('/stock-adjustment', StockAdjustmentRouter)
+Router.useRouters('/order', OrderRouter)
 
 Router.get('/health', [], new HealthController())
 Router.all('/*splat', [], new NoMatchController())
