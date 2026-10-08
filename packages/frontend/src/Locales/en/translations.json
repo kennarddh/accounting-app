@@ -100,6 +100,10 @@
 			"Taken": "A product with name '{{name}}' already exists.",
 			"Disabled": "The product '{{name}}' is disabled and cannot be used.",
 			"CategoryRequired": "A category is required."
+		},
+		"StockAdjustment": {
+			"NotFound": "The stock adjustment does not exist.",
+			"Taken": "A stock adjustment with number '{{adjustmentNumber}}' already exists."
 		}
 	},
 	"pwa": {
@@ -182,7 +186,8 @@
 			"accounts": "Accounts",
 			"journal": "Journal",
 			"categories": "Categories",
-			"products": "Products"
+			"products": "Products",
+			"stockAdjustments": "Stock Adjustments"
 		}
 	},
 	"accounts": {
@@ -284,6 +289,37 @@
 		"select": {
 			"button": "Select Product",
 			"title": "Select Product"
+		}
+	},
+	"stockAdjustments": {
+		"adjustmentNumber": "Adjustment Number",
+		"date": "Date",
+		"type": "Type",
+		"reason": "Reason",
+		"totalCost": "Total Cost",
+		"createdBy": "Created By",
+		"items": "Items",
+		"product": "Product",
+		"quantity": "Quantity",
+		"unitCost": "Unit Cost",
+		"subtotalCost": "Subtotal",
+		"addItem": "Add Item",
+		"totals": "Total Cost",
+		"new": {
+			"title": "New Stock Adjustment"
+		},
+		"detail": {
+			"title": "Stock Adjustment Detail"
+		},
+		"list": {
+			"title": "Stock Adjustments"
+		},
+		"enum": {
+			"type": {
+				"Waste": "Waste",
+				"Correction": "Correction",
+				"Restock": "Restock"
+			}
 		}
 	}
 }

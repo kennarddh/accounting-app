@@ -174,6 +174,26 @@ const router = createBrowserRouter([
 									},
 								],
 							},
+							{
+								path: 'stock-adjustment',
+								children: [
+									{
+										index: true,
+										lazy: () =>
+											import('Pages/StockAdjustment/StockAdjustmentList'),
+									},
+									{
+										path: 'new',
+										lazy: () =>
+											import('Pages/StockAdjustment/NewStockAdjustment'),
+									},
+									{
+										path: ':id',
+										lazy: () =>
+											import('Pages/StockAdjustment/StockAdjustmentDetail'),
+									},
+								],
+							},
 						],
 					},
 				],
