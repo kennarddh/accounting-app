@@ -1,10 +1,10 @@
 import { CelosiaRequest, DI, Injectable, Service, ServiceError } from '@celosiajs/core'
 
+import { NotFoundError } from 'Errors'
 
 import UserService from '../../User/UserService'
 import ResourceAccessPolicy from './ResourceAccessPolicy'
 import { OptionalResourceContextGetter } from './ResourceContextGetter'
-import { NotFoundError } from 'Errors'
 
 @Injectable()
 class AccessControlService extends Service {

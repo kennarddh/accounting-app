@@ -1,12 +1,12 @@
 import { CelosiaRouter } from '@celosiajs/core'
 
 import VerifyJWT from 'Middlewares/VerifyJWT'
-import Session from './Controllers/Session'
+
+import Login from './Controllers/Login'
 import Logout from './Controllers/Logout'
 import Me from './Controllers/Me'
 import Refresh from './Controllers/Refresh'
-import Login from './Controllers/Login'
-
+import Session from './Controllers/Session'
 
 const AuthRouter = new CelosiaRouter({ strict: true })
 
