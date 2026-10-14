@@ -51,7 +51,7 @@ AuthenticatedAxiosInstance.interceptors.response.use(undefined, async error => {
 					const newToken = await refreshTokenPromise
 
 					const newConfig = { ...response.config }
-					newConfig.headers['Access-Token'] = `Bearer ${newToken}`
+					newConfig.headers['Access-Token'] = newToken
 
 					return await AuthenticatedAxiosInstance.request(newConfig)
 				} catch (refreshError) {
