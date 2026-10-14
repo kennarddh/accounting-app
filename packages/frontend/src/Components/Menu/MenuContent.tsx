@@ -6,6 +6,7 @@ import HomeRoundedIcon from '@mui/icons-material/HomeRounded'
 import HowToRegRoundedIcon from '@mui/icons-material/HowToRegRounded'
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded'
 import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded'
+import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded'
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded'
 
 import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, Stack } from '@mui/material'
@@ -64,6 +65,11 @@ const MenuContent: FC<{ onClickLink?: () => void }> = props => {
 				text: t('navigations.links.stockAdjustments'),
 				to: '/stock-adjustment',
 				icon: <TuneRoundedIcon />,
+			},
+			{
+				text: t('navigations.links.orders'),
+				to: '/order',
+				icon: <ReceiptLongRoundedIcon />,
 			},
 		],
 		[t],

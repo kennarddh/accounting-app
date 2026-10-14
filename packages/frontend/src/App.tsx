@@ -194,6 +194,23 @@ const router = createBrowserRouter([
 									},
 								],
 							},
+							{
+								path: 'order',
+								children: [
+									{
+										index: true,
+										lazy: () => import('Pages/Order/OrderList'),
+									},
+									{
+										path: 'new',
+										lazy: () => import('Pages/Order/NewOrder'),
+									},
+									{
+										path: ':id',
+										lazy: () => import('Pages/Order/OrderDetail'),
+									},
+								],
+							},
 						],
 					},
 				],

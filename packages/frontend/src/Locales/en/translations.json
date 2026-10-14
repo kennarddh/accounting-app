@@ -104,6 +104,10 @@
 		"StockAdjustment": {
 			"NotFound": "The stock adjustment does not exist.",
 			"Taken": "A stock adjustment with number '{{adjustmentNumber}}' already exists."
+		},
+		"Order": {
+			"NotFound": "The order does not exist.",
+			"Taken": "An order with number '{{orderNumber}}' already exists."
 		}
 	},
 	"pwa": {
@@ -187,7 +191,8 @@
 			"journal": "Journal",
 			"categories": "Categories",
 			"products": "Products",
-			"stockAdjustments": "Stock Adjustments"
+			"stockAdjustments": "Stock Adjustments",
+			"orders": "Orders"
 		}
 	},
 	"accounts": {
@@ -319,6 +324,46 @@
 				"Waste": "Waste",
 				"Correction": "Correction",
 				"Restock": "Restock"
+			}
+		}
+	},
+	"orders": {
+		"orderNumber": "Order Number",
+		"date": "Date",
+		"status": "Status",
+		"paymentMethod": "Payment Method",
+		"totalAmount": "Total Amount",
+		"totalCost": "Total Cost",
+		"itemsCount": "Items Count",
+		"cashier": "Cashier",
+		"journalEntry": "Linked Journal Entry",
+		"product": "Product",
+		"quantity": "Quantity",
+		"unitPrice": "Price",
+		"unitCost": "Cost",
+		"subtotal": "Subtotal",
+		"addItem": "Add Item",
+		"totals": "Total Amount",
+		"new": {
+			"title": "New Order"
+		},
+		"detail": {
+			"title": "Order Detail"
+		},
+		"list": {
+			"title": "Orders"
+		},
+		"enum": {
+			"status": {
+				"Completed": "Completed",
+				"Cancelled": "Cancelled",
+				"Refunded": "Refunded"
+			},
+			"paymentMethod": {
+				"Cash": "Cash",
+				"BankTransfer": "Bank Transfer",
+				"Card": "Card",
+				"QRIS": "QRIS"
 			}
 		}
 	}
