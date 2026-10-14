@@ -91,7 +91,7 @@ class UserSessionService extends Service {
 				select: this.dataSelect,
 			})
 		} catch (error) {
-			handlePrismaError(error, ApiErrorResource.User)
+			handlePrismaError(error, ApiErrorResource.UserSession)
 		}
 	}
 
