@@ -167,6 +167,16 @@ class OrderService extends Service {
 	}
 
 	async create(data: OrderCreateData) {
+		const productIds = data.items.map(i => i.productId)
+
+		if (new Set(productIds).size !== productIds.length) {
+			throw new BusinessRuleError(
+				ApiErrorResource.OrderItem,
+				'Duplicate products in an order are not allowed.',
+				{ field: 'items' },
+			)
+		}
+
 		const status = data.status ?? OrderStatus.Completed
 
 		try {
@@ -174,12 +184,11 @@ class OrderService extends Service {
 				const config = await this.posConfigurationService.get()
 
 				// 1. Fetch products from database
-				const uniqueProductIds = Array.from(new Set(data.items.map(i => i.productId)))
 				const products = await tx.product.findMany({
-					where: { id: { in: uniqueProductIds } },
+					where: { id: { in: productIds } },
 				})
 
-				if (products.length !== uniqueProductIds.length) {
+				if (products.length !== productIds.length) {
 					throw new NotFoundError(ApiErrorResource.Product)
 				}
 

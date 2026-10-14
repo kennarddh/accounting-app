@@ -10,7 +10,7 @@ import {
 	GridGetRowsResponse,
 } from '@mui/x-data-grid'
 
-import { AccountSortField } from '@accounting-app/common'
+import { AccountSortField, AccountType } from '@accounting-app/common'
 import { useTranslation } from 'react-i18next'
 
 import HandleApiError from 'Utils/HandleApiError'
@@ -62,7 +62,7 @@ const SelectAccount: FC<SelectResourceProps> = props => {
 					search: debouncedFilterSearch,
 					...(debouncedFilterAccountType === ''
 						? {}
-						: { 'types[]': debouncedFilterAccountType }),
+						: { types: [debouncedFilterAccountType as AccountType] }),
 				})
 
 				return { rows: result.list, rowCount: result.pagination.total }

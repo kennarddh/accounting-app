@@ -174,17 +174,11 @@ const NewStockAdjustment: FC = () => {
 
 			startTransition(async () => {
 				try {
-					// Backend validates date >= new Date(), ensure time is not in the past
-					const submissionDate = new Date(
-						Math.max(Date.now() + 2000, date.valueOf()),
-					).toISOString()
-
 					await StockAdjustmentCreateApi({
 						adjustmentNumber,
-						date: submissionDate,
+						date: date.toISOString(),
 						type,
 						reason,
-						totalCost,
 						createdById: user.id,
 						items: items.map(item => ({
 							productId: item.productId ?? '',
@@ -200,7 +194,7 @@ const NewStockAdjustment: FC = () => {
 				}
 			})
 		},
-		[Navigate, adjustmentNumber, date, items, reason, totalCost, type, user],
+		[Navigate, adjustmentNumber, date, items, reason, type, user],
 	)
 
 	return (

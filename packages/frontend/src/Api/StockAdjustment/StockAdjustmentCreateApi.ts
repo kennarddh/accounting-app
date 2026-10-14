@@ -12,13 +12,11 @@ export interface StockAdjustmentCreateData {
 	date: string
 	type: StockAdjustmentType
 	reason: string
-	totalCost: string
 	createdById: string
 	items: {
 		productId: string
 		quantity: string
 		unitCost: string
-		subtotalCost: string
 	}[]
 }
 

@@ -23,12 +23,6 @@ class AccessControlService extends Service {
 	) {
 		const user = await this.userService.findById(userId)
 
-		if (user === null) {
-			this.logger.error("User doesn't exist.", { userId })
-
-			throw new ServiceError()
-		}
-
 		try {
 			const context = (
 				resourceContextGetter === undefined

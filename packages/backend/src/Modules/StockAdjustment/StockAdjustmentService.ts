@@ -7,7 +7,7 @@ import {
 	StockAdjustmentType,
 } from '@accounting-app/common'
 
-import { NotFoundError } from 'Errors'
+import { BusinessRuleError, NotFoundError } from 'Errors'
 
 import DatabaseService from 'Modules/Database/DatabaseService'
 import { buildPrismaPagination, handlePrismaError } from 'Modules/Database/PrismaUtils'
@@ -24,7 +24,6 @@ export interface StockAdjustmentItemCreateData {
 	productId: bigint
 	quantity: string
 	unitCost: string
-	subtotalCost: string
 }
 
 export interface StockAdjustmentCreateData {
@@ -32,7 +31,6 @@ export interface StockAdjustmentCreateData {
 	date: Date
 	type: StockAdjustmentType
 	reason: string
-	totalCost: string
 	createdById: bigint
 	items: StockAdjustmentItemCreateData[]
 }
@@ -191,15 +189,21 @@ class StockAdjustmentService extends Service {
 	}
 
 	async create(data: StockAdjustmentCreateData) {
-		const totalCostDec = new Prisma.Decimal(data.totalCost)
-		const isNegative = totalCostDec.isNegative()
-
 		try {
 			return await this.db.transaction(async tx => {
 				const config = await this.posConfigurationService.get()
 
-				// Verify all products exist and are active
+				// 1. Guard against duplicate products in the same adjustment document
 				const productIds = data.items.map(i => i.productId)
+				if (new Set(productIds).size !== productIds.length) {
+					throw new BusinessRuleError(
+						ApiErrorResource.StockAdjustment,
+						'Duplicate products in a stock adjustment are not allowed.',
+						{ field: 'items' },
+					)
+				}
+
+				// 2. Verify all products exist and are active
 				const products = await tx.product.findMany({
 					where: { id: { in: productIds }, disabledAt: null },
 				})
@@ -208,8 +212,38 @@ class StockAdjustmentService extends Service {
 					throw new NotFoundError(ApiErrorResource.Product)
 				}
 
+				// 3. Prepare normalized signed items & compute total cost on backend
+				let computedTotalCost = new Prisma.Decimal(0)
+
+				const preparedItems = data.items.map(item => {
+					const rawQty = new Prisma.Decimal(item.quantity)
+					const unitCost = new Prisma.Decimal(item.unitCost)
+
+					// Waste is always an inventory deduction (negative)
+					// Restock is always an inventory addition (positive)
+					// Correction depends on whether quantity is positive or negative
+					const signedQuantity =
+						data.type === StockAdjustmentType.Waste ? rawQty.abs().negated() : rawQty
+
+					const subtotalCost = signedQuantity.abs().mul(unitCost)
+					computedTotalCost = computedTotalCost.add(subtotalCost)
+
+					return {
+						productId: item.productId,
+						signedQuantity,
+						unitCost,
+						subtotalCost,
+					}
+				})
+
+				// Determine if net adjustment is a loss (negative) or gain (positive)
+				const isNegative =
+					data.type === StockAdjustmentType.Waste ||
+					preparedItems.some(i => i.signedQuantity.isNegative())
+
 				const mapping = this.resolveJournalAccounts(data.type, isNegative, config)
 
+				// 4. Create Double-Entry Journal Entry
 				const journal = await tx.journalEntry.create({
 					data: {
 						entryNumber: `JE-${data.adjustmentNumber}`,
@@ -220,14 +254,14 @@ class StockAdjustmentService extends Service {
 							create: [
 								{
 									accountId: mapping.debitAccountId,
-									debit: totalCostDec.abs(), // Always positive in journal lines
+									debit: computedTotalCost,
 									credit: 0,
 									description: mapping.debitDescription,
 								},
 								{
 									accountId: mapping.creditAccountId,
 									debit: 0,
-									credit: totalCostDec.abs(),
+									credit: computedTotalCost,
 									description: mapping.creditDescription,
 								},
 							],
@@ -236,28 +270,29 @@ class StockAdjustmentService extends Service {
 					select: { id: true },
 				})
 
+				// 5. Create Stock Adjustment & Items & Movements
 				const stockAdjustment = await tx.stockAdjustment.create({
 					data: {
 						adjustmentNumber: data.adjustmentNumber,
 						date: data.date,
 						type: data.type,
 						reason: data.reason,
-						totalCost: totalCostDec,
+						totalCost: computedTotalCost,
 						createdById: data.createdById,
 						journalEntryId: journal.id,
 						items: {
-							create: data.items.map(item => ({
+							create: preparedItems.map(item => ({
 								productId: item.productId,
-								quantity: new Prisma.Decimal(item.quantity),
-								unitCost: new Prisma.Decimal(item.unitCost),
-								subtotalCost: new Prisma.Decimal(item.subtotalCost),
+								quantity: item.signedQuantity,
+								unitCost: item.unitCost,
+								subtotalCost: item.subtotalCost,
 							})),
 						},
 						stockMovements: {
-							create: data.items.map(item => ({
+							create: preparedItems.map(item => ({
 								productId: item.productId,
 								type: data.type,
-								quantity: new Prisma.Decimal(item.quantity),
+								quantity: item.signedQuantity,
 								createdById: data.createdById,
 							})),
 						},
@@ -265,13 +300,14 @@ class StockAdjustmentService extends Service {
 					select: { id: true, adjustmentNumber: true },
 				})
 
+				// 6. Update product current stock (Increment handles both + and -)
 				await Promise.all(
-					data.items.map(item =>
+					preparedItems.map(item =>
 						tx.product.update({
 							where: { id: item.productId },
 							data: {
 								currentStock: {
-									increment: new Prisma.Decimal(item.quantity), // Negative decrements, positive increments!
+									increment: item.signedQuantity,
 								},
 							},
 						}),

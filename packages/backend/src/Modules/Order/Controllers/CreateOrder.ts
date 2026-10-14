@@ -52,7 +52,10 @@ class CreateOrder extends Controller {
 						quantity: z.string().regex(DecimalRegex, 'Must be a valid decimal string'),
 					}),
 				)
-				.min(1),
+				.min(1)
+				.refine(items => new Set(items.map(i => i.productId)).size === items.length, {
+					message: 'Each product can only appear once per order.',
+				}),
 		})
 	}
 }

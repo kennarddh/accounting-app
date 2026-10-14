@@ -53,7 +53,7 @@ const defaultAccounts = [
 	{ code: '511', name: 'Advertising Expense', type: AccountType.Expense },
 	{ code: '512', name: 'Rent Expense', type: AccountType.Expense },
 	{ code: '513', name: 'Supplies Expense', type: AccountType.Expense },
-	{ code: '514', name: 'Depreckation Expense of Building', type: AccountType.Expense },
+	{ code: '514', name: 'Depreciation Expense of Building', type: AccountType.Expense },
 	{ code: '516', name: 'Depreciation Expense of Machinery', type: AccountType.Expense },
 	{ code: '517', name: 'Bad Debt Expense', type: AccountType.Expense },
 	{ code: '521', name: 'Salaries Expense', type: AccountType.Expense },

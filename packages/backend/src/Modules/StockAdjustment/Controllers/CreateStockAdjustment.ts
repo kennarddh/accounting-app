@@ -3,7 +3,7 @@ import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from 
 import { StockAdjustmentType } from '@accounting-app/common'
 import z from 'zod/v4'
 
-import { DecimalRegex } from 'Utils/Constants'
+import { DecimalRegex, SignedDecimalRegex } from 'Utils/Constants'
 
 import StockAdjustmentService from '../StockAdjustmentService'
 
@@ -17,14 +17,13 @@ class CreateStockAdjustment extends Controller {
 		request: ControllerRequest<CreateStockAdjustment>,
 		response: CelosiaResponse,
 	) {
-		const { adjustmentNumber, date, type, reason, totalCost, createdById, items } = request.body
+		const { adjustmentNumber, date, type, reason, createdById, items } = request.body
 
 		const stockAdjustment = await this.stockAdjustmentService.create({
 			adjustmentNumber,
 			date,
 			type,
 			reason,
-			totalCost,
 			createdById,
 			items,
 		})
@@ -40,19 +39,23 @@ class CreateStockAdjustment extends Controller {
 	public override get body() {
 		return z.object({
 			adjustmentNumber: z.string().trim().min(1).max(100),
-			date: z.coerce.date().min(new Date()),
+			date: z.coerce.date(),
 			type: z.enum(StockAdjustmentType),
 			reason: z.string().trim().min(1).max(100),
-			totalCost: z.string().regex(DecimalRegex, 'Must be a valid decimal string'),
 			createdById: z.coerce.bigint().min(1n),
-			items: z.array(
-				z.object({
-					productId: z.coerce.bigint().min(1n),
-					quantity: z.string().regex(DecimalRegex, 'Must be a valid decimal string'),
-					unitCost: z.string().regex(DecimalRegex, 'Must be a valid decimal string'),
-					subtotalCost: z.string().regex(DecimalRegex, 'Must be a valid decimal string'),
+			items: z
+				.array(
+					z.object({
+						productId: z.coerce.bigint().min(1n),
+						quantity: z
+							.string()
+							.regex(SignedDecimalRegex, 'Must be a valid decimal string'),
+						unitCost: z.string().regex(DecimalRegex, 'Must be a valid decimal string'),
+					}),
+				)
+				.refine(items => new Set(items.map(i => i.productId)).size === items.length, {
+					message: 'Each product can only appear once per stock adjustment.',
 				}),
-			),
 		})
 	}
 }

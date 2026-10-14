@@ -29,7 +29,7 @@ class EnvironmentConfigurationProvider extends ConfigurationProvider<
 				await fs.access(fileEnvValue, fs.constants.F_OK)
 
 				// eslint-disable-next-line security/detect-non-literal-fs-filename
-				return await fs.readFile(fileEnvValue, { encoding: 'utf-8' })
+				return (await fs.readFile(fileEnvValue, { encoding: 'utf-8' })).trim()
 			} catch (error) {
 				this.logger.warn(`Loading env failed.`, { fileEnvName }, error)
 			}
