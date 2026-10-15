@@ -31,7 +31,7 @@
 		"@types/eslint": "^9.6.1",
 		"@types/eslint-plugin-jsx-a11y": "^6.10.1",
 		"@types/eslint-plugin-security": "^3.0.1",
-		"@types/node": "^26.4.1",
+		"@types/node": "^26.5.0",
 		"@typescript-eslint/utils": "^8.69.0",
 		"concurrently": "^10.0.5",
 		"cross-env": "^10.1.0",
