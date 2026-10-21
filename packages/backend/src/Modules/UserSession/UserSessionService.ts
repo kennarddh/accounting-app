@@ -47,7 +47,7 @@ class UserSessionService extends Service {
 		private db = DI.get(DatabaseService),
 		private configurationService = DI.get(ConfigurationService),
 	) {
-		super('UserService')
+		super('UserSessionService')
 	}
 
 	private buildWhereFilter(filter?: UserSessionFilterOptions) {

@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next'
 
 export enum DataSourceErrorKind {
 	Forbidden = 'Forbidden',
-	NoConnection = 'NoConnnection',
+	NoConnection = 'NoConnection',
 	Unknown = 'Unknown',
 }
 

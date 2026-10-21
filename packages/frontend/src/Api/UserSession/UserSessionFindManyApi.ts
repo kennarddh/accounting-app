@@ -29,7 +29,7 @@ export type UserSessionFindManyOutput = FindManyOutput<UserSessionFindManySingle
 
 export interface UserSessionFindManyData extends FindManyData<UserSessionSortField> {
 	includeInactive?: boolean
-	userId?: boolean
+	userId?: string
 }
 
 const UserSessionFindManyApi: ApiFunction<
