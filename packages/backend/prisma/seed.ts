@@ -104,7 +104,7 @@ const main = async () => {
 	})
 
 	// 5. Fetch seeded accounts by their unique code to get their generated IDs
-	const requiredCodes = ['101', '202', '401', '103', '513', '524', '517', '41', '201']
+	const requiredCodes = ['101', '104', '401', '103', '513', '524', '517', '41', '201']
 	const accounts = await prisma.account.findMany({
 		where: {
 			code: { in: requiredCodes },
