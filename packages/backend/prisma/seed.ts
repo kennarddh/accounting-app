@@ -18,6 +18,7 @@ const defaultAccounts = [
 	{ code: '101', name: 'Cash', type: AccountType.Asset },
 	{ code: '102', name: 'Account Receivable', type: AccountType.Asset },
 	{ code: '103', name: 'Supplies', type: AccountType.Asset },
+	{ code: '104', name: 'Cash in Bank', type: AccountType.Asset },
 	{ code: '111', name: 'Prepaid Insurance', type: AccountType.Asset },
 	{ code: '112', name: 'Prepaid Rent', type: AccountType.Asset },
 	{ code: '113', name: 'Prepaid Advertising', type: AccountType.Asset },
@@ -129,7 +130,7 @@ const main = async () => {
 
 			// A. Cash & Bank
 			cashAccountId: getAccountId('101'), // 101 - Cash
-			bankAccountId: getAccountId('202'), // 202 - Bank Payable / Bank
+			bankAccountId: getAccountId('104'), // 104 - Cash in Bank
 
 			// B. Sales & Revenue
 			salesRevenueAccountId: getAccountId('401'), // 401 - Service Revenue
