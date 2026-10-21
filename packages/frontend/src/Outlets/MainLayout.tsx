@@ -1,6 +1,6 @@
-import { FC, use, useEffect, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 
-import { Outlet, useNavigate } from 'react-router'
+import { Await, Outlet, useLoaderData, useNavigate } from 'react-router'
 
 import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import useAuthStore from 'Stores/AuthStore'
@@ -15,11 +15,15 @@ enum ErrorType {
 	Network = 'Network',
 }
 
+export const loader = async () => {
+	return {
+		sessionPromise: useAuthStore.getState().checkAuthStatus(),
+	}
+}
+
 const MainLayout: FC = () => {
 	const [Error, SetError] = useState<ErrorType | null>(null)
 
-	const checkAuthStatus = useAuthStore(state => state.checkAuthStatus)
-	const isLoading = useAuthStore(state => state.isLoading)
 	const completeLogout = useAuthStore(state => state.completeLogout)
 	const hasChecked = useAuthStore(state => state.hasChecked)
 	const error = useAuthStore(state => state.error)
@@ -27,6 +31,8 @@ const MainLayout: FC = () => {
 	const Navigate = useNavigate()
 
 	const { t } = useTranslation()
+
+	const { sessionPromise } = useLoaderData<{ sessionPromise: Promise<void> }>()
 
 	useEffect(() => {
 		const main = async () => {
@@ -68,16 +74,6 @@ const MainLayout: FC = () => {
 		main().catch((error: unknown) => console.error('MainLayout session check error', error))
 	}, [Navigate, completeLogout, error, hasChecked])
 
-	if (!hasChecked && !isLoading) {
-		use(
-			checkAuthStatus().catch((error: unknown) =>
-				console.error('Check auth status error.', error),
-			),
-		)
-	}
-
-	if (!hasChecked) return null
-
 	if (Error) {
 		if (Error === ErrorType.Network)
 			return (
@@ -92,7 +88,11 @@ const MainLayout: FC = () => {
 		)
 	}
 
-	return <Outlet />
+	return (
+		<Await resolve={sessionPromise}>
+			<Outlet />
+		</Await>
+	)
 }
 
 export default MainLayout

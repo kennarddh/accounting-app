@@ -8,7 +8,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 import AdminDashboardLayout from 'Outlets/AdminDashboardLayout'
 import AuthorizationOutlet from 'Outlets/AuthorizationOutlet'
-import MainLayout from 'Outlets/MainLayout'
+import MainLayout, { loader as mainLayoutLoader } from 'Outlets/MainLayout'
 import { useTranslation } from 'react-i18next'
 
 import PWAManager from 'Components/PWAManager'
@@ -23,6 +23,7 @@ import LoadingPage from 'Pages/LoadingPage'
 const router = createBrowserRouter([
 	{
 		element: <MainLayout />,
+		loader: mainLayoutLoader,
 		hydrateFallbackElement: <LoadingPage />,
 		errorElement: <ErrorPage />,
 		children: [

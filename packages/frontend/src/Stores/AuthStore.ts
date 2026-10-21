@@ -52,6 +52,7 @@ const useAuthStore = create<AuthState & AuthAction>()(
 				})),
 			checkAuthStatus: async () => {
 				if (get().isLoading) return
+				if (get().hasChecked) return
 
 				if (get().accessToken === null) {
 					set({
