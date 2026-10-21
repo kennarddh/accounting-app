@@ -182,7 +182,7 @@ class JournalService extends Service {
 			if ((hasDebit && hasCredit) || (!hasDebit && !hasCredit)) {
 				throw new BusinessRuleError(
 					ApiErrorResource.JournalEntry,
-					'Debits and credits must be either both positive or both negative.',
+					'A journal line must specify either a debit or a credit, but not both.',
 					{
 						field: 'lines',
 					},
