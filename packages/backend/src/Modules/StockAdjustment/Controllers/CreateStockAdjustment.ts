@@ -1,9 +1,11 @@
-import { CelosiaResponse, Controller, ControllerRequest, DI, EmptyObject } from '@celosiajs/core'
+import { CelosiaResponse, Controller, ControllerRequest, DI } from '@celosiajs/core'
 
 import { StockAdjustmentType } from '@accounting-app/common'
 import z from 'zod/v4'
 
 import { DecimalRegex, SignedDecimalRegex } from 'Utils/Constants'
+
+import { JWTVerifiedData } from 'Middlewares/VerifyJWT'
 
 import StockAdjustmentService from '../StockAdjustmentService'
 
@@ -13,11 +15,13 @@ class CreateStockAdjustment extends Controller {
 	}
 
 	public async index(
-		_: EmptyObject,
+		data: JWTVerifiedData,
 		request: ControllerRequest<CreateStockAdjustment>,
 		response: CelosiaResponse,
 	) {
-		const { adjustmentNumber, date, type, reason, createdById, items } = request.body
+		const { adjustmentNumber, date, type, reason, items } = request.body
+
+		const createdById = data.user.id
 
 		const stockAdjustment = await this.stockAdjustmentService.create({
 			adjustmentNumber,
@@ -42,7 +46,6 @@ class CreateStockAdjustment extends Controller {
 			date: z.coerce.date(),
 			type: z.enum(StockAdjustmentType),
 			reason: z.string().trim().min(1).max(100),
-			createdById: z.coerce.bigint().min(1n),
 			items: z
 				.array(
 					z.object({

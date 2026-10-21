@@ -12,7 +12,6 @@ export interface StockAdjustmentCreateData {
 	date: string
 	type: StockAdjustmentType
 	reason: string
-	createdById: string
 	items: {
 		productId: string
 		quantity: string

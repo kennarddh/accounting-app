@@ -11,9 +11,7 @@ import { BusinessRuleError, NotFoundError } from 'Errors'
 
 import DatabaseService from 'Modules/Database/DatabaseService'
 import { buildPrismaPagination, handlePrismaError } from 'Modules/Database/PrismaUtils'
-import PosConfigurationService, {
-	PosConfigurationData,
-} from 'Modules/PosConfiguration/PosConfigurationService'
+import PosConfigurationService from 'Modules/PosConfiguration/PosConfigurationService'
 
 import { Prisma } from 'PrismaGenerated/client'
 
@@ -41,13 +39,6 @@ export interface StockAdjustmentFilterOptions {
 
 export interface StockAdjustmentFindManyOptions extends FindManyOptions<StockAdjustmentSortField> {
 	filter?: StockAdjustmentFilterOptions
-}
-
-interface DynamicAccountMapping {
-	debitAccountId: bigint
-	creditAccountId: bigint
-	debitDescription: string
-	creditDescription: string
 }
 
 @Injectable()
@@ -139,55 +130,6 @@ class StockAdjustmentService extends Service {
 		}
 	}
 
-	/**
-	 * Dynamically resolves debit & credit accounts from the POS configuration
-	 * based on adjustment type and whether total cost is negative (loss) or positive (gain).
-	 */
-	private resolveJournalAccounts(
-		type: StockAdjustmentType,
-		isNegative: boolean,
-		config: PosConfigurationData,
-	): DynamicAccountMapping {
-		// Case 1: WASTE (Always a stock reduction / expense)
-		if (type === StockAdjustmentType.Waste) {
-			return {
-				debitAccountId: config.spoilageExpenseAccountId,
-				creditAccountId: config.inventoryAssetAccountId,
-				debitDescription: 'Inventory Spoilage / Waste Expense',
-				creditDescription: 'Inventory Asset Reduction',
-			}
-		}
-
-		// Case 2: CORRECTION (Count Discrepancy)
-		if (type === StockAdjustmentType.Correction) {
-			if (isNegative) {
-				// Audit Shortage (Fewer items found -> Loss)
-				return {
-					debitAccountId: config.shrinkageExpenseAccountId,
-					creditAccountId: config.inventoryAssetAccountId,
-					debitDescription: 'Inventory Count Discrepancy (Shrinkage Loss)',
-					creditDescription: 'Inventory Asset Reduction',
-				}
-			} else {
-				// Audit Surplus (Extra items found -> Gain)
-				return {
-					debitAccountId: config.inventoryAssetAccountId,
-					creditAccountId: config.inventoryGainAccountId,
-					debitDescription: 'Inventory Asset Addition (Surplus)',
-					creditDescription: 'Inventory Count Discrepancy Gain',
-				}
-			}
-		}
-
-		// Case 3: RESTOCK (Supplier Delivery / Restock Inflow)
-		return {
-			debitAccountId: config.inventoryAssetAccountId,
-			creditAccountId: config.accountsPayableAccountId,
-			debitDescription: 'Inventory Restock Addition',
-			creditDescription: 'Accounts Payable for Supplier Goods',
-		}
-	}
-
 	async create(data: StockAdjustmentCreateData) {
 		try {
 			return await this.db.transaction(async tx => {
@@ -212,21 +154,42 @@ class StockAdjustmentService extends Service {
 					throw new NotFoundError(ApiErrorResource.Product)
 				}
 
-				// 3. Prepare normalized signed items & compute total cost on backend
-				let computedTotalCost = new Prisma.Decimal(0)
+				// 3. Prepare normalized signed items & compute consolidated totals
+				let totalGainCost = new Prisma.Decimal(0) // Inventory asset additions (+)
+				let totalLossCost = new Prisma.Decimal(0) // Inventory asset reductions (-)
 
 				const preparedItems = data.items.map(item => {
 					const rawQty = new Prisma.Decimal(item.quantity)
 					const unitCost = new Prisma.Decimal(item.unitCost)
 
-					// Waste is always an inventory deduction (negative)
-					// Restock is always an inventory addition (positive)
-					// Correction depends on whether quantity is positive or negative
-					const signedQuantity =
-						data.type === StockAdjustmentType.Waste ? rawQty.abs().negated() : rawQty
+					// Quantity enforcement by type:
+					// - Waste: always a deduction (negative)
+					// - Restock: always an addition (positive)
+					// - Correction: signed as provided (+ for surplus, - for shortage)
+					let signedQuantity: Prisma.Decimal
+					if (data.type === StockAdjustmentType.Waste) {
+						signedQuantity = rawQty.abs().negated()
+					} else if (data.type === StockAdjustmentType.Restock) {
+						signedQuantity = rawQty.abs()
+					} else {
+						signedQuantity = rawQty
+					}
+
+					if (signedQuantity.isZero()) {
+						throw new BusinessRuleError(
+							ApiErrorResource.StockAdjustment,
+							'Adjustment quantity cannot be zero.',
+							{ field: 'quantity' },
+						)
+					}
 
 					const subtotalCost = signedQuantity.abs().mul(unitCost)
-					computedTotalCost = computedTotalCost.add(subtotalCost)
+
+					if (signedQuantity.isPositive()) {
+						totalGainCost = totalGainCost.add(subtotalCost)
+					} else {
+						totalLossCost = totalLossCost.add(subtotalCost)
+					}
 
 					return {
 						productId: item.productId,
@@ -236,14 +199,66 @@ class StockAdjustmentService extends Service {
 					}
 				})
 
-				// Determine if net adjustment is a loss (negative) or gain (positive)
-				const isNegative =
-					data.type === StockAdjustmentType.Waste ||
-					preparedItems.some(i => i.signedQuantity.isNegative())
+				// 4. Build consolidated Double-Entry Journal Lines (Max 4 lines total, never bloated)
+				const journalLines: Prisma.JournalLineUncheckedCreateWithoutJournalEntryInput[] = []
 
-				const mapping = this.resolveJournalAccounts(data.type, isNegative, config)
+				// A. Consolidated Loss Side (Shrinkage / Waste expense vs Inventory Asset)
+				if (totalLossCost.greaterThan(0)) {
+					const lossExpenseAccountId =
+						data.type === StockAdjustmentType.Waste
+							? config.spoilageExpenseAccountId
+							: config.shrinkageExpenseAccountId
 
-				// 4. Create Double-Entry Journal Entry
+					const lossDescription =
+						data.type === StockAdjustmentType.Waste
+							? `Inventory Waste/Spoilage for ${data.adjustmentNumber}`
+							: `Inventory Shrinkage/Shortage for ${data.adjustmentNumber}`
+
+					journalLines.push(
+						{
+							accountId: lossExpenseAccountId,
+							debit: totalLossCost,
+							credit: 0,
+							description: lossDescription,
+						},
+						{
+							accountId: config.inventoryAssetAccountId,
+							debit: 0,
+							credit: totalLossCost,
+							description: `Inventory Asset reduction for ${data.adjustmentNumber}`,
+						},
+					)
+				}
+
+				// B. Consolidated Gain Side (Inventory Asset vs Gain Income / Accounts Payable)
+				if (totalGainCost.greaterThan(0)) {
+					const gainCreditAccountId =
+						data.type === StockAdjustmentType.Restock
+							? config.accountsPayableAccountId
+							: config.inventoryGainAccountId
+
+					const gainDescription =
+						data.type === StockAdjustmentType.Restock
+							? `Accounts Payable for Supplier Delivery ${data.adjustmentNumber}`
+							: `Inventory Surplus/Gain for ${data.adjustmentNumber}`
+
+					journalLines.push(
+						{
+							accountId: config.inventoryAssetAccountId,
+							debit: totalGainCost,
+							credit: 0,
+							description: `Inventory Asset addition for ${data.adjustmentNumber}`,
+						},
+						{
+							accountId: gainCreditAccountId,
+							debit: 0,
+							credit: totalGainCost,
+							description: gainDescription,
+						},
+					)
+				}
+
+				// 5. Create the SINGLE consolidated Journal Entry
 				const journal = await tx.journalEntry.create({
 					data: {
 						entryNumber: `JE-${data.adjustmentNumber}`,
@@ -251,33 +266,22 @@ class StockAdjustmentService extends Service {
 						description: `Inventory Adjustment (${data.type}): ${data.reason}`,
 						createdById: data.createdById,
 						lines: {
-							create: [
-								{
-									accountId: mapping.debitAccountId,
-									debit: computedTotalCost,
-									credit: 0,
-									description: mapping.debitDescription,
-								},
-								{
-									accountId: mapping.creditAccountId,
-									debit: 0,
-									credit: computedTotalCost,
-									description: mapping.creditDescription,
-								},
-							],
+							create: journalLines,
 						},
 					},
 					select: { id: true },
 				})
 
-				// 5. Create Stock Adjustment & Items & Movements
+				// 6. Create Stock Adjustment document & Stock Movements
+				const netCost = totalGainCost.minus(totalLossCost)
+
 				const stockAdjustment = await tx.stockAdjustment.create({
 					data: {
 						adjustmentNumber: data.adjustmentNumber,
 						date: data.date,
 						type: data.type,
 						reason: data.reason,
-						totalCost: computedTotalCost,
+						totalCost: netCost.abs(), // Magnitude of adjusted inventory value
 						createdById: data.createdById,
 						journalEntryId: journal.id,
 						items: {
@@ -293,6 +297,7 @@ class StockAdjustmentService extends Service {
 								productId: item.productId,
 								type: data.type,
 								quantity: item.signedQuantity,
+								costPerUnit: item.unitCost,
 								createdById: data.createdById,
 							})),
 						},
@@ -300,7 +305,7 @@ class StockAdjustmentService extends Service {
 					select: { id: true, adjustmentNumber: true },
 				})
 
-				// 6. Update product current stock (Increment handles both + and -)
+				// 7. Update each product's current cached stock level atomically
 				await Promise.all(
 					preparedItems.map(item =>
 						tx.product.update({

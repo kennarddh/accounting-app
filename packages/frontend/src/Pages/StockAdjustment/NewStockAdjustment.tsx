@@ -25,7 +25,6 @@ import {
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker'
 
 import { StockAdjustmentType } from '@accounting-app/common'
-import useAuthStore from 'Stores/AuthStore'
 import dayjs, { Dayjs } from 'dayjs'
 import { Decimal } from 'decimal.js'
 import { useTranslation } from 'react-i18next'
@@ -48,8 +47,6 @@ interface AdjustmentItemRow {
 }
 
 const NewStockAdjustment: FC = () => {
-	const user = useAuthStore(state => state.user)
-
 	const [ErrorText, SetErrorText] = useState<string | null>(null)
 
 	const [adjustmentNumber, setAdjustmentNumber] = useState(
@@ -170,8 +167,6 @@ const NewStockAdjustment: FC = () => {
 		(event: SubmitEvent<HTMLFormElement>) => {
 			event.preventDefault()
 
-			if (!user) return
-
 			startTransition(async () => {
 				try {
 					await StockAdjustmentCreateApi({
@@ -179,7 +174,6 @@ const NewStockAdjustment: FC = () => {
 						date: date.toISOString(),
 						type,
 						reason,
-						createdById: user.id,
 						items: items.map(item => ({
 							productId: item.productId ?? '',
 							quantity: item.quantity || '0',
@@ -194,7 +188,7 @@ const NewStockAdjustment: FC = () => {
 				}
 			})
 		},
-		[Navigate, adjustmentNumber, date, items, reason, type, user],
+		[Navigate, adjustmentNumber, date, items, reason, type],
 	)
 
 	return (

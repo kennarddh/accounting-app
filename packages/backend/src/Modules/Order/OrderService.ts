@@ -248,20 +248,24 @@ class OrderService extends Service {
 						: config.bankAccountId
 
 				// 4. Build balanced Double-Entry Journal
-				const journalLines: Prisma.JournalLineUncheckedCreateWithoutJournalEntryInput[] = [
-					{
-						accountId: paymentAccountId,
-						debit: totalAmount,
-						credit: 0,
-						description: `Customer payment (${data.paymentMethod}) for ${data.orderNumber}`,
-					},
-					{
-						accountId: config.salesRevenueAccountId,
-						debit: 0,
-						credit: totalAmount,
-						description: `Sales Revenue for ${data.orderNumber}`,
-					},
-				]
+				const journalLines: Prisma.JournalLineUncheckedCreateWithoutJournalEntryInput[] = []
+
+				if (totalAmount.greaterThan(0)) {
+					journalLines.push(
+						{
+							accountId: paymentAccountId,
+							debit: totalAmount,
+							credit: 0,
+							description: `Customer payment (${data.paymentMethod}) for ${data.orderNumber}`,
+						},
+						{
+							accountId: config.salesRevenueAccountId,
+							debit: 0,
+							credit: totalAmount,
+							description: `Sales Revenue for ${data.orderNumber}`,
+						},
+					)
+				}
 
 				// COGS & Inventory Asset entry
 				if (totalCost.greaterThan(0)) {
@@ -281,18 +285,25 @@ class OrderService extends Service {
 					)
 				}
 
-				const journal = await tx.journalEntry.create({
-					data: {
-						entryNumber: `JE-${data.orderNumber}`,
-						date: data.date,
-						description: `POS Order ${data.orderNumber}`,
-						createdById: data.createdById,
-						lines: {
-							create: journalLines,
+				// Only create a JournalEntry if there is actual financial value to record!
+				let journalId: bigint | null = null
+
+				if (journalLines.length > 0) {
+					const journal = await tx.journalEntry.create({
+						data: {
+							entryNumber: `JE-${data.orderNumber}`,
+							date: data.date,
+							description: `POS Order ${data.orderNumber}`,
+							createdById: data.createdById,
+							lines: {
+								create: journalLines,
+							},
 						},
-					},
-					select: { id: true },
-				})
+						select: { id: true },
+					})
+
+					journalId = journal.id
+				}
 
 				// 5. Create Order & Line Items
 				const order = await tx.order.create({
@@ -304,7 +315,7 @@ class OrderService extends Service {
 						totalAmount,
 						totalCost,
 						createdById: data.createdById,
-						journalEntryId: journal.id,
+						journalEntryId: journalId,
 						items: {
 							create: calculatedItems.map(item => ({
 								productId: item.productId,
