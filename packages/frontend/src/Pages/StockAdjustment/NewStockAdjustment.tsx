@@ -296,6 +296,7 @@ const NewStockAdjustment: FC = () => {
 											size='small'
 											value={item.quantity}
 											onChange={val => handleQuantityChange(index, val)}
+											allowNegative={type === StockAdjustmentType.Correction}
 										/>
 									</TableCell>
 

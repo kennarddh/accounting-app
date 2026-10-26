@@ -19,6 +19,7 @@ export interface MuiMoneyInputProps {
 	prefix?: string // e.g. "$ " or "Rp "
 	name?: string
 	id?: string
+	allowNegative?: boolean
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,6 +40,7 @@ export const MuiMoneyInput: React.FC<MuiMoneyInputProps> = ({
 	prefix,
 	name,
 	id,
+	allowNegative = false,
 }) => {
 	return (
 		<NumberInput
@@ -55,7 +57,7 @@ export const MuiMoneyInput: React.FC<MuiMoneyInputProps> = ({
 			thousandSeparator=','
 			decimalSeparator='.'
 			decimalScale={4}
-			allowNegative={false}
+			allowNegative={allowNegative}
 			prefix={prefix}
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			isAllowed={(values: any) => {
