@@ -224,6 +224,10 @@ const router = createBrowserRouter([
 										path: 'trial-balance',
 										lazy: () => import('Pages/Report/TrialBalanceReport'),
 									},
+									{
+										path: 'balance-sheet',
+										lazy: () => import('Pages/Report/BalanceSheetReport'),
+									},
 								],
 							},
 						],

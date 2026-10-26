@@ -3,6 +3,7 @@ import { FC, JSX, useMemo } from 'react'
 import { Link, useLocation } from 'react-router'
 
 import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded'
+import AccountBalanceWalletRoundedIcon from '@mui/icons-material/AccountBalanceWalletRounded'
 import AssessmentRoundedIcon from '@mui/icons-material/AssessmentRounded'
 import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded'
 import FactCheckRoundedIcon from '@mui/icons-material/FactCheckRounded'
@@ -85,6 +86,11 @@ const MenuContent: FC<{ onClickLink?: () => void }> = props => {
 				text: t('navigations.links.trialBalance'),
 				to: '/report/trial-balance',
 				icon: <FactCheckRoundedIcon fontSize='small' />,
+			},
+			{
+				text: t('navigations.links.balanceSheet'),
+				to: '/report/balance-sheet',
+				icon: <AccountBalanceWalletRoundedIcon fontSize='small' />,
 			},
 		],
 		[t],

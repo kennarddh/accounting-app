@@ -199,7 +199,8 @@
 			"stockAdjustments": "Stock Adjustments",
 			"orders": "Orders",
 			"profitAndLoss": "Profit & Loss",
-			"trialBalance": "Trial Balance"
+			"trialBalance": "Trial Balance",
+			"balanceSheet": "Balance Sheet"
 		}
 	},
 	"accounts": {
@@ -396,7 +397,8 @@
 		"edit": "Edit",
 		"report": "Reports",
 		"profit-and-loss": "Profit & Loss",
-		"trial-balance": "Trial Balance"
+		"trial-balance": "Trial Balance",
+		"balance-sheet": "Balance Sheet"
 	},
 	"stockStatus": {
 		"inStock": "In Stock ({{count}})",
@@ -487,6 +489,24 @@
 			"totals": "Total Balances",
 			"runReport": "Run Report",
 			"empty": "No account activity recorded in this period."
+		},
+		"balanceSheet": {
+			"title": "Balance Sheet",
+			"subtitle": "Statement of Financial Position (GAAP)",
+			"asOfDate": "As of Date",
+			"assets": "Assets",
+			"currentAssets": "Current & Fixed Assets",
+			"liabilities": "Liabilities",
+			"equity": "Equity",
+			"retainedEarnings": "Retained Earnings (Cumulative Net Income)",
+			"totalAssets": "Total Assets",
+			"totalLiabilities": "Total Liabilities",
+			"totalEquity": "Total Equity",
+			"totalLiabilitiesAndEquity": "Total Liabilities & Equity",
+			"balanced": "Balanced (Assets = Liabilities + Equity)",
+			"outOfBalance": "Out of Balance (Diff: {{diff}})",
+			"runReport": "Run Report",
+			"empty": "No balance sheet transactions found up to this date."
 		}
 	}
 }
