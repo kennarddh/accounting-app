@@ -451,6 +451,10 @@
 		"viewAll": "View all"
 	},
 	"reports": {
+		"exportAs": "Export As",
+		"exportExcel": "Excel (.xlsx)",
+		"exportPdf": "PDF Document",
+		"exportCsv": "CSV (Raw Data)",
 		"profitAndLoss": {
 			"title": "Profit & Loss Statement",
 			"subtitle": "Income Statement (GAAP)",

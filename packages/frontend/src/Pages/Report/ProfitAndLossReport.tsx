@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useState, useTransition } from 'react'
 
-import PrintIcon from '@mui/icons-material/Print'
+import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import RefreshIcon from '@mui/icons-material/Refresh'
 
 import {
@@ -10,6 +10,8 @@ import {
 	Card,
 	CardContent,
 	CircularProgress,
+	Menu,
+	MenuItem,
 	Paper,
 	Table,
 	TableBody,
@@ -31,6 +33,7 @@ import FormatCurrency from 'Utils/FormatCurrency'
 import HandleApiError from 'Utils/HandleApiError'
 
 import ProfitAndLossApi, { ProfitAndLossOutput } from 'Api/Report/ProfitAndLossApi'
+import ProfitAndLossExportApi from 'Api/Report/ProfitAndLossExportApi'
 
 const ProfitAndLossReport: FC = () => {
 	const { t } = useTranslation()
@@ -41,6 +44,42 @@ const ProfitAndLossReport: FC = () => {
 	const [report, setReport] = useState<ProfitAndLossOutput | null>(null)
 	const [errorText, setErrorText] = useState<string | null>(null)
 	const [isPending, startTransition] = useTransition()
+
+	const [exportAnchorEl, setExportAnchorEl] = useState<null | HTMLElement>(null)
+	const [isExporting, setIsExporting] = useState(false)
+
+	const handleExport = async (format: 'xlsx' | 'csv' | 'pdf') => {
+		setExportAnchorEl(null)
+		setIsExporting(true)
+		setErrorText(null)
+
+		try {
+			const blob = await ProfitAndLossExportApi({
+				fromDate: fromDate.startOf('day').valueOf(),
+				toDate: toDate.endOf('day').valueOf(),
+				format,
+			})
+
+			// Create a temporary object URL in browser memory
+			const url = window.URL.createObjectURL(blob)
+			const link = document.createElement('a')
+			link.href = url
+
+			const dateStr = dayjs().format('YYYY-MM-DD')
+			link.download = `pnl_report_${dateStr}.${format}`
+
+			document.body.appendChild(link)
+			link.click()
+
+			// Cleanup
+			document.body.removeChild(link)
+			window.URL.revokeObjectURL(url)
+		} catch (err) {
+			setErrorText(HandleApiError(err))
+		} finally {
+			setIsExporting(false)
+		}
+	}
 
 	const fetchReport = useCallback(() => {
 		setErrorText(null)
@@ -58,6 +97,7 @@ const ProfitAndLossReport: FC = () => {
 	}, [fromDate, toDate])
 
 	useEffect(() => {
+		// eslint-disable-next-line react-hooks/set-state-in-effect
 		fetchReport()
 	}, [fetchReport])
 
@@ -93,14 +133,32 @@ const ProfitAndLossReport: FC = () => {
 					>
 						{t('reports.profitAndLoss.runReport')}
 					</Button>
+
 					<Button
 						variant='outlined'
-						startIcon={<PrintIcon />}
+						startIcon={<FileDownloadIcon />}
+						onClick={e => setExportAnchorEl(e.currentTarget)}
+						loading={isExporting}
 						sx={{ ml: 'auto' }}
-						onClick={() => window.print()}
 					>
-						{t('common.details')}
+						{t('reports.exportAs')}
 					</Button>
+
+					<Menu
+						anchorEl={exportAnchorEl}
+						open={Boolean(exportAnchorEl)}
+						onClose={() => setExportAnchorEl(null)}
+					>
+						<MenuItem onClick={() => handleExport('xlsx')}>
+							{t('reports.exportExcel')}
+						</MenuItem>
+						<MenuItem onClick={() => handleExport('pdf')}>
+							{t('reports.exportPdf')}
+						</MenuItem>
+						<MenuItem onClick={() => handleExport('csv')}>
+							{t('reports.exportCsv')}
+						</MenuItem>
+					</Menu>
 				</Paper>
 
 				{errorText && <Alert severity='error'>{errorText}</Alert>}
