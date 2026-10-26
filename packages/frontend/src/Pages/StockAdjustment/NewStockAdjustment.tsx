@@ -33,6 +33,7 @@ import { MuiMoneyInput } from 'Components/MuiMoneyInput'
 import PageContainer from 'Components/PageContainer'
 import SelectProduct from 'Components/SelectResources/SelectProduct'
 
+import { safeDecimal } from 'Utils/DecimalUtils'
 import HandleApiError from 'Utils/HandleApiError'
 
 import ProductFindByIdApi from 'Api/Product/ProductFindByIdApi'
@@ -85,8 +86,8 @@ const NewStockAdjustment: FC = () => {
 	}
 
 	const calculateSubtotal = (quantity: string, unitCost: string): string => {
-		const qtyDec = new Decimal(quantity || '0')
-		const costDec = new Decimal(unitCost || '0')
+		const qtyDec = safeDecimal(quantity || '0')
+		const costDec = safeDecimal(unitCost || '0')
 		return qtyDec.times(costDec).toDecimalPlaces(4).toString()
 	}
 
@@ -150,7 +151,7 @@ const NewStockAdjustment: FC = () => {
 
 	const totalCost = useMemo(() => {
 		return items
-			.reduce((acc, item) => acc.plus(item.subtotalCost || '0'), new Decimal(0))
+			.reduce((acc, item) => acc.plus(safeDecimal(item.subtotalCost)), new Decimal(0))
 			.toDecimalPlaces(4)
 			.toString()
 	}, [items])
@@ -159,7 +160,12 @@ const NewStockAdjustment: FC = () => {
 		return (
 			!reason.trim() ||
 			items.length === 0 ||
-			items.some(item => !item.productId || new Decimal(item.quantity || 0).isZero())
+			items.some(item => {
+				if (!item.productId) return true
+				const qty = safeDecimal(item.quantity)
+				// Disallow submitting if quantity is 0 or still in incomplete '-' state
+				return qty.isZero() || item.quantity === '-' || item.quantity === '.'
+			})
 		)
 	}, [items, reason])
 

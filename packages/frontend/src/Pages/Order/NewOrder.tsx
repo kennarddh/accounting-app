@@ -33,6 +33,7 @@ import { MuiMoneyInput } from 'Components/MuiMoneyInput'
 import PageContainer from 'Components/PageContainer'
 import SelectProduct from 'Components/SelectResources/SelectProduct'
 
+import { safeDecimal } from 'Utils/DecimalUtils'
 import HandleApiError from 'Utils/HandleApiError'
 
 import OrderCreateApi from 'Api/Order/OrderCreateApi'
@@ -92,8 +93,8 @@ const NewOrder: FC = () => {
 	}
 
 	const calculateSubtotal = (quantity: string, unitPrice: string): string => {
-		const qtyDec = new Decimal(quantity || '0')
-		const priceDec = new Decimal(unitPrice || '0')
+		const qtyDec = safeDecimal(quantity || '0')
+		const priceDec = safeDecimal(unitPrice || '0')
 		return qtyDec.times(priceDec).toDecimalPlaces(4).toString()
 	}
 
@@ -145,7 +146,7 @@ const NewOrder: FC = () => {
 
 	const totalAmount = useMemo(() => {
 		return items
-			.reduce((acc, item) => acc.plus(item.subtotal || '0'), new Decimal(0))
+			.reduce((acc, item) => acc.plus(safeDecimal(item.subtotal || '0')), new Decimal(0))
 			.toDecimalPlaces(4)
 			.toString()
 	}, [items])
@@ -154,9 +155,12 @@ const NewOrder: FC = () => {
 		return (
 			!orderNumber.trim() ||
 			items.length === 0 ||
-			items.some(
-				item => !item.productId || new Decimal(item.quantity || 0).lessThanOrEqualTo(0),
-			)
+			items.some(item => {
+				if (!item.productId) return true
+				const qty = safeDecimal(item.quantity)
+				// Disallow submitting if quantity is 0 or still in incomplete '-' state
+				return qty.isZero() || item.quantity === '-' || item.quantity === '.'
+			})
 		)
 	}, [items, orderNumber])
 
