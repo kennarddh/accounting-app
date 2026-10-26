@@ -29,6 +29,7 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker'
 import { StockAdjustmentType } from '@accounting-app/common'
 import dayjs, { Dayjs } from 'dayjs'
 import { Decimal } from 'decimal.js'
+import Papa from 'papaparse'
 import { useTranslation } from 'react-i18next'
 
 import { MuiMoneyInput } from 'Components/MuiMoneyInput'
@@ -73,27 +74,10 @@ interface AdjustmentItemRow {
 	subtotalCost: string
 }
 
-// Helper to parse standard CSV text (handles commas, trims whitespace)
-const parseCSV = (text: string): { headers: string[]; rows: Record<string, string>[] } => {
-	const lines = text.split(/\r\n|\n/).filter(line => line.trim())
-	if (lines.length < 2) return { headers: [], rows: [] }
-
-	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-	const headers = lines[0]!.split(',').map(h => h.trim().toLowerCase().replace(/['"]+/g, ''))
-	const rows: Record<string, string>[] = []
-
-	for (let i = 1; i < lines.length; i++) {
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const values = lines[i]!.split(',').map(v => v.trim().replace(/['"]+/g, ''))
-		if (values.length === headers.length) {
-			const row: Record<string, string> = {}
-			headers.forEach((h, idx) => {
-				row[h] = values[idx] ?? ''
-			})
-			rows.push(row)
-		}
-	}
-	return { headers, rows }
+interface CSVStockRow {
+	sku?: string
+	quantity?: string
+	unitcost?: string
 }
 
 const NewStockAdjustment: FC = () => {
@@ -154,52 +138,69 @@ const NewStockAdjustment: FC = () => {
 		const file = event.target.files?.[0]
 		if (!file) return
 
-		try {
-			const text = await file.text()
-			const { headers, rows } = parseCSV(text)
+		Papa.parse<CSVStockRow>(file, {
+			header: true,
+			skipEmptyLines: 'greedy',
+			transformHeader: header => header.trim().toLowerCase().replace(/['"]+/g, ''),
+			complete: async results => {
+				const rows = results.data
 
-			if (!headers.includes('sku') || !headers.includes('quantity')) {
-				SetErrorText(t('stockAdjustments.bulkImport.invalidColumns'))
-				return
-			}
-
-			// Load products to match SKUs to product IDs & default costs
-			const productsRes = await ProductFindManyApi({ pagination: { limit: 100 } })
-			const skuMap = new Map(productsRes.list.map(p => [p.sku.toLowerCase(), p]))
-
-			const importedItems: AdjustmentItemRow[] = []
-
-			for (const row of rows) {
-				const sku = (row.sku ?? '').toLowerCase()
-				const qty = row.quantity ?? '0'
-				const product = skuMap.get(sku)
-
-				if (product) {
-					const unitCost = row.unitcost ?? product.costPrice
-					const subtotal = calculateSubtotal(qty, unitCost)
-
-					importedItems.push({
-						id: crypto.randomUUID(),
-						productId: product.id,
-						quantity: qty,
-						unitCost,
-						subtotalCost: subtotal,
-					})
+				if (rows.length === 0) {
+					SetErrorText(t('stockAdjustments.bulkImport.noMatchingProducts'))
+					return
 				}
-			}
 
-			if (importedItems.length === 0) {
-				SetErrorText(t('stockAdjustments.bulkImport.noMatchingProducts'))
-				return
-			}
+				// Validate essential columns
+				const firstRow = rows[0]
+				if (firstRow?.sku === undefined || firstRow.quantity === undefined) {
+					SetErrorText(t('stockAdjustments.bulkImport.invalidColumns'))
+					return
+				}
 
-			setItems(importedItems)
-			SetErrorText(null)
-		} catch {
-			SetErrorText(t('stockAdjustments.bulkImport.parsingError'))
-		} finally {
-			if (fileInputRef.current) fileInputRef.current.value = ''
-		}
+				try {
+					// Fetch products from backend to map SKUs to product IDs & default costs
+					const productsRes = await ProductFindManyApi({ pagination: { limit: 100 } })
+					const skuMap = new Map(productsRes.list.map(p => [p.sku.toLowerCase(), p]))
+
+					const importedItems: AdjustmentItemRow[] = []
+
+					for (const row of rows) {
+						const rawSku = (row.sku ?? '').trim().toLowerCase()
+						const rawQty = (row.quantity ?? '0').trim()
+						const product = skuMap.get(rawSku)
+
+						if (product) {
+							const unitCost = row.unitcost?.trim() ?? product.costPrice
+							const subtotal = calculateSubtotal(rawQty, unitCost)
+
+							importedItems.push({
+								id: crypto.randomUUID(),
+								productId: product.id,
+								quantity: rawQty,
+								unitCost,
+								subtotalCost: subtotal,
+							})
+						}
+					}
+
+					if (importedItems.length === 0) {
+						SetErrorText(t('stockAdjustments.bulkImport.noMatchingProducts'))
+						return
+					}
+
+					setItems(importedItems)
+					SetErrorText(null)
+				} catch (err) {
+					SetErrorText(HandleApiError(err))
+				} finally {
+					if (fileInputRef.current) fileInputRef.current.value = ''
+				}
+			},
+			error: () => {
+				SetErrorText(t('stockAdjustments.bulkImport.parsingError'))
+				if (fileInputRef.current) fileInputRef.current.value = ''
+			},
+		})
 	}
 
 	const handleAddItem = () => {
