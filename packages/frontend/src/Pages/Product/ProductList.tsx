@@ -21,9 +21,11 @@ import { useTranslation } from 'react-i18next'
 import ListPageTemplate, { ListPageTemplateHandle } from 'Components/ListPageTemplate'
 
 import CreateArrayConditional from 'Utils/CreateArrayConditional'
+import FormatCurrency from 'Utils/FormatCurrency'
 import HandleApiError from 'Utils/HandleApiError'
 import TransformGridGetRowsParams from 'Utils/TransformGridGetRowsParams'
 
+import useConfirm from 'Hooks/useConfirm'
 import useDebounce from 'Hooks/useDebounce'
 
 import ProductDisableApi from 'Api/Product/ProductDisableApi'
@@ -53,6 +55,8 @@ const ProductList: FC = () => {
 
 	const { t } = useTranslation()
 
+	const confirm = useConfirm()
+
 	const handleEnableDisableFilterChange = (
 		_: React.MouseEvent<HTMLElement>,
 		newValue: FilterEnableDisable | null,
@@ -67,19 +71,35 @@ const ProductList: FC = () => {
 		setEnableDisableFilter(FilterEnableDisable.All)
 	}, [])
 
-	const EnableDisable = useCallback(async (id: string, enable: boolean) => {
-		ListPageTemplateRef.current?.setLoading(true)
+	const EnableDisable = useCallback(
+		async (id: string, name: string, enable: boolean) => {
+			const isConfirmed = await confirm({
+				title: enable
+					? t('modals.confirmEnable.title', { item: t('products.sku') })
+					: t('modals.confirmDisable.title', { item: t('products.sku') }),
+				content: enable
+					? t('modals.confirmEnable.message', { name })
+					: t('modals.confirmDisable.message', { name }),
+				confirmColor: enable ? 'primary' : 'error',
+				confirmText: enable ? t('common.enable') : t('common.disable'),
+			})
 
-		try {
-			if (enable) await ProductEnableApi({ id })
-			else await ProductDisableApi({ id })
-		} catch (error) {
-			ListPageTemplateRef.current?.setError(HandleApiError(error))
-		} finally {
-			ListPageTemplateRef.current?.setLoading(false)
-			ListPageTemplateRef.current?.refresh()
-		}
-	}, [])
+			if (!isConfirmed) return
+
+			ListPageTemplateRef.current?.setLoading(true)
+
+			try {
+				if (enable) await ProductEnableApi({ id })
+				else await ProductDisableApi({ id })
+			} catch (error) {
+				ListPageTemplateRef.current?.setError(HandleApiError(error))
+			} finally {
+				ListPageTemplateRef.current?.setLoading(false)
+				ListPageTemplateRef.current?.refresh()
+			}
+		},
+		[confirm, t],
+	)
 
 	const Columns = useMemo<GridColDef<ProductFindManySingleOutput>[]>(
 		() => [
@@ -91,8 +111,20 @@ const ProductList: FC = () => {
 				flex: 1,
 				filterable: false,
 			},
-			{ field: 'price', headerName: t('products.price'), minWidth: 100, flex: 1 },
-			{ field: 'costPrice', headerName: t('products.costPrice'), minWidth: 100, flex: 1 },
+			{
+				field: 'price',
+				headerName: t('products.price'),
+				minWidth: 100,
+				flex: 1,
+				valueFormatter: (value: string) => FormatCurrency(value),
+			},
+			{
+				field: 'costPrice',
+				headerName: t('products.costPrice'),
+				minWidth: 100,
+				flex: 1,
+				valueFormatter: (value: string) => FormatCurrency(value),
+			},
 			{
 				field: 'currentStock',
 				headerName: t('products.currentStock'),
@@ -155,7 +187,7 @@ const ProductList: FC = () => {
 								key='enable'
 								label={t('common.enable')}
 								showInMenu
-								onClick={() => EnableDisable(params.row.id, true)}
+								onClick={() => EnableDisable(params.row.id, params.row.name, true)}
 							/>,
 						],
 						[
@@ -164,7 +196,7 @@ const ProductList: FC = () => {
 								key='disable'
 								label={t('common.disable')}
 								showInMenu
-								onClick={() => EnableDisable(params.row.id, false)}
+								onClick={() => EnableDisable(params.row.id, params.row.name, false)}
 							/>,
 						],
 					),

@@ -27,6 +27,7 @@ import { useTranslation } from 'react-i18next'
 
 import ListPageTemplate, { ListPageTemplateHandle } from 'Components/ListPageTemplate'
 
+import FormatCurrency from 'Utils/FormatCurrency'
 import TransformGridGetRowsParams from 'Utils/TransformGridGetRowsParams'
 
 import useDebounce from 'Hooks/useDebounce'
@@ -105,21 +106,25 @@ const OrderList: FC = () => {
 			{
 				field: 'totalAmount',
 				headerName: t('orders.totalAmount'),
-				width: 150,
+				width: 160,
 				align: 'right',
 				headerAlign: 'right',
 				renderCell: params => (
-					<span style={{ fontFamily: 'monospace' }}>{params.row.totalAmount}</span>
+					<span style={{ fontFamily: 'monospace', fontWeight: 600 }}>
+						{FormatCurrency(params.row.totalAmount)}
+					</span>
 				),
 			},
 			{
 				field: 'totalCost',
 				headerName: t('orders.totalCost'),
-				width: 150,
+				width: 160,
 				align: 'right',
 				headerAlign: 'right',
 				renderCell: params => (
-					<span style={{ fontFamily: 'monospace' }}>{params.row.totalCost}</span>
+					<span style={{ fontFamily: 'monospace' }}>
+						{FormatCurrency(params.row.totalCost)}
+					</span>
 				),
 			},
 			{

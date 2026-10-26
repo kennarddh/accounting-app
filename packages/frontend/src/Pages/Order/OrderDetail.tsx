@@ -2,8 +2,11 @@ import { FC, useEffect, useState } from 'react'
 
 import { useNavigate, useParams } from 'react-router'
 
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+
 import {
 	Box,
+	Button,
 	Chip,
 	FormControl,
 	Paper,
@@ -74,6 +77,31 @@ const OrderDetail: FC = () => {
 					gap: 2,
 				}}
 			>
+				<Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+					<Button
+						variant='outlined'
+						startIcon={<ContentCopyIcon />}
+						onClick={() =>
+							Navigate('/order/new', {
+								state: {
+									duplicateFromOrder: {
+										paymentMethod: order.paymentMethod,
+										items: order.items.map(item => ({
+											productId: item.product.id,
+											quantity: item.quantity,
+											unitPrice: item.unitPrice,
+											unitCost: item.unitCost,
+											subtotal: item.subtotal,
+										})),
+									},
+								},
+							})
+						}
+					>
+						{t('common.reorder')}
+					</Button>
+				</Box>
+
 				<Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
 					<FormControl sx={{ flex: 1, minWidth: 250 }}>
 						<TextField

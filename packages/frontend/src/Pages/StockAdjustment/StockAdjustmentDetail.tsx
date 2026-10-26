@@ -2,8 +2,11 @@ import { FC, useEffect, useState } from 'react'
 
 import { useNavigate, useParams } from 'react-router'
 
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+
 import {
 	Box,
+	Button,
 	Chip,
 	FormControl,
 	Paper,
@@ -76,6 +79,31 @@ const StockAdjustmentDetail: FC = () => {
 					gap: 2,
 				}}
 			>
+				<Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+					<Button
+						variant='outlined'
+						startIcon={<ContentCopyIcon />}
+						onClick={() =>
+							Navigate('/stock-adjustment/new', {
+								state: {
+									duplicateFromAdjustment: {
+										type: adjustment.type,
+										reason: `Copy of ${adjustment.adjustmentNumber}: ${adjustment.reason}`,
+										items: adjustment.items.map(item => ({
+											productId: item.product.id,
+											quantity: item.quantity,
+											unitCost: item.unitCost,
+											subtotalCost: item.subtotalCost,
+										})),
+									},
+								},
+							})
+						}
+					>
+						{t('common.duplicate')}
+					</Button>
+				</Box>
+
 				<Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
 					<FormControl sx={{ flex: 1, minWidth: 250 }}>
 						<TextField

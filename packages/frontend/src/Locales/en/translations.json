@@ -23,6 +23,7 @@
 		"currency": "{{value, currency(currency: IDR; maximumFractionDigits: 0)}}",
 		"duration": "{{value, duration}}",
 		"save": "Save",
+		"saveAndCreateAnother": "Save & Create Another",
 		"cancel": "Cancel",
 		"delete": "Delete",
 		"details": "Details",
@@ -32,7 +33,10 @@
 		"includeDisabled": "Include Disabled",
 		"includeInactive": "Include Inactive",
 		"loadMore": "Load More",
-		"loading": "Loading..."
+		"loading": "Loading...",
+		"duplicate": "Duplicate",
+		"reorder": "Re-order",
+		"createdSuccessfully": "{{item}} created successfully."
 	},
 	"auth": {
 		"name": "Name",
@@ -394,5 +398,19 @@
 		"add20k": "+20k",
 		"add50k": "+50k",
 		"add100k": "+100k"
+	},
+	"modals": {
+		"confirmDisable": {
+			"title": "Disable {{item}}",
+			"message": "Are you sure you want to disable \"{{name}}\"? It will no longer be available for transactions."
+		},
+		"confirmEnable": {
+			"title": "Enable {{item}}",
+			"message": "Are you sure you want to enable \"{{name}}\"?"
+		},
+		"confirmRevokeSession": {
+			"title": "Revoke User Session",
+			"message": "Are you sure you want to revoke the session for {{user}} from IP {{ip}}? The user will be logged out immediately."
+		}
 	}
 }

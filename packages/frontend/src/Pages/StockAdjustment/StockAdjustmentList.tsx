@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next'
 
 import ListPageTemplate, { ListPageTemplateHandle } from 'Components/ListPageTemplate'
 
+import FormatCurrency from 'Utils/FormatCurrency'
 import TransformGridGetRowsParams from 'Utils/TransformGridGetRowsParams'
 
 import useDebounce from 'Hooks/useDebounce'
@@ -93,7 +94,9 @@ const StockAdjustmentList: FC = () => {
 				align: 'right',
 				headerAlign: 'right',
 				renderCell: params => (
-					<span style={{ fontFamily: 'monospace' }}>{params.row.totalCost}</span>
+					<span style={{ fontFamily: 'monospace' }}>
+						{FormatCurrency(params.row.totalCost)}
+					</span>
 				),
 			},
 			{

@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next'
 
 import PWAManager from 'Components/PWAManager'
 
+import { ConfirmProvider } from 'Contexts/ConfirmContext'
 import PromptProvider from 'Contexts/Prompt'
 
 import MUILocaleMap, { DefaultMUILocale } from 'Constants/MUILocaleMap'
@@ -246,8 +247,10 @@ const App: FC = () => {
 			<ThemeProvider theme={theme} noSsr>
 				<LocalizationProvider dateAdapter={AdapterDayjs}>
 					<PromptProvider>
-						<PWAManager />
-						<RouterProvider router={router} />
+						<ConfirmProvider>
+							<PWAManager />
+							<RouterProvider router={router} />
+						</ConfirmProvider>
 					</PromptProvider>
 				</LocalizationProvider>
 			</ThemeProvider>

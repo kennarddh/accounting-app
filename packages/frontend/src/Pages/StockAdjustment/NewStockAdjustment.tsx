@@ -1,6 +1,6 @@
 import { FC, SubmitEvent, useCallback, useMemo, useState, useTransition } from 'react'
 
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 
 import AddIcon from '@mui/icons-material/Add'
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined'
@@ -47,19 +47,60 @@ interface AdjustmentItemRow {
 	subtotalCost: string
 }
 
+export interface DuplicateAdjustmentItemPayload {
+	productId: string
+	quantity: string
+	unitCost: string
+	subtotalCost: string
+}
+
+export interface DuplicateAdjustmentLocationState {
+	duplicateFromAdjustment?: {
+		type: StockAdjustmentType
+		reason: string
+		items: DuplicateAdjustmentItemPayload[]
+	}
+}
+
+interface AdjustmentItemRow {
+	id: string
+	productId: string | null
+	quantity: string
+	unitCost: string
+	subtotalCost: string
+}
+
 const NewStockAdjustment: FC = () => {
+	const location = useLocation()
+	const locationState = location.state as DuplicateAdjustmentLocationState | null
+	const duplicateData = locationState?.duplicateFromAdjustment
+
 	const [ErrorText, SetErrorText] = useState<string | null>(null)
 
 	const [adjustmentNumber, setAdjustmentNumber] = useState(
 		() => `ADJ-${dayjs().format('YYYYMMDD-HHmmss')}`,
 	)
 	const [date, setDate] = useState<Dayjs>(dayjs())
-	const [type, setType] = useState<StockAdjustmentType>(StockAdjustmentType.Correction)
-	const [reason, setReason] = useState('')
 
-	const [items, setItems] = useState<AdjustmentItemRow[]>([
-		{ id: '1', productId: null, quantity: '1', unitCost: '0', subtotalCost: '0' },
-	])
+	const [type, setType] = useState<StockAdjustmentType>(
+		() => duplicateData?.type ?? StockAdjustmentType.Correction,
+	)
+	const [reason, setReason] = useState<string>(() => duplicateData?.reason ?? '')
+
+	const [items, setItems] = useState<AdjustmentItemRow[]>(() => {
+		if (duplicateData?.items && duplicateData.items.length > 0) {
+			return duplicateData.items.map(
+				(item: DuplicateAdjustmentItemPayload): AdjustmentItemRow => ({
+					id: crypto.randomUUID(),
+					productId: item.productId,
+					quantity: item.quantity,
+					unitCost: item.unitCost,
+					subtotalCost: item.subtotalCost,
+				}),
+			)
+		}
+		return [{ id: '1', productId: null, quantity: '1', unitCost: '0', subtotalCost: '0' }]
+	})
 
 	const [isPending, startTransition] = useTransition()
 

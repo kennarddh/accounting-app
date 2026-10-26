@@ -1,6 +1,6 @@
 import { FC, SubmitEvent, useCallback, useMemo, useRef, useState, useTransition } from 'react'
 
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 
 import AddIcon from '@mui/icons-material/Add'
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined'
@@ -38,6 +38,7 @@ import { MuiMoneyInput } from 'Components/MuiMoneyInput'
 import PageContainer from 'Components/PageContainer'
 import SelectProduct from 'Components/SelectResources/SelectProduct'
 
+import { safeDecimal } from 'Utils/DecimalUtils'
 import HandleApiError from 'Utils/HandleApiError'
 
 import useKeyboardShortcuts from 'Hooks/useKeyboardShortcuts'
@@ -54,34 +55,68 @@ interface OrderItemRow {
 	subtotal: string
 }
 
-const safeDecimal = (val: string | number | null | undefined): Decimal => {
-	if (!val || val === '-' || val === '.' || val === '-.') return new Decimal(0)
-	try {
-		return new Decimal(val)
-	} catch {
-		return new Decimal(0)
+export interface DuplicateOrderItemPayload {
+	productId: string
+	quantity: string
+	unitPrice: string
+	unitCost: string
+	subtotal: string
+}
+
+export interface DuplicateOrderLocationState {
+	duplicateFromOrder?: {
+		paymentMethod: PaymentMethod
+		items: DuplicateOrderItemPayload[]
 	}
+}
+
+interface OrderItemRow {
+	id: string
+	productId: string | null
+	unitPrice: string
+	currentStock: string
+	quantity: string
+	subtotal: string
 }
 
 const NewOrder: FC = () => {
 	const [ErrorText, SetErrorText] = useState<string | null>(null)
 
+	const location = useLocation()
+	const locationState = location.state as DuplicateOrderLocationState | null
+	const duplicatedData = locationState?.duplicateFromOrder
+
 	const [orderNumber, setOrderNumber] = useState(() => `ORD-${dayjs().format('YYYYMMDD-HHmmss')}`)
 	const [date, setDate] = useState<Dayjs>(dayjs())
 	const [status, setStatus] = useState<OrderStatus>(OrderStatus.Completed)
-	const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.Cash)
 	const [cashTendered, setCashTendered] = useState<string>('')
 
-	const [items, setItems] = useState<OrderItemRow[]>([
-		{
-			id: '1',
-			productId: null,
-			unitPrice: '0',
-			currentStock: '0',
-			quantity: '1',
-			subtotal: '0',
-		},
-	])
+	const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
+		() => duplicatedData?.paymentMethod ?? PaymentMethod.Cash,
+	)
+
+	const [items, setItems] = useState<OrderItemRow[]>(() => {
+		if (duplicatedData?.items && duplicatedData.items.length > 0) {
+			return duplicatedData.items.map((item: DuplicateOrderItemPayload): OrderItemRow => ({
+				id: crypto.randomUUID(),
+				productId: item.productId,
+				quantity: item.quantity,
+				unitPrice: item.unitPrice,
+				currentStock: '0',
+				subtotal: item.subtotal,
+			}))
+		}
+		return [
+			{
+				id: '1',
+				productId: null,
+				unitPrice: '0',
+				currentStock: '0',
+				quantity: '1',
+				subtotal: '0',
+			},
+		]
+	})
 
 	const [isPending, startTransition] = useTransition()
 	const formRef = useRef<HTMLFormElement>(null)

@@ -1,8 +1,8 @@
-import { FC, SubmitEvent, useCallback, useState, useTransition } from 'react'
+import { FC, SubmitEvent, useCallback, useRef, useState, useTransition } from 'react'
 
 import { useNavigate } from 'react-router'
 
-import { Alert, Box, Button, FormControl, TextField } from '@mui/material'
+import { Alert, Box, Button, FormControl, Snackbar, TextField } from '@mui/material'
 
 import { useTranslation } from 'react-i18next'
 
@@ -16,6 +16,7 @@ import ProductCreateApi from 'Api/Product/ProductCreateApi'
 
 const NewProduct: FC = () => {
 	const [ErrorText, SetErrorText] = useState<string | null>(null)
+	const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
 	const [sku, setSku] = useState('')
 	const [Name, SetName] = useState('')
@@ -24,16 +25,24 @@ const NewProduct: FC = () => {
 	const [categoryId, setCategoryId] = useState<string | null>(null)
 
 	const [isPending, startTransition] = useTransition()
-
+	const keepOpenRef = useRef(false)
 	const Navigate = useNavigate()
-
 	const { t } = useTranslation()
 
-	const OnSubmit = useCallback(
-		(event: SubmitEvent<HTMLFormElement>) => {
-			event.preventDefault()
+	const resetForm = () => {
+		setSku('')
+		SetName('')
+		setPrice('')
+		setCostPrice('')
+		setCategoryId(null)
+		SetErrorText(null)
+	}
 
+	const executeSubmit = useCallback(
+		(keepOpen: boolean) => {
 			if (categoryId === null) return SetErrorText(t('errors.Product.CategoryRequired'))
+
+			keepOpenRef.current = keepOpen
 
 			startTransition(async () => {
 				try {
@@ -45,13 +54,27 @@ const NewProduct: FC = () => {
 						categoryId,
 					})
 
-					await Navigate('../')
+					if (keepOpenRef.current) {
+						setSuccessMessage(t('common.createdSuccessfully', { item: Name }))
+						resetForm()
+					} else {
+						await Navigate('../')
+					}
 				} catch (thrownError) {
 					SetErrorText(HandleApiError(thrownError))
 				}
 			})
 		},
-		[Name, Navigate, categoryId, costPrice, price, sku, t],
+		[sku, Name, price, costPrice, categoryId, t, Navigate, SetErrorText],
+	)
+
+	const OnSubmit = useCallback(
+		(event: SubmitEvent<HTMLFormElement>) => {
+			event.preventDefault()
+
+			executeSubmit(false)
+		},
+		[executeSubmit],
 	)
 
 	return (
@@ -60,17 +83,14 @@ const NewProduct: FC = () => {
 				component='form'
 				noValidate
 				onSubmit={OnSubmit}
-				sx={{
-					display: 'flex',
-					flexDirection: 'column',
-					gap: 2,
-				}}
+				sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
 			>
 				{ErrorText !== null ? (
 					<Alert severity='error' sx={{ width: '100%', whiteSpace: 'pre-line' }}>
 						{ErrorText}
 					</Alert>
 				) : null}
+
 				<FormControl fullWidth>
 					<TextField
 						value={sku}
@@ -118,10 +138,34 @@ const NewProduct: FC = () => {
 					onChange={setCategoryId}
 					onError={SetErrorText}
 				/>
-				<Button type='submit' variant='outlined' fullWidth loading={isPending}>
-					{t('common.submit')}
-				</Button>
+
+				<Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
+					<Button
+						type='submit'
+						variant='contained'
+						fullWidth
+						loading={isPending && !keepOpenRef.current}
+					>
+						{t('common.submit')}
+					</Button>
+					<Button
+						type='button'
+						variant='outlined'
+						fullWidth
+						loading={isPending && keepOpenRef.current}
+						onClick={() => executeSubmit(true)}
+					>
+						{t('common.saveAndCreateAnother')}
+					</Button>
+				</Box>
 			</Box>
+
+			<Snackbar
+				open={successMessage !== null}
+				autoHideDuration={4000}
+				onClose={() => setSuccessMessage(null)}
+				message={successMessage}
+			/>
 		</PageContainer>
 	)
 }
