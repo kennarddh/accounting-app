@@ -220,6 +220,10 @@ const router = createBrowserRouter([
 										path: 'profit-and-loss',
 										lazy: () => import('Pages/Report/ProfitAndLossReport'),
 									},
+									{
+										path: 'trial-balance',
+										lazy: () => import('Pages/Report/TrialBalanceReport'),
+									},
 								],
 							},
 						],

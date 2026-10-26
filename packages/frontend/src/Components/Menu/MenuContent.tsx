@@ -5,6 +5,7 @@ import { Link, useLocation } from 'react-router'
 import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded'
 import AssessmentRoundedIcon from '@mui/icons-material/AssessmentRounded'
 import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded'
+import FactCheckRoundedIcon from '@mui/icons-material/FactCheckRounded'
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded'
 import HowToRegRoundedIcon from '@mui/icons-material/HowToRegRounded'
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded'
@@ -79,6 +80,11 @@ const MenuContent: FC<{ onClickLink?: () => void }> = props => {
 				text: t('navigations.links.profitAndLoss'),
 				to: '/report/profit-and-loss',
 				icon: <AssessmentRoundedIcon fontSize='small' />,
+			},
+			{
+				text: t('navigations.links.trialBalance'),
+				to: '/report/trial-balance',
+				icon: <FactCheckRoundedIcon fontSize='small' />,
 			},
 		],
 		[t],

@@ -198,7 +198,8 @@
 			"products": "Products",
 			"stockAdjustments": "Stock Adjustments",
 			"orders": "Orders",
-			"profitAndLoss": "Profit & Loss"
+			"profitAndLoss": "Profit & Loss",
+			"trialBalance": "Trial Balance"
 		}
 	},
 	"accounts": {
@@ -394,7 +395,8 @@
 		"new": "New",
 		"edit": "Edit",
 		"report": "Reports",
-		"profit-and-loss": "Profit & Loss"
+		"profit-and-loss": "Profit & Loss",
+		"trial-balance": "Trial Balance"
 	},
 	"stockStatus": {
 		"inStock": "In Stock ({{count}})",
@@ -471,6 +473,20 @@
 			"totalExpenses": "Total Operating Expenses",
 			"empty": "No financial transactions found for this period.",
 			"runReport": "Run Report"
+		},
+		"trialBalance": {
+			"title": "Trial Balance",
+			"subtitle": "General Ledger Debit & Credit Verification",
+			"balanced": "Balanced",
+			"outOfBalance": "Out of Balance (Diff: {{diff}})",
+			"accountCode": "Account Code",
+			"accountName": "Account Name",
+			"accountType": "Type",
+			"debit": "Debit",
+			"credit": "Credit",
+			"totals": "Total Balances",
+			"runReport": "Run Report",
+			"empty": "No account activity recorded in this period."
 		}
 	}
 }
