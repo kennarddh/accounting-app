@@ -61,6 +61,7 @@ const BalanceSheetReport: FC = () => {
 	}, [asOfDate])
 
 	useEffect(() => {
+		// eslint-disable-next-line react-hooks/set-state-in-effect
 		fetchReport()
 	}, [fetchReport])
 
@@ -221,7 +222,11 @@ const BalanceSheetReport: FC = () => {
 										<TableCell width='70%' sx={{ fontWeight: 600 }}>
 											{t('reports.profitAndLoss.account')}
 										</TableCell>
-										<TableCell width='30%' align='right' sx={{ fontWeight: 600 }}>
+										<TableCell
+											width='30%'
+											align='right'
+											sx={{ fontWeight: 600 }}
+										>
 											{t('reports.profitAndLoss.amount')}
 										</TableCell>
 									</TableRow>
@@ -235,7 +240,10 @@ const BalanceSheetReport: FC = () => {
 									</TableRow>
 									{report.assets.items.length === 0 ? (
 										<TableRow>
-											<TableCell colSpan={2} sx={{ color: 'text.secondary', pl: 4 }}>
+											<TableCell
+												colSpan={2}
+												sx={{ color: 'text.secondary', pl: 4 }}
+											>
 												{t('reports.balanceSheet.empty')}
 											</TableCell>
 										</TableRow>
@@ -278,7 +286,10 @@ const BalanceSheetReport: FC = () => {
 									</TableRow>
 									{report.liabilities.items.length === 0 ? (
 										<TableRow>
-											<TableCell colSpan={2} sx={{ color: 'text.secondary', pl: 4 }}>
+											<TableCell
+												colSpan={2}
+												sx={{ color: 'text.secondary', pl: 4 }}
+											>
 												{t('reports.balanceSheet.empty')}
 											</TableCell>
 										</TableRow>
@@ -351,7 +362,9 @@ const BalanceSheetReport: FC = () => {
 									{/* GRAND TOTAL LIABILITIES + EQUITY */}
 									<TableRow
 										sx={{
-											backgroundColor: report.isBalanced ? '#f1f5f9' : '#fee2e2',
+											backgroundColor: report.isBalanced
+												? '#f1f5f9'
+												: '#fee2e2',
 											fontWeight: 'bold',
 										}}
 									>

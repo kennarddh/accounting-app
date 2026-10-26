@@ -5,7 +5,7 @@ export interface BalanceSheetExportParams {
 	format: 'xlsx' | 'csv' | 'pdf'
 }
 
-export const BalanceSheetExportApi = async (params: BalanceSheetExportParams): Promise<Blob> => {
+const BalanceSheetExportApi = async (params: BalanceSheetExportParams): Promise<Blob> => {
 	const response = await AuthenticatedAxiosInstance.get('/report/balance-sheet/export', {
 		params,
 		responseType: 'blob',

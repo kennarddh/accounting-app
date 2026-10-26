@@ -12,6 +12,7 @@ import HowToRegRoundedIcon from '@mui/icons-material/HowToRegRounded'
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded'
 import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded'
 import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded'
+import ReceiptRoundedIcon from '@mui/icons-material/ReceiptRounded'
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded'
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded'
 
@@ -91,6 +92,11 @@ const MenuContent: FC<{ onClickLink?: () => void }> = props => {
 				text: t('navigations.links.balanceSheet'),
 				to: '/report/balance-sheet',
 				icon: <AccountBalanceWalletRoundedIcon fontSize='small' />,
+			},
+			{
+				text: t('navigations.links.generalLedger'),
+				to: '/report/general-ledger',
+				icon: <ReceiptRoundedIcon fontSize='small' />,
 			},
 		],
 		[t],

@@ -228,6 +228,10 @@ const router = createBrowserRouter([
 										path: 'balance-sheet',
 										lazy: () => import('Pages/Report/BalanceSheetReport'),
 									},
+									{
+										path: 'general-ledger',
+										lazy: () => import('Pages/Report/GeneralLedgerReport'),
+									},
 								],
 							},
 						],

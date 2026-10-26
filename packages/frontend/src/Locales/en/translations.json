@@ -200,7 +200,8 @@
 			"orders": "Orders",
 			"profitAndLoss": "Profit & Loss",
 			"trialBalance": "Trial Balance",
-			"balanceSheet": "Balance Sheet"
+			"balanceSheet": "Balance Sheet",
+			"generalLedger": "General Ledger"
 		}
 	},
 	"accounts": {
@@ -398,7 +399,8 @@
 		"report": "Reports",
 		"profit-and-loss": "Profit & Loss",
 		"trial-balance": "Trial Balance",
-		"balance-sheet": "Balance Sheet"
+		"balance-sheet": "Balance Sheet",
+		"general-ledger": "General Ledger"
 	},
 	"stockStatus": {
 		"inStock": "In Stock ({{count}})",
@@ -507,6 +509,25 @@
 			"outOfBalance": "Out of Balance (Diff: {{diff}})",
 			"runReport": "Run Report",
 			"empty": "No balance sheet transactions found up to this date."
+		},
+		"generalLedger": {
+			"title": "General Ledger",
+			"subtitle": "Account Audit Trail & Running Balances",
+			"selectAccount": "Select Account",
+			"account": "Account",
+			"openingBalance": "Opening Balance",
+			"periodDebits": "Period Debits",
+			"periodCredits": "Period Credits",
+			"endingBalance": "Ending Balance",
+			"date": "Date",
+			"entryNumber": "Entry #",
+			"description": "Description",
+			"debit": "Debit",
+			"credit": "Credit",
+			"balance": "Running Balance",
+			"runReport": "Run Report",
+			"empty": "No transactions found for this account in the selected period.",
+			"normalBalance": "Normal Balance: {{type}}"
 		}
 	}
 }
