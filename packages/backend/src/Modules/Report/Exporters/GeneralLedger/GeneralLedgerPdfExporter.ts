@@ -4,15 +4,78 @@ import { GeneralLedgerReportData } from '../../ReportService'
 
 export const exportGeneralLedgerPdf = (report: GeneralLedgerReportData): Promise<Buffer> => {
 	return new Promise((resolve, reject) => {
-		const doc = new PDFDocument({ margin: 40, size: 'A4' })
+		// General Ledger with 6 columns is best formatted in Landscape
+		const doc = new PDFDocument({ margin: 40, size: 'A4', layout: 'landscape' })
 		const buffers: Buffer[] = []
 
 		doc.on('data', (b: Buffer) => buffers.push(b))
 		doc.on('end', () => resolve(Buffer.concat(buffers)))
 		doc.on('error', reject)
 
-		// Header
-		doc.fontSize(16).text('GENERAL LEDGER REPORT', { align: 'center' })
+		// Page dimensions (A4 Landscape: ~842 x 595, usable width = 762)
+		const startX = 40
+		const usableWidth = 762
+		const colWidths = {
+			date: 75,
+			entryNumber: 130,
+			description: 257,
+			debit: 100,
+			credit: 100,
+			balance: 100,
+		}
+
+		// Helper to render table headers
+		const renderTableHeader = () => {
+			doc.fontSize(9).fillColor('#0f172a').font('Helvetica-Bold')
+			const headerY = doc.y
+
+			doc.text('Date', startX, headerY, { width: colWidths.date })
+			doc.text('Entry #', startX + colWidths.date, headerY, { width: colWidths.entryNumber })
+			doc.text('Description', startX + colWidths.date + colWidths.entryNumber, headerY, {
+				width: colWidths.description,
+			})
+			doc.text(
+				'Debit (IDR)',
+				startX + colWidths.date + colWidths.entryNumber + colWidths.description,
+				headerY,
+				{ width: colWidths.debit, align: 'right' },
+			)
+			doc.text(
+				'Credit (IDR)',
+				startX +
+					colWidths.date +
+					colWidths.entryNumber +
+					colWidths.description +
+					colWidths.debit,
+				headerY,
+				{ width: colWidths.credit, align: 'right' },
+			)
+			doc.text(
+				'Balance (IDR)',
+				startX +
+					colWidths.date +
+					colWidths.entryNumber +
+					colWidths.description +
+					colWidths.debit +
+					colWidths.credit,
+				headerY,
+				{ width: colWidths.balance, align: 'right' },
+			)
+
+			doc.y = headerY + 14
+			doc.strokeColor('#cbd5e1')
+				.lineWidth(1)
+				.moveTo(startX, doc.y)
+				.lineTo(startX + usableWidth, doc.y)
+				.stroke()
+			doc.y += 6
+		}
+
+		// Document Header
+		doc.fontSize(16)
+			.font('Helvetica-Bold')
+			.fillColor('#0f172a')
+			.text('GENERAL LEDGER REPORT', { align: 'center' })
 		doc.fontSize(11)
 			.fillColor('#0284c7')
 			.text(`${report.account.code} - ${report.account.name} (${report.account.type})`, {
@@ -20,68 +83,19 @@ export const exportGeneralLedgerPdf = (report: GeneralLedgerReportData): Promise
 			})
 		doc.fontSize(9)
 			.fillColor('#64748b')
+			.font('Helvetica')
 			.text(
 				`Period: ${new Date(report.fromDate).toLocaleDateString()} to ${new Date(report.toDate).toLocaleDateString()}`,
 				{ align: 'center' },
 			)
 		doc.moveDown(1.5)
 
-		// Columns layout
-		const startX = 40
-		const colWidths = {
-			date: 65,
-			entryNumber: 95,
-			description: 145,
-			debit: 70,
-			credit: 70,
-			balance: 70,
-		}
+		renderTableHeader()
 
-		// Table Header
-		doc.fontSize(9).fillColor('#0f172a').font('Helvetica-Bold')
-		doc.text('Date', startX, doc.y, { width: colWidths.date })
-		doc.text('Entry #', startX + colWidths.date, doc.y, { width: colWidths.entryNumber })
-		doc.text('Description', startX + colWidths.date + colWidths.entryNumber, doc.y, {
-			width: colWidths.description,
-		})
-		doc.text(
-			'Debit (IDR)',
-			startX + colWidths.date + colWidths.entryNumber + colWidths.description,
-			doc.y,
-			{
-				width: colWidths.debit,
-				align: 'right',
-			},
-		)
-		doc.text(
-			'Credit (IDR)',
-			startX +
-				colWidths.date +
-				colWidths.entryNumber +
-				colWidths.description +
-				colWidths.debit,
-			doc.y,
-			{ width: colWidths.credit, align: 'right' },
-		)
-		doc.text(
-			'Balance',
-			startX +
-				colWidths.date +
-				colWidths.entryNumber +
-				colWidths.description +
-				colWidths.debit +
-				colWidths.credit,
-			doc.y,
-			{ width: colWidths.balance, align: 'right' },
-		)
-		doc.moveDown(0.5)
-
-		doc.strokeColor('#cbd5e1').lineWidth(1).moveTo(startX, doc.y).lineTo(555, doc.y).stroke()
-		doc.moveDown(0.4)
-
-		// Opening Balance Line
-		doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#475569')
-		doc.text('OPENING BALANCE', startX + colWidths.date + colWidths.entryNumber, doc.y, {
+		// Opening Balance Row
+		doc.font('Helvetica-Bold').fontSize(9).fillColor('#475569')
+		const openY = doc.y
+		doc.text('OPENING BALANCE', startX + colWidths.date + colWidths.entryNumber, openY, {
 			width: colWidths.description,
 		})
 		doc.text(
@@ -92,13 +106,13 @@ export const exportGeneralLedgerPdf = (report: GeneralLedgerReportData): Promise
 				colWidths.description +
 				colWidths.debit +
 				colWidths.credit,
-			doc.y,
+			openY,
 			{ width: colWidths.balance, align: 'right' },
 		)
-		doc.moveDown(0.5)
+		doc.y = openY + 16
 
-		// Transaction Lines
-		doc.font('Helvetica').fontSize(8).fillColor('#334155')
+		// Transaction Rows with dynamic row height
+		doc.font('Helvetica').fontSize(8.5).fillColor('#334155')
 
 		if (report.transactions.length === 0) {
 			doc.text(
@@ -106,9 +120,22 @@ export const exportGeneralLedgerPdf = (report: GeneralLedgerReportData): Promise
 				startX + colWidths.date + colWidths.entryNumber,
 				doc.y,
 			)
-			doc.moveDown(1)
+			doc.y += 18
 		} else {
 			for (const tx of report.transactions) {
+				// 1. Calculate dynamic height based on text wrapping of the description
+				const descHeight = doc.heightOfString(tx.description || '', {
+					width: colWidths.description,
+				})
+				const rowHeight = Math.max(14, descHeight)
+
+				// 2. Page break check: if row doesn't fit on page, add page and re-draw header
+				if (doc.y + rowHeight > doc.page.height - 50) {
+					doc.addPage()
+					renderTableHeader()
+					doc.font('Helvetica').fontSize(8.5).fillColor('#334155')
+				}
+
 				const currentY = doc.y
 
 				doc.text(new Date(tx.date).toLocaleDateString(), startX, currentY, {
@@ -118,7 +145,7 @@ export const exportGeneralLedgerPdf = (report: GeneralLedgerReportData): Promise
 					width: colWidths.entryNumber,
 				})
 				doc.text(
-					tx.description,
+					tx.description || '',
 					startX + colWidths.date + colWidths.entryNumber,
 					currentY,
 					{
@@ -152,16 +179,23 @@ export const exportGeneralLedgerPdf = (report: GeneralLedgerReportData): Promise
 					currentY,
 					{ width: colWidths.balance, align: 'right' },
 				)
-				doc.moveDown(0.4)
+
+				// 3. Move Y strictly below the longest cell + 4pt padding
+				doc.y = currentY + rowHeight + 4
 			}
 		}
 
-		doc.strokeColor('#0f172a').lineWidth(1).moveTo(startX, doc.y).lineTo(555, doc.y).stroke()
-		doc.moveDown(0.5)
+		// Divider
+		doc.strokeColor('#0f172a')
+			.lineWidth(1)
+			.moveTo(startX, doc.y)
+			.lineTo(startX + usableWidth, doc.y)
+			.stroke()
+		doc.y += 6
 
-		// Ending Totals Row
+		// Totals Row
 		const totalY = doc.y
-		doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#0f172a')
+		doc.font('Helvetica-Bold').fontSize(9).fillColor('#0f172a')
 		doc.text('TOTALS', startX, totalY, { width: colWidths.date + colWidths.entryNumber })
 		doc.text(
 			parseFloat(report.totalDebit).toLocaleString('id-ID'),

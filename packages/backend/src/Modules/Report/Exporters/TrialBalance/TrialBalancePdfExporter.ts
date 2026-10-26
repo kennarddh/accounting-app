@@ -56,6 +56,15 @@ export const exportTrialBalancePdf = (report: TrialBalanceReportData): Promise<B
 			doc.moveDown(1)
 		} else {
 			for (const item of report.items) {
+				// Calculate dynamic row height based on account name length
+				const nameHeight = doc.heightOfString(item.name || '', { width: colWidths.name })
+				const rowHeight = Math.max(14, nameHeight)
+
+				if (doc.y + rowHeight > doc.page.height - 50) {
+					doc.addPage()
+					doc.font('Helvetica').fontSize(9).fillColor('#334155')
+				}
+
 				const currentY = doc.y
 
 				doc.text(item.code, startX, currentY, { width: colWidths.code })
@@ -79,7 +88,9 @@ export const exportTrialBalancePdf = (report: TrialBalanceReportData): Promise<B
 					currentY,
 					{ width: colWidths.credit, align: 'right' },
 				)
-				doc.moveDown(0.5)
+
+				// Advance by actual row height
+				doc.y = currentY + rowHeight + 3
 			}
 		}
 
