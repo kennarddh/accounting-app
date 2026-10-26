@@ -366,5 +366,33 @@
 				"QRIS": "QRIS"
 			}
 		}
+	},
+	"breadcrumbs": {
+		"home": "Home",
+		"user": "Users",
+		"session": "Sessions",
+		"account": "Accounts",
+		"journal": "Journal",
+		"category": "Categories",
+		"product": "Products",
+		"stock-adjustment": "Stock Adjustments",
+		"order": "Orders",
+		"new": "New",
+		"edit": "Edit"
+	},
+	"stockStatus": {
+		"inStock": "In Stock ({{count}})",
+		"lowStock": "Low Stock ({{count}})",
+		"outOfStock": "Out of Stock ({{count}})"
+	},
+	"cashCalculator": {
+		"title": "Cash Payment & Change Calculator",
+		"cashTendered": "Cash Received (Tendered)",
+		"changeDue": "Change Due",
+		"exact": "Exact",
+		"add10k": "+10k",
+		"add20k": "+20k",
+		"add50k": "+50k",
+		"add100k": "+100k"
 	}
 }

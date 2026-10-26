@@ -2,7 +2,7 @@ import { FC, useCallback, useMemo, useState } from 'react'
 
 import SearchIcon from '@mui/icons-material/Search'
 
-import { InputAdornment, TextField } from '@mui/material'
+import { Chip, InputAdornment, TextField } from '@mui/material'
 import {
 	GridColDef,
 	GridDataSource,
@@ -55,16 +55,43 @@ const SelectProduct: FC<SelectResourceProps> = props => {
 				filterable: false,
 			},
 			{
-				field: 'costPrice',
-				headerName: t('products.costPrice'),
+				field: 'price',
+				headerName: t('products.price'),
 				width: 130,
 				filterable: false,
 			},
 			{
 				field: 'currentStock',
 				headerName: t('products.currentStock'),
-				width: 100,
+				width: 160,
 				filterable: false,
+				renderCell: params => {
+					const stock = parseFloat(params.row.currentStock || '0')
+
+					let label: string
+					let color: 'error' | 'warning' | 'success'
+
+					if (stock <= 0) {
+						label = t('stockStatus.outOfStock', { count: stock })
+						color = 'error'
+					} else if (stock <= 5) {
+						label = t('stockStatus.lowStock', { count: stock })
+						color = 'warning'
+					} else {
+						label = t('stockStatus.inStock', { count: stock })
+						color = 'success'
+					}
+
+					return (
+						<Chip
+							label={label}
+							color={color}
+							size='small'
+							variant={stock <= 5 ? 'filled' : 'outlined'}
+							sx={{ fontWeight: stock <= 5 ? 600 : 400 }}
+						/>
+					)
+				},
 			},
 		],
 		[t],
