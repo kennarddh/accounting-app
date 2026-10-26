@@ -35,7 +35,7 @@ import PageContainer from 'Components/PageContainer'
 
 import HandleApiError from 'Utils/HandleApiError'
 
-import AccountFindManyApi from 'Api/Account/AccountFindManyApi'
+import AccountFindOptionsApi from 'Api/Account/AccountFindOptionsApi'
 import JournalEntryCreateApi from 'Api/Journal/JournalEntryCreateApi'
 
 interface LineRow {
@@ -115,16 +115,12 @@ const NewJournalEntry: FC = () => {
 
 	useEffect(() => {
 		const main = async () => {
-			// TODO: Replace with search and limit for > 100 accounts autocomplete with dynamic content
-			const accounts = await AccountFindManyApi({ pagination: { limit: 100 } })
-
-			setAccounts(
-				accounts.list.map(account => ({
-					id: account.id,
-					code: account.code,
-					name: account.name,
-				})),
-			)
+			try {
+				const activeAccounts = await AccountFindOptionsApi()
+				setAccounts(activeAccounts)
+			} catch (error) {
+				console.error('Failed to load accounts for dropdown:', error)
+			}
 		}
 
 		main().catch((error: unknown) => console.error('JournalEntryCreate load error', error))

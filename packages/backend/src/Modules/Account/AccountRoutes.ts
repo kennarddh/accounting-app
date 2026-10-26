@@ -6,12 +6,14 @@ import CreateAccount from './Controllers/CreateAccount'
 import DisableAccount from './Controllers/DisableAccount'
 import EnableAccount from './Controllers/EnableAccount'
 import FindAccountById from './Controllers/FindAccountById'
+import FindAccountOptions from './Controllers/FindAccountOptions'
 import FindManyAccounts from './Controllers/FindManyAccounts'
 import UpdateAccount from './Controllers/UpdateAccount'
 
 const AccountRouter = new CelosiaRouter({ strict: true })
 
 AccountRouter.get('/', [new VerifyJWT()], new FindManyAccounts())
+AccountRouter.get('/options', [new VerifyJWT()], new FindAccountOptions())
 AccountRouter.post('/', [new VerifyJWT()], new CreateAccount())
 AccountRouter.patch('/:id', [new VerifyJWT()], new UpdateAccount())
 AccountRouter.get('/:id', [new VerifyJWT()], new FindAccountById())

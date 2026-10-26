@@ -199,6 +199,19 @@ class AccountService extends Service {
 			handlePrismaError(error, ApiErrorResource.Account)
 		}
 	}
+
+	async findOptions() {
+		return await this.db.client.account.findMany({
+			where: { disabledAt: null },
+			select: {
+				id: true,
+				code: true,
+				name: true,
+				type: true,
+			},
+			orderBy: { code: 'asc' },
+		})
+	}
 }
 
 export default AccountService

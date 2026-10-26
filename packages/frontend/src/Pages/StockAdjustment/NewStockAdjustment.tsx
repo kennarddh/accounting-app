@@ -40,7 +40,7 @@ import { safeDecimal } from 'Utils/DecimalUtils'
 import HandleApiError from 'Utils/HandleApiError'
 
 import ProductFindByIdApi from 'Api/Product/ProductFindByIdApi'
-import ProductFindManyApi from 'Api/Product/ProductFindManyApi'
+import ProductFindLookupApi from 'Api/Product/ProductFindLookupApi'
 import StockAdjustmentCreateApi from 'Api/StockAdjustment/StockAdjustmentCreateApi'
 
 interface AdjustmentItemRow {
@@ -159,8 +159,9 @@ const NewStockAdjustment: FC = () => {
 
 				try {
 					// Fetch products from backend to map SKUs to product IDs & default costs
-					const productsRes = await ProductFindManyApi({ pagination: { limit: 100 } })
-					const skuMap = new Map(productsRes.list.map(p => [p.sku.toLowerCase(), p]))
+					const products = await ProductFindLookupApi()
+
+					const skuMap = new Map(products.map(p => [p.sku.toLowerCase(), p]))
 
 					const importedItems: AdjustmentItemRow[] = []
 

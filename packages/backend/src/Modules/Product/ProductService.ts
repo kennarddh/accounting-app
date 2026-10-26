@@ -191,6 +191,21 @@ class ProductService extends Service {
 			handlePrismaError(error, ApiErrorResource.Product)
 		}
 	}
+
+	async findLookup() {
+		return await this.db.client.product.findMany({
+			where: { disabledAt: null },
+			select: {
+				id: true,
+				sku: true,
+				name: true,
+				price: true,
+				costPrice: true,
+				currentStock: true,
+			},
+			orderBy: { sku: 'asc' },
+		})
+	}
 }
 
 export default ProductService
