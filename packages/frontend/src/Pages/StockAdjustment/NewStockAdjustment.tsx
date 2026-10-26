@@ -1,9 +1,11 @@
-import { FC, SubmitEvent, useCallback, useMemo, useState, useTransition } from 'react'
+import { FC, SubmitEvent, useCallback, useMemo, useRef, useState, useTransition } from 'react'
 
 import { useLocation, useNavigate } from 'react-router'
 
 import AddIcon from '@mui/icons-material/Add'
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined'
+import DownloadIcon from '@mui/icons-material/Download'
+import UploadFileIcon from '@mui/icons-material/UploadFile'
 
 import {
 	Alert,
@@ -37,6 +39,7 @@ import { safeDecimal } from 'Utils/DecimalUtils'
 import HandleApiError from 'Utils/HandleApiError'
 
 import ProductFindByIdApi from 'Api/Product/ProductFindByIdApi'
+import ProductFindManyApi from 'Api/Product/ProductFindManyApi'
 import StockAdjustmentCreateApi from 'Api/StockAdjustment/StockAdjustmentCreateApi'
 
 interface AdjustmentItemRow {
@@ -68,6 +71,29 @@ interface AdjustmentItemRow {
 	quantity: string
 	unitCost: string
 	subtotalCost: string
+}
+
+// Helper to parse standard CSV text (handles commas, trims whitespace)
+const parseCSV = (text: string): { headers: string[]; rows: Record<string, string>[] } => {
+	const lines = text.split(/\r\n|\n/).filter(line => line.trim())
+	if (lines.length < 2) return { headers: [], rows: [] }
+
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	const headers = lines[0]!.split(',').map(h => h.trim().toLowerCase().replace(/['"]+/g, ''))
+	const rows: Record<string, string>[] = []
+
+	for (let i = 1; i < lines.length; i++) {
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const values = lines[i]!.split(',').map(v => v.trim().replace(/['"]+/g, ''))
+		if (values.length === headers.length) {
+			const row: Record<string, string> = {}
+			headers.forEach((h, idx) => {
+				row[h] = values[idx] ?? ''
+			})
+			rows.push(row)
+		}
+	}
+	return { headers, rows }
 }
 
 const NewStockAdjustment: FC = () => {
@@ -107,6 +133,74 @@ const NewStockAdjustment: FC = () => {
 	const Navigate = useNavigate()
 
 	const { t } = useTranslation()
+
+	const fileInputRef = useRef<HTMLInputElement>(null)
+
+	// Downloads a clean template CSV for stock counting
+	const handleDownloadTemplate = () => {
+		const csvContent =
+			'data:text/csv;charset=utf-8,sku,quantity,unitCost\nBEV-001,5,8000\nBAK-001,-2,11000\n'
+		const encodedUri = encodeURI(csvContent)
+		const link = document.createElement('a')
+		link.setAttribute('href', encodedUri)
+		link.setAttribute('download', 'stock_count_template.csv')
+		document.body.appendChild(link)
+		link.click()
+		document.body.removeChild(link)
+	}
+
+	// Handles parsing uploaded CSV and resolving SKUs against the product database
+	const handleCSVUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0]
+		if (!file) return
+
+		try {
+			const text = await file.text()
+			const { headers, rows } = parseCSV(text)
+
+			if (!headers.includes('sku') || !headers.includes('quantity')) {
+				SetErrorText(t('stockAdjustments.bulkImport.invalidColumns'))
+				return
+			}
+
+			// Load products to match SKUs to product IDs & default costs
+			const productsRes = await ProductFindManyApi({ pagination: { limit: 100 } })
+			const skuMap = new Map(productsRes.list.map(p => [p.sku.toLowerCase(), p]))
+
+			const importedItems: AdjustmentItemRow[] = []
+
+			for (const row of rows) {
+				const sku = (row.sku ?? '').toLowerCase()
+				const qty = row.quantity ?? '0'
+				const product = skuMap.get(sku)
+
+				if (product) {
+					const unitCost = row.unitcost ?? product.costPrice
+					const subtotal = calculateSubtotal(qty, unitCost)
+
+					importedItems.push({
+						id: crypto.randomUUID(),
+						productId: product.id,
+						quantity: qty,
+						unitCost,
+						subtotalCost: subtotal,
+					})
+				}
+			}
+
+			if (importedItems.length === 0) {
+				SetErrorText(t('stockAdjustments.bulkImport.noMatchingProducts'))
+				return
+			}
+
+			setItems(importedItems)
+			SetErrorText(null)
+		} catch {
+			SetErrorText(t('stockAdjustments.bulkImport.parsingError'))
+		} finally {
+			if (fileInputRef.current) fileInputRef.current.value = ''
+		}
+	}
 
 	const handleAddItem = () => {
 		setItems(prev => [
@@ -303,6 +397,53 @@ const NewStockAdjustment: FC = () => {
 						required
 					/>
 				</FormControl>
+
+				<Box
+					sx={{
+						display: 'flex',
+						gap: 1,
+						mb: 1.5,
+						alignItems: 'center',
+						flexWrap: 'wrap',
+					}}
+				>
+					{/* Hidden native input */}
+					<input
+						type='file'
+						accept='.csv'
+						ref={fileInputRef}
+						style={{ display: 'none' }}
+						onChange={handleCSVUpload}
+					/>
+
+					<Button
+						startIcon={<AddIcon />}
+						variant='outlined'
+						size='small'
+						onClick={handleAddItem}
+					>
+						{t('stockAdjustments.addItem')}
+					</Button>
+
+					<Button
+						startIcon={<UploadFileIcon />}
+						variant='outlined'
+						color='secondary'
+						size='small'
+						onClick={() => fileInputRef.current?.click()}
+					>
+						{t('stockAdjustments.bulkImport.uploadCountSheet')}
+					</Button>
+
+					<Button
+						startIcon={<DownloadIcon />}
+						variant='text'
+						size='small'
+						onClick={handleDownloadTemplate}
+					>
+						{t('stockAdjustments.bulkImport.downloadTemplate')}
+					</Button>
+				</Box>
 
 				<TableContainer component={Paper} variant='outlined' sx={{ mb: 2 }}>
 					<Table size='small'>

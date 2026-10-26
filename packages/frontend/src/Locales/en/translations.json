@@ -331,6 +331,13 @@
 				"Correction": "Correction",
 				"Restock": "Restock"
 			}
+		},
+		"bulkImport": {
+			"uploadCountSheet": "Upload Count Sheet (CSV)",
+			"downloadTemplate": "Download Template",
+			"parsingError": "Failed to parse CSV file. Ensure valid CSV format.",
+			"invalidColumns": "Missing required header: 'sku' or 'quantity'.",
+			"noMatchingProducts": "No valid product SKUs found in the CSV."
 		}
 	},
 	"orders": {
