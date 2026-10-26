@@ -2,7 +2,6 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useNavigate, useSearchParams } from 'react-router'
 
-import EditIcon from '@mui/icons-material/Edit'
 import SearchIcon from '@mui/icons-material/Search'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
@@ -20,7 +19,6 @@ import { useTranslation } from 'react-i18next'
 
 import ListPageTemplate, { ListPageTemplateHandle } from 'Components/ListPageTemplate'
 
-import CreateArrayConditional from 'Utils/CreateArrayConditional'
 import TransformGridGetRowsParams from 'Utils/TransformGridGetRowsParams'
 
 import useDebounce from 'Hooks/useDebounce'
@@ -57,28 +55,15 @@ const JournalList: FC = () => {
 			{
 				field: 'actions',
 				type: 'actions',
-				width: 120,
-				getActions: params =>
-					CreateArrayConditional(
-						[
-							true,
-							<GridActionsCellItem
-								key='seeDetail'
-								icon={<VisibilityIcon />}
-								label={t('common.seeDetail')}
-								onClick={() => Navigate(params.row.id)}
-							/>,
-						],
-						[
-							true,
-							<GridActionsCellItem
-								key='edit'
-								icon={<EditIcon />}
-								label={t('common.edit')}
-								onClick={() => Navigate(`${params.row.id}/edit`)}
-							/>,
-						],
-					),
+				width: 80,
+				getActions: params => [
+					<GridActionsCellItem
+						key='seeDetail'
+						icon={<VisibilityIcon />}
+						label={t('common.seeDetail')}
+						onClick={() => Navigate(params.row.id)}
+					/>,
+				],
 			},
 		],
 		[Navigate, t],

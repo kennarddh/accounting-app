@@ -1,6 +1,6 @@
 import { FC, SubmitEvent, useCallback, useEffect, useMemo, useState, useTransition } from 'react'
 
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 
 import AddIcon from '@mui/icons-material/Add'
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined'
@@ -52,23 +52,64 @@ interface Account {
 	name: string
 }
 
+export interface ReverseJournalLinePayload {
+	accountId: string
+	debit: string
+	credit: string
+	description: string
+}
+
+export interface ReverseJournalLocationState {
+	reverseFromJournal?: {
+		entryNumber: string
+		description: string
+		lines: ReverseJournalLinePayload[]
+	}
+}
+
 const NewJournalEntry: FC = () => {
+	const { t } = useTranslation()
+
+	const location = useLocation()
+	const locationState = location.state as ReverseJournalLocationState | null
+	const reverseData = locationState?.reverseFromJournal
+
 	const [ErrorText, SetErrorText] = useState<string | null>(null)
 
-	const [entryNumber, setEntryNumber] = useState('')
 	const [date, setDate] = useState<Dayjs>(dayjs())
-	const [description, setDescription] = useState('')
+
+	const [entryNumber, setEntryNumber] = useState(() =>
+		reverseData ? `REV-${reverseData.entryNumber}` : '',
+	)
+	const [description, setDescription] = useState(() =>
+		reverseData
+			? t('journal.reversalDescription', {
+					entryNumber: reverseData.entryNumber,
+					description: reverseData.description,
+				})
+			: '',
+	)
+
+	const [lines, setLines] = useState<LineRow[]>(() => {
+		if (reverseData?.lines && reverseData.lines.length > 0) {
+			return reverseData.lines.map((line: ReverseJournalLinePayload) => ({
+				id: crypto.randomUUID(),
+				accountId: line.accountId,
+				// Swap debit and credit:
+				debit: line.credit || '',
+				credit: line.debit || '',
+				description: `Reversal: ${line.description}`,
+			}))
+		}
+		return [
+			{ id: '1', accountId: '', debit: '', credit: '', description: '' },
+			{ id: '2', accountId: '', debit: '', credit: '', description: '' },
+		]
+	})
 
 	const [isPending, startTransition] = useTransition()
 
 	const Navigate = useNavigate()
-
-	const { t } = useTranslation()
-
-	const [lines, setLines] = useState<LineRow[]>([
-		{ id: '1', accountId: '', debit: '', credit: '', description: '' },
-		{ id: '2', accountId: '', debit: '', credit: '', description: '' },
-	])
 
 	const [accounts, setAccounts] = useState<Account[]>([])
 

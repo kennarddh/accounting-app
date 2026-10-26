@@ -2,8 +2,11 @@ import { FC, useEffect, useState } from 'react'
 
 import { useNavigate, useParams } from 'react-router'
 
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz'
+
 import {
 	Box,
+	Button,
 	FormControl,
 	Paper,
 	Table,
@@ -63,6 +66,32 @@ const JournalEntryDetail: FC = () => {
 
 	return (
 		<PageContainer title={t('journal.detail.title')}>
+			<Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mb: 2 }}>
+				<Button
+					variant='outlined'
+					color='warning'
+					startIcon={<SwapHorizIcon />}
+					onClick={() =>
+						Navigate('/journal/new', {
+							state: {
+								reverseFromJournal: {
+									entryNumber: journalEntry.entryNumber,
+									description: journalEntry.description,
+									lines: journalEntry.lines.map(line => ({
+										accountId: line.account.id,
+										debit: line.debit,
+										credit: line.credit,
+										description: line.description,
+									})),
+								},
+							},
+						})
+					}
+				>
+					{t('common.reverse')}
+				</Button>
+			</Box>
+
 			<Box
 				sx={{
 					display: 'flex',

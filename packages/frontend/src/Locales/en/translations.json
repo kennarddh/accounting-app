@@ -36,7 +36,8 @@
 		"loading": "Loading...",
 		"duplicate": "Duplicate",
 		"reorder": "Re-order",
-		"createdSuccessfully": "{{item}} created successfully."
+		"createdSuccessfully": "{{item}} created successfully.",
+		"reverse": "Reverse Entry"
 	},
 	"auth": {
 		"name": "Name",
@@ -243,6 +244,7 @@
 		"selectAccount": "Select Account",
 		"totals": "Totals",
 		"addLine": "Add Line",
+		"reversalDescription": "Reversal of {{entryNumber}}: {{description}}",
 		"new": {
 			"title": "New Journal Entry"
 		},
