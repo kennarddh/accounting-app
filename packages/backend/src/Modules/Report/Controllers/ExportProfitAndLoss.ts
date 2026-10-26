@@ -25,16 +25,17 @@ class ExportProfitAndLoss extends Controller {
 		const dateStr = new Date().toISOString().slice(0, 10)
 
 		if (format === 'csv') {
-			const csv = this.reportService.generateProfitAndLossCSV(report)
+			const csvBuffer = await this.reportService.exportProfitAndLossCsv(report)
 
 			response.header({
 				'Content-Type': 'text/csv; charset=utf-8',
 				'Content-Disposition': `attachment; filename="pnl_report_${dateStr}.csv"`,
 			})
 
-			response.expressResponse.send(csv)
+			response.expressResponse.end(csvBuffer)
 		} else if (format === 'pdf') {
-			const pdfBuffer = await this.reportService.generateProfitAndLossPDF(report)
+			const pdfBuffer = await this.reportService.exportProfitAndLossPdf(report)
+
 			response.header({
 				'Content-Type': 'application/pdf',
 				'Content-Disposition': `attachment; filename="pnl_report_${dateStr}.pdf"`,
@@ -43,7 +44,8 @@ class ExportProfitAndLoss extends Controller {
 			response.expressResponse.end(pdfBuffer)
 		} else {
 			// Default: Excel (.xlsx)
-			const excelBuffer = await this.reportService.generateProfitAndLossExcel(report)
+			const excelBuffer = await this.reportService.exportProfitAndLossExcel(report)
+
 			response.header({
 				'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 				'Content-Disposition': `attachment; filename="pnl_report_${dateStr}.xlsx"`,
