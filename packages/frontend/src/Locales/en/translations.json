@@ -197,7 +197,8 @@
 			"categories": "Categories",
 			"products": "Products",
 			"stockAdjustments": "Stock Adjustments",
-			"orders": "Orders"
+			"orders": "Orders",
+			"profitAndLoss": "Profit & Loss"
 		}
 	},
 	"accounts": {
@@ -391,7 +392,9 @@
 		"stock-adjustment": "Stock Adjustments",
 		"order": "Orders",
 		"new": "New",
-		"edit": "Edit"
+		"edit": "Edit",
+		"report": "Reports",
+		"profit-and-loss": "Profit & Loss"
 	},
 	"stockStatus": {
 		"inStock": "In Stock ({{count}})",
@@ -446,5 +449,24 @@
 			"empty": "No recent stock adjustments found."
 		},
 		"viewAll": "View all"
+	},
+	"reports": {
+		"profitAndLoss": {
+			"title": "Profit & Loss Statement",
+			"subtitle": "Income Statement (GAAP)",
+			"operatingRevenues": "Operating Revenues",
+			"cogs": "Cost of Goods Sold (COGS)",
+			"grossProfit": "Gross Profit",
+			"operatingExpenses": "Operating Expenses",
+			"netProfit": "Net Profit",
+			"netLoss": "Net Loss",
+			"account": "Account",
+			"amount": "Amount",
+			"totalRevenues": "Total Revenues",
+			"totalCogs": "Total Cost of Goods Sold",
+			"totalExpenses": "Total Operating Expenses",
+			"empty": "No financial transactions found for this period.",
+			"runReport": "Run Report"
+		}
 	}
 }

@@ -3,6 +3,7 @@ import { FC, JSX, useMemo } from 'react'
 import { Link, useLocation } from 'react-router'
 
 import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded'
+import AssessmentRoundedIcon from '@mui/icons-material/AssessmentRounded'
 import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded'
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded'
 import HowToRegRoundedIcon from '@mui/icons-material/HowToRegRounded'
@@ -73,6 +74,11 @@ const MenuContent: FC<{ onClickLink?: () => void }> = props => {
 				text: t('navigations.links.orders'),
 				to: '/order',
 				icon: <ShoppingCartRoundedIcon fontSize='small' />, // POS / Orders / Sales
+			},
+			{
+				text: t('navigations.links.profitAndLoss'),
+				to: '/report/profit-and-loss',
+				icon: <AssessmentRoundedIcon fontSize='small' />,
 			},
 		],
 		[t],

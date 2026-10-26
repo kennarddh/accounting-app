@@ -213,6 +213,15 @@ const router = createBrowserRouter([
 									},
 								],
 							},
+							{
+								path: 'report',
+								children: [
+									{
+										path: 'profit-and-loss',
+										lazy: () => import('Pages/Report/ProfitAndLossReport'),
+									},
+								],
+							},
 						],
 					},
 				],
