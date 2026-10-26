@@ -236,6 +236,10 @@ const router = createBrowserRouter([
 										path: 'z-report',
 										lazy: () => import('Pages/Report/ZReportPage'),
 									},
+									{
+										path: 'sales-by-product',
+										lazy: () => import('Pages/Report/SalesByProductReport'),
+									},
 								],
 							},
 						],

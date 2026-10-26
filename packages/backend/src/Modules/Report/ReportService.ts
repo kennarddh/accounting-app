@@ -16,12 +16,68 @@ import { exportGeneralLedgerPdf } from './Exporters/GeneralLedger/GeneralLedgerP
 import { exportProfitAndLossCsv } from './Exporters/ProfitAndLoss/ProfitAndLossCsvExporter'
 import { exportProfitAndLossExcel } from './Exporters/ProfitAndLoss/ProfitAndLossExcelExporter'
 import { exportProfitAndLossPdf } from './Exporters/ProfitAndLoss/ProfitAndLossPdfExporter'
+import { exportSalesByProductCsv } from './Exporters/SalesByProduct/SalesByProductCsvExporter'
+import { exportSalesByProductExcel } from './Exporters/SalesByProduct/SalesByProductExcelExporter'
+import { exportSalesByProductPdf } from './Exporters/SalesByProduct/SalesByProductPdfExporter'
 import { exportTrialBalanceCsv } from './Exporters/TrialBalance/TrialBalanceCsvExporter'
 import { exportTrialBalanceExcel } from './Exporters/TrialBalance/TrialBalanceExcelExporter'
 import { exportTrialBalancePdf } from './Exporters/TrialBalance/TrialBalancePdfExporter'
 import { exportZReportCsv } from './Exporters/ZReport/ZReportCsvExporter'
 import { exportZReportExcel } from './Exporters/ZReport/ZReportExcelExporter'
 import { exportZReportPdf } from './Exporters/ZReport/ZReportPdfExporter'
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type ProductSalesLine = {
+	productId: string
+	sku: string
+	name: string
+	categoryId: string
+	categoryName: string
+	quantitySold: string
+	totalRevenue: string
+	totalCost: string
+	grossProfit: string
+	marginPercent: string
+}
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type CategorySalesLine = {
+	categoryId: string
+	categoryName: string
+	productCount: number
+	quantitySold: string
+	totalRevenue: string
+	totalCost: string
+	grossProfit: string
+	marginPercent: string
+}
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type SalesByProductReportData = {
+	fromDate: number
+	toDate: number
+	categoryFilterName: string
+	summary: {
+		totalQuantity: string
+		totalRevenue: string
+		totalCost: string
+		totalProfit: string
+		overallMarginPercent: string
+	}
+	categories: CategorySalesLine[]
+	products: ProductSalesLine[]
+}
+
+interface RawProductSalesAgg {
+	productId: bigint
+	sku: string
+	productName: string
+	categoryId: bigint
+	categoryName: string
+	quantitySold: string
+	totalRevenue: string
+	totalCost: string
+}
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type ZReportPaymentLine = {
@@ -829,6 +885,151 @@ class ReportService extends Service {
 
 	exportZReportCsv(report: ZReportData) {
 		return exportZReportCsv(report)
+	}
+
+	async getSalesByProduct(
+		fromDate: Date,
+		toDate: Date,
+		categoryId?: bigint,
+	): Promise<SalesByProductReportData> {
+		let categoryFilterName = 'All Categories'
+		if (categoryId) {
+			const cat = await this.db.client.category.findUnique({
+				where: { id: categoryId },
+				select: { name: true },
+			})
+			if (cat) categoryFilterName = cat.name
+		}
+
+		// SQL aggregation grouping historical sales and line-item costs by product
+		const rows = await this.db.client.$queryRaw<RawProductSalesAgg[]>`
+			SELECT 
+				p.id AS "productId",
+				p.sku,
+				p.name AS "productName",
+				c.id AS "categoryId",
+				c.name AS "categoryName",
+				COALESCE(SUM(oi.quantity), 0)::text AS "quantitySold",
+				COALESCE(SUM(oi.subtotal), 0)::text AS "totalRevenue",
+				COALESCE(SUM(oi.quantity * oi."unitCost"), 0)::text AS "totalCost"
+			FROM order_items oi
+			JOIN orders o ON o.id = oi."orderId"
+			JOIN products p ON p.id = oi."productId"
+			JOIN categories c ON c.id = p."categoryId"
+			WHERE o.date >= ${fromDate}
+			  AND o.date <= ${toDate}
+			  AND o.status = 'Completed'
+			  AND (${categoryId}::bigint IS NULL OR c.id = ${categoryId})
+			GROUP BY p.id, p.sku, p.name, c.id, c.name
+			ORDER BY SUM(oi.subtotal) DESC;
+		`
+
+		let totalQty = new Prisma.Decimal(0)
+		let totalRev = new Prisma.Decimal(0)
+		let totalCost = new Prisma.Decimal(0)
+
+		const products: ProductSalesLine[] = []
+		const categoryMap = new Map<
+			string,
+			{
+				categoryId: string
+				categoryName: string
+				productCount: number
+				qty: Prisma.Decimal
+				rev: Prisma.Decimal
+				cost: Prisma.Decimal
+			}
+		>()
+
+		for (const row of rows) {
+			const qty = new Prisma.Decimal(row.quantitySold)
+			const rev = new Prisma.Decimal(row.totalRevenue)
+			const cost = new Prisma.Decimal(row.totalCost)
+			const profit = rev.minus(cost)
+			const margin = rev.isZero() ? new Prisma.Decimal(0) : profit.div(rev).mul(100)
+
+			totalQty = totalQty.add(qty)
+			totalRev = totalRev.add(rev)
+			totalCost = totalCost.add(cost)
+
+			products.push({
+				productId: row.productId.toString(),
+				sku: row.sku,
+				name: row.productName,
+				categoryId: row.categoryId.toString(),
+				categoryName: row.categoryName,
+				quantitySold: qty.toDecimalPlaces(4).toString(),
+				totalRevenue: rev.toDecimalPlaces(4).toString(),
+				totalCost: cost.toDecimalPlaces(4).toString(),
+				grossProfit: profit.toDecimalPlaces(4).toString(),
+				marginPercent: margin.toFixed(2),
+			})
+
+			// Group into Category Summary
+			const catKey = row.categoryId.toString()
+			const existingCat = categoryMap.get(catKey) ?? {
+				categoryId: catKey,
+				categoryName: row.categoryName,
+				productCount: 0,
+				qty: new Prisma.Decimal(0),
+				rev: new Prisma.Decimal(0),
+				cost: new Prisma.Decimal(0),
+			}
+
+			existingCat.productCount += 1
+			existingCat.qty = existingCat.qty.add(qty)
+			existingCat.rev = existingCat.rev.add(rev)
+			existingCat.cost = existingCat.cost.add(cost)
+			categoryMap.set(catKey, existingCat)
+		}
+
+		const overallProfit = totalRev.minus(totalCost)
+		const overallMarginPercent = totalRev.isZero()
+			? new Prisma.Decimal(0)
+			: overallProfit.div(totalRev).mul(100)
+
+		const categories: CategorySalesLine[] = Array.from(categoryMap.values()).map(c => {
+			const catProfit = c.rev.minus(c.cost)
+			const catMargin = c.rev.isZero() ? new Prisma.Decimal(0) : catProfit.div(c.rev).mul(100)
+
+			return {
+				categoryId: c.categoryId,
+				categoryName: c.categoryName,
+				productCount: c.productCount,
+				quantitySold: c.qty.toDecimalPlaces(4).toString(),
+				totalRevenue: c.rev.toDecimalPlaces(4).toString(),
+				totalCost: c.cost.toDecimalPlaces(4).toString(),
+				grossProfit: catProfit.toDecimalPlaces(4).toString(),
+				marginPercent: catMargin.toFixed(2),
+			}
+		})
+
+		return {
+			fromDate: fromDate.getTime(),
+			toDate: toDate.getTime(),
+			categoryFilterName,
+			summary: {
+				totalQuantity: totalQty.toDecimalPlaces(4).toString(),
+				totalRevenue: totalRev.toDecimalPlaces(4).toString(),
+				totalCost: totalCost.toDecimalPlaces(4).toString(),
+				totalProfit: overallProfit.toDecimalPlaces(4).toString(),
+				overallMarginPercent: overallMarginPercent.toFixed(2),
+			},
+			categories,
+			products,
+		}
+	}
+
+	exportSalesByProductExcel(report: SalesByProductReportData) {
+		return exportSalesByProductExcel(report)
+	}
+
+	exportSalesByProductPdf(report: SalesByProductReportData) {
+		return exportSalesByProductPdf(report)
+	}
+
+	exportSalesByProductCsv(report: SalesByProductReportData) {
+		return exportSalesByProductCsv(report)
 	}
 }
 

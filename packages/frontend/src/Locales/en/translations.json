@@ -202,7 +202,8 @@
 			"trialBalance": "Trial Balance",
 			"balanceSheet": "Balance Sheet",
 			"generalLedger": "General Ledger",
-			"zReport": "Z-Report (Closeout)"
+			"zReport": "Z-Report (Closeout)",
+			"salesByProduct": "Sales by Product"
 		}
 	},
 	"accounts": {
@@ -402,7 +403,8 @@
 		"trial-balance": "Trial Balance",
 		"balance-sheet": "Balance Sheet",
 		"general-ledger": "General Ledger",
-		"z-report": "Z-Report"
+		"z-report": "Z-Report",
+		"sales-by-product": "Sales by Product"
 	},
 	"stockStatus": {
 		"inStock": "In Stock ({{count}})",
@@ -574,6 +576,40 @@
 				"amount": "Total Amount"
 			},
 			"empty": "No POS orders recorded for the selected date and cashier."
+		},
+		"salesByProduct": {
+			"title": "Sales by Product & Category",
+			"subtitle": "Product Performance, Volume & Profit Margins",
+			"categoryFilter": "Category Filter",
+			"allCategories": "All Categories",
+			"summary": {
+				"totalRevenue": "Total Revenue",
+				"totalProfit": "Gross Profit",
+				"unitsSold": "Units Sold",
+				"avgMargin": "Average Margin"
+			},
+			"categoriesTable": {
+				"title": "Category Performance Summary",
+				"category": "Category",
+				"uniqueProducts": "Products",
+				"units": "Units Sold",
+				"revenue": "Revenue",
+				"cost": "COGS",
+				"profit": "Gross Profit",
+				"margin": "Margin %"
+			},
+			"productsTable": {
+				"title": "Product Sales Breakdown",
+				"sku": "SKU",
+				"product": "Product",
+				"category": "Category",
+				"units": "Units Sold",
+				"revenue": "Revenue",
+				"cost": "COGS",
+				"profit": "Gross Profit",
+				"margin": "Margin %"
+			},
+			"empty": "No product sales recorded in the selected period."
 		}
 	}
 }

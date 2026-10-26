@@ -10,6 +10,7 @@ import FactCheckRoundedIcon from '@mui/icons-material/FactCheckRounded'
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded'
 import HowToRegRoundedIcon from '@mui/icons-material/HowToRegRounded'
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded'
+import LeaderboardRoundedIcon from '@mui/icons-material/LeaderboardRounded'
 import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded'
 import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded'
 import PointOfSaleRoundedIcon from '@mui/icons-material/PointOfSaleRounded'
@@ -103,6 +104,11 @@ const MenuContent: FC<{ onClickLink?: () => void }> = props => {
 				text: t('navigations.links.zReport'),
 				to: '/report/z-report',
 				icon: <PointOfSaleRoundedIcon fontSize='small' />,
+			},
+			{
+				text: t('navigations.links.salesByProduct'),
+				to: '/report/sales-by-product',
+				icon: <LeaderboardRoundedIcon fontSize='small' />,
 			},
 		],
 		[t],
