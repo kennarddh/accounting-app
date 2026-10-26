@@ -203,7 +203,8 @@
 			"balanceSheet": "Balance Sheet",
 			"generalLedger": "General Ledger",
 			"zReport": "Z-Report (Closeout)",
-			"salesByProduct": "Sales by Product"
+			"salesByProduct": "Sales by Product",
+			"inventoryValuation": "Inventory Valuation"
 		}
 	},
 	"accounts": {
@@ -404,7 +405,8 @@
 		"balance-sheet": "Balance Sheet",
 		"general-ledger": "General Ledger",
 		"z-report": "Z-Report",
-		"sales-by-product": "Sales by Product"
+		"sales-by-product": "Sales by Product",
+		"inventory-valuation": "Inventory Valuation"
 	},
 	"stockStatus": {
 		"inStock": "In Stock ({{count}})",
@@ -610,6 +612,39 @@
 				"margin": "Margin %"
 			},
 			"empty": "No product sales recorded in the selected period."
+		},
+		"inventoryValuation": {
+			"title": "Inventory Valuation & Shrinkage",
+			"subtitle": "On-Hand Stock Asset Valuation & Loss Audit",
+			"period": "Shrinkage & Waste Period",
+			"summary": {
+				"totalValuation": "Total Inventory Value",
+				"totalUnits": "Units on Hand",
+				"wasteCost": "Waste / Spoilage",
+				"shrinkageCost": "Shrinkage / Audit Loss"
+			},
+			"valuationTable": {
+				"title": "Current On-Hand Inventory Valuation",
+				"sku": "SKU",
+				"product": "Product",
+				"category": "Category",
+				"stock": "Current Stock",
+				"unitCost": "Cost Price",
+				"totalValue": "Asset Value"
+			},
+			"shrinkageTable": {
+				"title": "Period Waste, Spoilage & Discrepancy Log",
+				"date": "Date",
+				"adjustmentNumber": "Adj #",
+				"type": "Type",
+				"product": "Product",
+				"quantity": "Qty Delta",
+				"unitCost": "Cost",
+				"subtotal": "Value Impact",
+				"reason": "Reason"
+			},
+			"emptyValuation": "No active products found in inventory.",
+			"emptyShrinkage": "No waste or stock adjustments recorded for this period."
 		}
 	}
 }

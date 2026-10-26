@@ -4,12 +4,14 @@ import VerifyJWT from 'Middlewares/VerifyJWT'
 
 import ExportBalanceSheet from './Controllers/ExportBalanceSheet'
 import ExportGeneralLedger from './Controllers/ExportGeneralLedger'
+import ExportInventoryValuation from './Controllers/ExportInventoryValuation'
 import ExportProfitAndLoss from './Controllers/ExportProfitAndLoss'
 import ExportSalesByProduct from './Controllers/ExportSalesByProduct'
 import ExportTrialBalance from './Controllers/ExportTrialBalance'
 import ExportZReport from './Controllers/ExportZReport'
 import GetBalanceSheet from './Controllers/GetBalanceSheet'
 import GetGeneralLedger from './Controllers/GetGeneralLedger'
+import GetInventoryValuation from './Controllers/GetInventoryValuation'
 import GetProfitAndLoss from './Controllers/GetProfitAndLoss'
 import GetSalesByProduct from './Controllers/GetSalesByProduct'
 import GetTrialBalance from './Controllers/GetTrialBalance'
@@ -34,5 +36,8 @@ ReportRouter.get('/z-report/export', [new VerifyJWT()], new ExportZReport())
 
 ReportRouter.get('/sales-by-product', [new VerifyJWT()], new GetSalesByProduct())
 ReportRouter.get('/sales-by-product/export', [new VerifyJWT()], new ExportSalesByProduct())
+
+ReportRouter.get('/inventory-valuation', [new VerifyJWT()], new GetInventoryValuation())
+ReportRouter.get('/inventory-valuation/export', [new VerifyJWT()], new ExportInventoryValuation())
 
 export default ReportRouter

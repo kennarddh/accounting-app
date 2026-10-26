@@ -17,6 +17,7 @@ import PointOfSaleRoundedIcon from '@mui/icons-material/PointOfSaleRounded'
 import ReceiptRoundedIcon from '@mui/icons-material/ReceiptRounded'
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded'
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded'
+import WarehouseRoundedIcon from '@mui/icons-material/WarehouseRounded'
 
 import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, Stack } from '@mui/material'
 
@@ -109,6 +110,11 @@ const MenuContent: FC<{ onClickLink?: () => void }> = props => {
 				text: t('navigations.links.salesByProduct'),
 				to: '/report/sales-by-product',
 				icon: <LeaderboardRoundedIcon fontSize='small' />,
+			},
+			{
+				text: t('navigations.links.inventoryValuation'),
+				to: '/report/inventory-valuation',
+				icon: <WarehouseRoundedIcon fontSize='small' />,
 			},
 		],
 		[t],

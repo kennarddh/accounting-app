@@ -13,6 +13,9 @@ import { exportBalanceSheetPdf } from './Exporters/BalanceSheet/BalanceSheetPdfE
 import { exportGeneralLedgerCsv } from './Exporters/GeneralLedger/GeneralLedgerCsvExporter'
 import { exportGeneralLedgerExcel } from './Exporters/GeneralLedger/GeneralLedgerExcelExporter'
 import { exportGeneralLedgerPdf } from './Exporters/GeneralLedger/GeneralLedgerPdfExporter'
+import { exportInventoryValuationCsv } from './Exporters/InventoryValuation/InventoryValuationCsvExporter'
+import { exportInventoryValuationExcel } from './Exporters/InventoryValuation/InventoryValuationExcelExporter'
+import { exportInventoryValuationPdf } from './Exporters/InventoryValuation/InventoryValuationPdfExporter'
 import { exportProfitAndLossCsv } from './Exporters/ProfitAndLoss/ProfitAndLossCsvExporter'
 import { exportProfitAndLossExcel } from './Exporters/ProfitAndLoss/ProfitAndLossExcelExporter'
 import { exportProfitAndLossPdf } from './Exporters/ProfitAndLoss/ProfitAndLossPdfExporter'
@@ -25,6 +28,69 @@ import { exportTrialBalancePdf } from './Exporters/TrialBalance/TrialBalancePdfE
 import { exportZReportCsv } from './Exporters/ZReport/ZReportCsvExporter'
 import { exportZReportExcel } from './Exporters/ZReport/ZReportExcelExporter'
 import { exportZReportPdf } from './Exporters/ZReport/ZReportPdfExporter'
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type InventoryValuationItem = {
+	productId: string
+	sku: string
+	name: string
+	categoryName: string
+	currentStock: string
+	costPrice: string
+	totalValue: string
+}
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type ShrinkageDiscrepancyItem = {
+	adjustmentNumber: string
+	date: number
+	type: string
+	sku: string
+	productName: string
+	quantityAdjusted: string
+	unitCost: string
+	subtotalCost: string
+	reason: string
+}
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type InventoryValuationReportData = {
+	asOfDate: number
+	fromDate: number
+	toDate: number
+	summary: {
+		totalValuation: string
+		totalUnitsOnHand: string
+		totalWasteCost: string
+		totalShrinkageCost: string
+		totalSurplusCost: string
+		netLossCost: string
+	}
+	valuationItems: InventoryValuationItem[]
+	discrepancies: ShrinkageDiscrepancyItem[]
+}
+
+interface RawValuationRow {
+	productId: bigint
+	sku: string
+	productName: string
+	categoryName: string
+	currentStock: string
+	costPrice: string
+	totalValue: string
+}
+
+interface RawShrinkageRow {
+	adjustmentNumber: string
+	date: Date
+	type: string
+	sku: string
+	productName: string
+	quantityAdjusted: string
+	unitCost: string
+	subtotalCost: string
+	reason: string
+}
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type ProductSalesLine = {
@@ -1030,6 +1096,138 @@ class ReportService extends Service {
 
 	exportSalesByProductCsv(report: SalesByProductReportData) {
 		return exportSalesByProductCsv(report)
+	}
+
+	async getInventoryValuation(
+		fromDate: Date,
+		toDate: Date,
+	): Promise<InventoryValuationReportData> {
+		// 1. Current on-hand valuation for all active catalog products
+		const valuationRows = await this.db.client.$queryRaw<RawValuationRow[]>`
+			SELECT 
+				p.id AS "productId",
+				p.sku,
+				p.name AS "productName",
+				c.name AS "categoryName",
+				p."currentStock"::text AS "currentStock",
+				p."costPrice"::text AS "costPrice",
+				(p."currentStock" * p."costPrice")::text AS "totalValue"
+			FROM products p
+			JOIN categories c ON c.id = p."categoryId"
+			WHERE p."disabledAt" IS NULL
+			ORDER BY (p."currentStock" * p."costPrice") DESC;
+		`
+
+		// 2. Shrinkage, waste & correction lines within the period
+		const shrinkageRows = await this.db.client.$queryRaw<RawShrinkageRow[]>`
+			SELECT 
+				sa."adjustmentNumber",
+				sa.date,
+				sa.type,
+				p.sku,
+				p.name AS "productName",
+				sai.quantity::text AS "quantityAdjusted",
+				sai."unitCost"::text AS "unitCost",
+				sai."subtotalCost"::text AS "subtotalCost",
+				sa.reason
+			FROM stock_adjustment_items sai
+			JOIN stock_adjustments sa ON sa.id = sai."stockAdjustmentId"
+			JOIN products p ON p.id = sai."productId"
+			WHERE sa.date >= ${fromDate}
+			  AND sa.date <= ${toDate}
+			ORDER BY sa.date DESC, sa.id DESC;
+		`
+
+		let totalValuation = new Prisma.Decimal(0)
+		let totalUnits = new Prisma.Decimal(0)
+
+		const valuationItems: InventoryValuationItem[] = valuationRows.map(r => {
+			const stock = new Prisma.Decimal(r.currentStock)
+			const val = new Prisma.Decimal(r.totalValue)
+
+			totalUnits = totalUnits.add(stock)
+			totalValuation = totalValuation.add(val)
+
+			return {
+				productId: r.productId.toString(),
+				sku: r.sku,
+				name: r.productName,
+				categoryName: r.categoryName,
+				currentStock: stock.toDecimalPlaces(4).toString(),
+				costPrice: new Prisma.Decimal(r.costPrice).toDecimalPlaces(4).toString(),
+				totalValue: val.toDecimalPlaces(4).toString(),
+			}
+		})
+
+		let totalWasteCost = new Prisma.Decimal(0)
+		let totalShrinkageCost = new Prisma.Decimal(0)
+		let totalSurplusCost = new Prisma.Decimal(0)
+
+		const discrepancies: ShrinkageDiscrepancyItem[] = shrinkageRows.map(s => {
+			const qty = new Prisma.Decimal(s.quantityAdjusted)
+			const sub = new Prisma.Decimal(s.subtotalCost)
+
+			if (s.type === 'Waste') {
+				totalWasteCost = totalWasteCost.add(sub)
+			} else if (s.type === 'Correction') {
+				if (qty.isNegative()) {
+					totalShrinkageCost = totalShrinkageCost.add(sub)
+				} else {
+					totalSurplusCost = totalSurplusCost.add(sub)
+				}
+			}
+
+			return {
+				adjustmentNumber: s.adjustmentNumber,
+				date: s.date.getTime(),
+				type: s.type,
+				sku: s.sku,
+				productName: s.productName,
+				quantityAdjusted: qty.toDecimalPlaces(4).toString(),
+				unitCost: new Prisma.Decimal(s.unitCost).toDecimalPlaces(4).toString(),
+				subtotalCost: sub.toDecimalPlaces(4).toString(),
+				reason: s.reason,
+			}
+		})
+
+		const netLossCost = totalWasteCost.add(totalShrinkageCost).minus(totalSurplusCost)
+
+		return {
+			asOfDate: Date.now(),
+			fromDate: fromDate.getTime(),
+			toDate: toDate.getTime(),
+			summary: {
+				totalValuation: totalValuation.toDecimalPlaces(4).toString(),
+				totalUnitsOnHand: totalUnits.toDecimalPlaces(4).toString(),
+				totalWasteCost: totalWasteCost.toDecimalPlaces(4).toString(),
+				totalShrinkageCost: totalShrinkageCost.toDecimalPlaces(4).toString(),
+				totalSurplusCost: totalSurplusCost.toDecimalPlaces(4).toString(),
+				netLossCost: netLossCost.toDecimalPlaces(4).toString(),
+			},
+			valuationItems,
+			discrepancies,
+		}
+	}
+
+	exportInventoryValuationExcel(
+		report: InventoryValuationReportData,
+		view: 'valuation' | 'shrinkage' = 'valuation',
+	) {
+		return exportInventoryValuationExcel(report, view)
+	}
+
+	exportInventoryValuationPdf(
+		report: InventoryValuationReportData,
+		view: 'valuation' | 'shrinkage' = 'valuation',
+	) {
+		return exportInventoryValuationPdf(report, view)
+	}
+
+	exportInventoryValuationCsv(
+		report: InventoryValuationReportData,
+		view: 'valuation' | 'shrinkage' = 'valuation',
+	) {
+		return exportInventoryValuationCsv(report, view)
 	}
 }
 
