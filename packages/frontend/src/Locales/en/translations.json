@@ -414,5 +414,30 @@
 			"title": "Revoke User Session",
 			"message": "Are you sure you want to revoke the session for {{user}} from IP {{ip}}? The user will be logged out immediately."
 		}
+	},
+	"dashboard": {
+		"title": "Dashboard",
+		"quickActions": "Quick Actions",
+		"metrics": {
+			"todaySales": "Today's Sales",
+			"todayOrders": "Today's Orders",
+			"lowStock": "Low Stock Items",
+			"mtdProfit": "Month-to-Date Profit"
+		},
+		"metricsSub": {
+			"todaySales": "Gross revenue today",
+			"todayOrders": "Completed checkouts",
+			"lowStock": "Items with stock < 10",
+			"mtdProfit": "Sales revenue minus COGS"
+		},
+		"recentOrders": {
+			"title": "Recent Orders",
+			"empty": "No recent orders found."
+		},
+		"recentAdjustments": {
+			"title": "Recent Stock Adjustments",
+			"empty": "No recent stock adjustments found."
+		},
+		"viewAll": "View all"
 	}
 }
