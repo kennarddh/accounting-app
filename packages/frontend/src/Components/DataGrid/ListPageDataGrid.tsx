@@ -115,6 +115,22 @@ const ListPageDataGrid: FC<ListPageDataGridProps> = props => {
 			onDataSourceError={OnError}
 			slots={{ noRowsOverlay }}
 			loading={props.loading ?? false}
+			showToolbar
+			disableColumnFilter
+			slotProps={{
+				toolbar: {
+					showQuickFilter: false,
+					csvOptions: {
+						fileName: `export_${new Date().toISOString().slice(0, 10)}`,
+						delimiter: ',',
+						utf8WithBom: true,
+					},
+					printOptions: {
+						hideFooter: true,
+						hideToolbar: true,
+					},
+				},
+			}}
 		/>
 	)
 }
