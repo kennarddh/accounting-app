@@ -232,6 +232,10 @@ const router = createBrowserRouter([
 										path: 'general-ledger',
 										lazy: () => import('Pages/Report/GeneralLedgerReport'),
 									},
+									{
+										path: 'z-report',
+										lazy: () => import('Pages/Report/ZReportPage'),
+									},
 								],
 							},
 						],

@@ -201,7 +201,8 @@
 			"profitAndLoss": "Profit & Loss",
 			"trialBalance": "Trial Balance",
 			"balanceSheet": "Balance Sheet",
-			"generalLedger": "General Ledger"
+			"generalLedger": "General Ledger",
+			"zReport": "Z-Report (Closeout)"
 		}
 	},
 	"accounts": {
@@ -400,7 +401,8 @@
 		"profit-and-loss": "Profit & Loss",
 		"trial-balance": "Trial Balance",
 		"balance-sheet": "Balance Sheet",
-		"general-ledger": "General Ledger"
+		"general-ledger": "General Ledger",
+		"z-report": "Z-Report"
 	},
 	"stockStatus": {
 		"inStock": "In Stock ({{count}})",
@@ -528,6 +530,50 @@
 			"runReport": "Run Report",
 			"empty": "No transactions found for this account in the selected period.",
 			"normalBalance": "Normal Balance: {{type}}"
+		},
+		"zReport": {
+			"title": "Daily Register Closeout (Z-Report)",
+			"subtitle": "End-of-Day POS Till & Sales Reconciliation",
+			"cashier": "Cashier",
+			"allCashiers": "All Cashiers",
+			"date": "Register Date",
+			"runReport": "Generate Z-Report",
+			"summary": {
+				"grossSales": "Gross Sales",
+				"totalOrders": "Completed Orders",
+				"itemsSold": "Total Items Sold",
+				"avgTicket": "Average Ticket Size",
+				"totalCost": "Cost of Goods Sold",
+				"grossProfit": "Gross Margin",
+				"cashCollected": "Cash Tendered"
+			},
+			"payments": {
+				"title": "Payment Method Drawer Reconciliation",
+				"method": "Payment Method",
+				"orders": "Transactions",
+				"amount": "Total Collected",
+				"percent": "Share"
+			},
+			"categories": {
+				"title": "Sales by Category",
+				"category": "Category",
+				"quantity": "Qty Sold",
+				"revenue": "Revenue"
+			},
+			"topProducts": {
+				"title": "Top Selling Products",
+				"sku": "SKU",
+				"name": "Product",
+				"quantity": "Qty Sold",
+				"revenue": "Revenue"
+			},
+			"statuses": {
+				"title": "Order Status Breakdown",
+				"status": "Status",
+				"count": "Orders",
+				"amount": "Total Amount"
+			},
+			"empty": "No POS orders recorded for the selected date and cashier."
 		}
 	}
 }

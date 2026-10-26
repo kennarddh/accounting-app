@@ -19,6 +19,80 @@ import { exportProfitAndLossPdf } from './Exporters/ProfitAndLoss/ProfitAndLossP
 import { exportTrialBalanceCsv } from './Exporters/TrialBalance/TrialBalanceCsvExporter'
 import { exportTrialBalanceExcel } from './Exporters/TrialBalance/TrialBalanceExcelExporter'
 import { exportTrialBalancePdf } from './Exporters/TrialBalance/TrialBalancePdfExporter'
+import { exportZReportCsv } from './Exporters/ZReport/ZReportCsvExporter'
+import { exportZReportExcel } from './Exporters/ZReport/ZReportExcelExporter'
+import { exportZReportPdf } from './Exporters/ZReport/ZReportPdfExporter'
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type ZReportPaymentLine = {
+	paymentMethod: string
+	orderCount: number
+	totalAmount: string
+}
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type ZReportStatusLine = {
+	status: string
+	count: number
+	totalAmount: string
+}
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type ZReportProductLine = {
+	productId: string
+	sku: string
+	name: string
+	categoryName: string
+	quantity: string
+	totalAmount: string
+}
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type ZReportCategoryLine = {
+	categoryName: string
+	quantity: string
+	totalAmount: string
+}
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type ZReportData = {
+	date: number
+	cashierName: string
+	grossSales: string
+	totalCost: string
+	grossProfit: string
+	grossMarginPercent: string
+	totalOrders: number
+	totalItemsSold: string
+	averageTicket: string
+	cashCollected: string
+	payments: ZReportPaymentLine[]
+	statuses: ZReportStatusLine[]
+	categories: ZReportCategoryLine[]
+	topProducts: ZReportProductLine[]
+}
+
+interface RawPaymentAgg {
+	paymentMethod: string
+	orderCount: number
+	totalAmount: string
+	totalCost: string
+}
+
+interface RawStatusAgg {
+	status: string
+	count: number
+	totalAmount: string
+}
+
+interface RawItemAgg {
+	productId: bigint
+	sku: string
+	productName: string
+	categoryName: string
+	totalQuantity: string
+	totalAmount: string
+}
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type GeneralLedgerTransactionLine = {
@@ -577,6 +651,184 @@ class ReportService extends Service {
 
 	exportGeneralLedgerCsv(report: GeneralLedgerReportData) {
 		return exportGeneralLedgerCsv(report)
+	}
+
+	async getZReport(date: Date, cashierId?: bigint): Promise<ZReportData> {
+		const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0)
+		const endOfDay = new Date(
+			date.getFullYear(),
+			date.getMonth(),
+			date.getDate(),
+			23,
+			59,
+			59,
+			999,
+		)
+
+		let cashierName = 'All Cashiers'
+		if (cashierId) {
+			const user = await this.db.client.user.findUnique({
+				where: { id: cashierId },
+				select: { name: true },
+			})
+			if (user) cashierName = user.name
+		}
+
+		// 1. Payment Methods breakdown for completed orders
+		const paymentRows = await this.db.client.$queryRaw<RawPaymentAgg[]>`
+			SELECT 
+				o."paymentMethod",
+				COUNT(o.id)::int AS "orderCount",
+				COALESCE(SUM(o."totalAmount"), 0)::text AS "totalAmount",
+				COALESCE(SUM(o."totalCost"), 0)::text AS "totalCost"
+			FROM orders o
+			WHERE o.date >= ${startOfDay}
+			  AND o.date <= ${endOfDay}
+			  AND o.status = 'Completed'
+			  AND (${cashierId}::bigint IS NULL OR o."createdById" = ${cashierId})
+			GROUP BY o."paymentMethod"
+			ORDER BY o."paymentMethod" ASC;
+		`
+
+		// 2. Order Status Breakdown
+		const statusRows = await this.db.client.$queryRaw<RawStatusAgg[]>`
+			SELECT 
+				o.status,
+				COUNT(o.id)::int AS "count",
+				COALESCE(SUM(o."totalAmount"), 0)::text AS "totalAmount"
+			FROM orders o
+			WHERE o.date >= ${startOfDay}
+			  AND o.date <= ${endOfDay}
+			  AND (${cashierId}::bigint IS NULL OR o."createdById" = ${cashierId})
+			GROUP BY o.status
+			ORDER BY o.status ASC;
+		`
+
+		// 3. Item Level Aggregation (Quantities, Categories, Top Selling Products)
+		const itemRows = await this.db.client.$queryRaw<RawItemAgg[]>`
+			SELECT 
+				p.id AS "productId",
+				p.sku,
+				p.name AS "productName",
+				c.name AS "categoryName",
+				COALESCE(SUM(oi.quantity), 0)::text AS "totalQuantity",
+				COALESCE(SUM(oi.subtotal), 0)::text AS "totalAmount"
+			FROM order_items oi
+			JOIN orders o ON o.id = oi."orderId"
+			JOIN products p ON p.id = oi."productId"
+			JOIN categories c ON c.id = p."categoryId"
+			WHERE o.date >= ${startOfDay}
+			  AND o.date <= ${endOfDay}
+			  AND o.status = 'Completed'
+			  AND (${cashierId}::bigint IS NULL OR o."createdById" = ${cashierId})
+			GROUP BY p.id, p.sku, p.name, c.name
+			ORDER BY SUM(oi.subtotal) DESC;
+		`
+
+		let grossSales = new Prisma.Decimal(0)
+		let totalCost = new Prisma.Decimal(0)
+		let totalOrders = 0
+		let cashCollected = new Prisma.Decimal(0)
+
+		const payments: ZReportPaymentLine[] = []
+		for (const p of paymentRows) {
+			const amt = new Prisma.Decimal(p.totalAmount)
+			const cost = new Prisma.Decimal(p.totalCost)
+
+			grossSales = grossSales.add(amt)
+			totalCost = totalCost.add(cost)
+			totalOrders += p.orderCount
+
+			if (p.paymentMethod === 'Cash') {
+				cashCollected = amt
+			}
+
+			payments.push({
+				paymentMethod: p.paymentMethod,
+				orderCount: p.orderCount,
+				totalAmount: amt.toDecimalPlaces(4).toString(),
+			})
+		}
+
+		// Calculate Profit & Margin
+		const grossProfit = grossSales.minus(totalCost)
+		const grossMarginPercent = grossSales.isZero()
+			? new Prisma.Decimal(0)
+			: grossProfit.div(grossSales).mul(100)
+
+		const averageTicket =
+			totalOrders === 0 ? new Prisma.Decimal(0) : grossSales.div(totalOrders)
+
+		// Aggregate Categories
+		let totalItemsSold = new Prisma.Decimal(0)
+		const categoryMap = new Map<string, { qty: Prisma.Decimal; amount: Prisma.Decimal }>()
+
+		for (const item of itemRows) {
+			const qty = new Prisma.Decimal(item.totalQuantity)
+			const amt = new Prisma.Decimal(item.totalAmount)
+
+			totalItemsSold = totalItemsSold.add(qty)
+
+			const existing = categoryMap.get(item.categoryName) ?? {
+				qty: new Prisma.Decimal(0),
+				amount: new Prisma.Decimal(0),
+			}
+			existing.qty = existing.qty.add(qty)
+			existing.amount = existing.amount.add(amt)
+			categoryMap.set(item.categoryName, existing)
+		}
+
+		const categories: ZReportCategoryLine[] = Array.from(categoryMap.entries()).map(
+			([name, val]) => ({
+				categoryName: name,
+				quantity: val.qty.toDecimalPlaces(4).toString(),
+				totalAmount: val.amount.toDecimalPlaces(4).toString(),
+			}),
+		)
+
+		const topProducts: ZReportProductLine[] = itemRows.slice(0, 10).map(i => ({
+			productId: i.productId.toString(),
+			sku: i.sku,
+			name: i.productName,
+			categoryName: i.categoryName,
+			quantity: new Prisma.Decimal(i.totalQuantity).toDecimalPlaces(4).toString(),
+			totalAmount: new Prisma.Decimal(i.totalAmount).toDecimalPlaces(4).toString(),
+		}))
+
+		const statuses: ZReportStatusLine[] = statusRows.map(s => ({
+			status: s.status,
+			count: s.count,
+			totalAmount: new Prisma.Decimal(s.totalAmount).toDecimalPlaces(4).toString(),
+		}))
+
+		return {
+			date: startOfDay.getTime(),
+			cashierName,
+			grossSales: grossSales.toDecimalPlaces(4).toString(),
+			totalCost: totalCost.toDecimalPlaces(4).toString(),
+			grossProfit: grossProfit.toDecimalPlaces(4).toString(),
+			grossMarginPercent: grossMarginPercent.toFixed(2),
+			totalOrders,
+			totalItemsSold: totalItemsSold.toDecimalPlaces(4).toString(),
+			averageTicket: averageTicket.toDecimalPlaces(4).toString(),
+			cashCollected: cashCollected.toDecimalPlaces(4).toString(),
+			payments,
+			statuses,
+			categories,
+			topProducts,
+		}
+	}
+
+	exportZReportExcel(report: ZReportData) {
+		return exportZReportExcel(report)
+	}
+
+	exportZReportPdf(report: ZReportData) {
+		return exportZReportPdf(report)
+	}
+
+	exportZReportCsv(report: ZReportData) {
+		return exportZReportCsv(report)
 	}
 }
 

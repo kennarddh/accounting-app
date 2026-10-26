@@ -6,10 +6,12 @@ import ExportBalanceSheet from './Controllers/ExportBalanceSheet'
 import ExportGeneralLedger from './Controllers/ExportGeneralLedger'
 import ExportProfitAndLoss from './Controllers/ExportProfitAndLoss'
 import ExportTrialBalance from './Controllers/ExportTrialBalance'
+import ExportZReport from './Controllers/ExportZReport'
 import GetBalanceSheet from './Controllers/GetBalanceSheet'
 import GetGeneralLedger from './Controllers/GetGeneralLedger'
 import GetProfitAndLoss from './Controllers/GetProfitAndLoss'
 import GetTrialBalance from './Controllers/GetTrialBalance'
+import GetZReport from './Controllers/GetZReport'
 
 const ReportRouter = new CelosiaRouter({ strict: true })
 
@@ -24,5 +26,8 @@ ReportRouter.get('/balance-sheet/export', [new VerifyJWT()], new ExportBalanceSh
 
 ReportRouter.get('/general-ledger', [new VerifyJWT()], new GetGeneralLedger())
 ReportRouter.get('/general-ledger/export', [new VerifyJWT()], new ExportGeneralLedger())
+
+ReportRouter.get('/z-report', [new VerifyJWT()], new GetZReport())
+ReportRouter.get('/z-report/export', [new VerifyJWT()], new ExportZReport())
 
 export default ReportRouter
