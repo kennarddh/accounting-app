@@ -198,6 +198,7 @@
 			"products": "Products",
 			"stockAdjustments": "Stock Adjustments",
 			"orders": "Orders",
+			"reports": "Reports",
 			"profitAndLoss": "Profit & Loss",
 			"trialBalance": "Trial Balance",
 			"balanceSheet": "Balance Sheet",
@@ -467,6 +468,28 @@
 		"exportExcel": "Excel (.xlsx)",
 		"exportPdf": "PDF Document",
 		"exportCsv": "CSV (Raw Data)",
+		"hub": {
+			"title": "Reports Directory",
+			"subtitle": "Select a financial, sales, or inventory report to view, analyze, and export.",
+			"openReport": "Open Report",
+			"sections": {
+				"financial": "Financial & Accounting Statements",
+				"financialDesc": "Double-entry GAAP statements, general ledger audit trails, and trial balances.",
+				"pos": "Point-of-Sale & Operations",
+				"posDesc": "Daily register till balancing, cashier closeouts, and product revenue rankings.",
+				"inventory": "Inventory & Asset Management",
+				"inventoryDesc": "Balance sheet inventory valuations and warehouse waste/shrinkage logs."
+			},
+			"cards": {
+				"pnl": "Revenue, cost of goods sold, operating expenses, and net profit margins over time.",
+				"trialBalance": "Verify debit and credit ledger balances for audit integrity.",
+				"balanceSheet": "Point-in-time financial position: Assets, Liabilities, and Equity.",
+				"generalLedger": "Detailed chronological debit/credit transactions and running balances for an account.",
+				"zReport": "End-of-day register balancing, payment method totals, and cashier reconciliations.",
+				"salesByProduct": "Ranked product sales, units sold, and gross margin percentages.",
+				"inventoryValuation": "On-hand stock monetary valuation and recorded physical audit shrinkage."
+			}
+		},
 		"profitAndLoss": {
 			"title": "Profit & Loss Statement",
 			"subtitle": "Income Statement (GAAP)",

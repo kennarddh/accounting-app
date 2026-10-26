@@ -217,6 +217,10 @@ const router = createBrowserRouter([
 								path: 'report',
 								children: [
 									{
+										index: true,
+										lazy: () => import('Pages/Report/ReportsIndex'),
+									},
+									{
 										path: 'profit-and-loss',
 										lazy: () => import('Pages/Report/ProfitAndLossReport'),
 									},
