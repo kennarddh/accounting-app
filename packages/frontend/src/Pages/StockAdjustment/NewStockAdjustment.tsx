@@ -258,6 +258,7 @@ const NewStockAdjustment: FC = () => {
 		if (!file) return
 
 		Papa.parse<CSVStockRow>(file, {
+			beforeFirstChunk: chunk => chunk.replace(/^\uFEFF/, ''),
 			header: true,
 			skipEmptyLines: 'greedy',
 			transformHeader: header => header.trim().toLowerCase().replace(/['"]+/g, ''),
