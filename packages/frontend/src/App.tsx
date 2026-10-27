@@ -258,6 +258,10 @@ const router = createBrowserRouter([
 								path: 'settings',
 								children: [
 									{
+										index: true,
+										lazy: () => import('Pages/Settings/SettingsIndex'),
+									},
+									{
 										path: 'pos-configuration',
 										lazy: () =>
 											import('Pages/Settings/PosConfigurationSettings'),

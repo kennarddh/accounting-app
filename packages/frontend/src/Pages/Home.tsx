@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router'
 
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
+import AssessmentRoundedIcon from '@mui/icons-material/AssessmentRounded'
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney'
 import MenuBookIcon from '@mui/icons-material/MenuBook'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
@@ -189,6 +190,14 @@ const Home: FC = () => {
 						onClick={() => navigate('/journal/new')}
 					>
 						{t('journal.new.title')}
+					</Button>
+					<Button
+						variant='outlined'
+						color='secondary'
+						startIcon={<AssessmentRoundedIcon />}
+						onClick={() => navigate('/report')}
+					>
+						{t('dashboard.viewReports')}
 					</Button>
 				</Box>
 

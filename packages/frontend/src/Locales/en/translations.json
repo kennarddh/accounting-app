@@ -492,7 +492,8 @@
 			"title": "Recent Stock Adjustments",
 			"empty": "No recent stock adjustments found."
 		},
-		"viewAll": "View all"
+		"viewAll": "View all",
+		"viewReports": "Reports Directory"
 	},
 	"reports": {
 		"exportAs": "Export As",
@@ -739,6 +740,15 @@
 		}
 	},
 	"settings": {
+		"index": {
+			"title": "System Settings",
+			"subtitle": "Configure application preferences, accounting GL mappings, and system options.",
+			"openSetting": "Open Setting",
+			"posConfig": {
+				"title": "POS Accounting Configuration",
+				"description": "Configure automated General Ledger mappings for cash, bank, revenue, inventory, and period closing lock dates."
+			}
+		},
 		"posConfiguration": {
 			"title": "POS Accounting Settings",
 			"subtitle": "Configure General Ledger (GL) account mappings for automated double-entry transactions.",
