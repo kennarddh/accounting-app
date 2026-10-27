@@ -205,7 +205,8 @@
 			"generalLedger": "General Ledger",
 			"zReport": "Z-Report (Closeout)",
 			"salesByProduct": "Sales by Product",
-			"inventoryValuation": "Inventory Valuation"
+			"inventoryValuation": "Inventory Valuation",
+			"settings": "POS Settings"
 		}
 	},
 	"accounts": {
@@ -407,7 +408,9 @@
 		"general-ledger": "General Ledger",
 		"z-report": "Z-Report",
 		"sales-by-product": "Sales by Product",
-		"inventory-valuation": "Inventory Valuation"
+		"inventory-valuation": "Inventory Valuation",
+		"settings": "Settings",
+		"pos-configuration": "POS Configuration"
 	},
 	"stockStatus": {
 		"inStock": "In Stock ({{count}})",
@@ -668,6 +671,38 @@
 			},
 			"emptyValuation": "No active products found in inventory.",
 			"emptyShrinkage": "No waste or stock adjustments recorded for this period."
+		}
+	},
+	"settings": {
+		"posConfiguration": {
+			"title": "POS Accounting Settings",
+			"subtitle": "Configure General Ledger (GL) account mappings for automated double-entry transactions.",
+			"saveButton": "Save Account Mappings",
+			"savedSuccessfully": "POS account mappings updated successfully.",
+			"sections": {
+				"cashAndBank": "Cash & Banking Accounts",
+				"cashAndBankDesc": "Accounts where customer cash and digital bank payments are recorded.",
+				"salesAndRevenue": "Sales & Revenue Recognition",
+				"salesAndRevenueDesc": "Accounts credited when customer orders are completed.",
+				"inventoryAndCogs": "Inventory Asset & COGS",
+				"inventoryAndCogsDesc": "Accounts updated when products are sold or depleted from inventory.",
+				"adjustments": "Stock Adjustments, Shrinkage & Waste",
+				"adjustmentsDesc": "GL accounts touched during inventory damage, loss, or audit surplus.",
+				"payables": "Supplier Payables & Rounding",
+				"payablesDesc": "Accounts for restock deliveries on credit and POS roundings."
+			},
+			"fields": {
+				"cashAccount": "Cash Drawer Account (Asset)",
+				"bankAccount": "Bank Account (Asset)",
+				"salesRevenueAccount": "Sales Revenue Account (Revenue)",
+				"inventoryAssetAccount": "Inventory Asset Account (Asset)",
+				"cogsAccount": "Cost of Goods Sold Account (Expense)",
+				"spoilageExpenseAccount": "Spoilage / Waste Expense Account (Expense)",
+				"shrinkageExpenseAccount": "Shrinkage / Shortage Loss Account (Expense)",
+				"inventoryGainAccount": "Inventory Gain / Surplus Account (Revenue)",
+				"accountsPayableAccount": "Accounts Payable Account (Liability)",
+				"roundingAccount": "Rounding Difference Account (Expense)"
+			}
 		}
 	}
 }

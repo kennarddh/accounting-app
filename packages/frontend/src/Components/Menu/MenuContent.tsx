@@ -17,6 +17,7 @@ import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded'
 import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded'
 import PointOfSaleRoundedIcon from '@mui/icons-material/PointOfSaleRounded'
 import ReceiptRoundedIcon from '@mui/icons-material/ReceiptRounded'
+import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded'
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded'
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded'
 import WarehouseRoundedIcon from '@mui/icons-material/WarehouseRounded'
@@ -276,6 +277,11 @@ const MenuContent: FC<{ onClickLink?: () => void }> = ({ onClickLink }) => {
 						icon: <WarehouseRoundedIcon fontSize='small' />,
 					},
 				],
+			},
+			{
+				text: t('navigations.links.settings'),
+				to: '/settings/pos-configuration',
+				icon: <SettingsRoundedIcon fontSize='small' />,
 			},
 		],
 		[t],

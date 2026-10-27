@@ -250,6 +250,16 @@ const router = createBrowserRouter([
 									},
 								],
 							},
+							{
+								path: 'settings',
+								children: [
+									{
+										path: 'pos-configuration',
+										lazy: () =>
+											import('Pages/Settings/PosConfigurationSettings'),
+									},
+								],
+							},
 						],
 					},
 				],

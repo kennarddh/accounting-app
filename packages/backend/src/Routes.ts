@@ -10,6 +10,7 @@ import CategoryRouter from 'Modules/Category/CategoryRoutes'
 import HealthController from 'Modules/Health/HealthController'
 import JournalRouter from 'Modules/Journal/JournalRoutes'
 import OrderRouter from 'Modules/Order/OrderRoutes'
+import PosConfigurationRouter from 'Modules/PosConfiguration/PosConfigurationRoutes'
 import ProductRouter from 'Modules/Product/ProductRoutes'
 import ReportRouter from 'Modules/Report/ReportRoutes'
 import StockAdjustmentRouter from 'Modules/StockAdjustment/StockAdjustmentRoutes'
@@ -28,6 +29,7 @@ Router.useRouters('/product', ProductRouter)
 Router.useRouters('/stock-adjustment', StockAdjustmentRouter)
 Router.useRouters('/order', OrderRouter)
 Router.useRouters('/report', ReportRouter)
+Router.useRouters('/pos-configuration', PosConfigurationRouter)
 
 Router.get('/health', [], new HealthController())
 Router.all('/*splat', [], new NoMatchController())

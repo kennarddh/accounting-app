@@ -13,7 +13,7 @@ import UpdateProduct from './Controllers/UpdateProduct'
 const ProductRouter = new CelosiaRouter({ strict: true })
 
 ProductRouter.get('/', [new VerifyJWT()], new FindManyProducts())
-ProductRouter.get('/lookup', [new VerifyJWT()], new FindProductLookup()) // <--- ADD HERE (BEFORE /:id)
+ProductRouter.get('/lookup', [new VerifyJWT()], new FindProductLookup())
 ProductRouter.post('/', [new VerifyJWT()], new CreateProduct())
 ProductRouter.patch('/:id', [new VerifyJWT()], new UpdateProduct())
 ProductRouter.get('/:id', [new VerifyJWT()], new FindProductById())
