@@ -11,7 +11,6 @@ export interface TrialBalanceItemOutput {
 }
 
 export interface TrialBalanceOutput {
-	fromDate: number
 	toDate: number
 	items: TrialBalanceItemOutput[]
 	totalDebit: string
@@ -21,14 +20,12 @@ export interface TrialBalanceOutput {
 }
 
 export interface TrialBalanceData {
-	fromDate?: number
 	toDate?: number
 }
 
 const TrialBalanceApi: ApiFunction<TrialBalanceOutput, TrialBalanceData> = async data => {
 	const result = await CallApi<TrialBalanceOutput>('/report/trial-balance', 'GET', true, {
 		params: {
-			fromDate: data.fromDate,
 			toDate: data.toDate,
 		},
 	})

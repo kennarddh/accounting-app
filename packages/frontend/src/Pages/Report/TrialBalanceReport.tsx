@@ -38,7 +38,6 @@ import TrialBalanceExportApi from 'Api/Report/TrialBalanceExportApi'
 const TrialBalanceReport: FC = () => {
 	const { t } = useTranslation()
 
-	const [fromDate, setFromDate] = useState<Dayjs>(() => dayjs().startOf('month'))
 	const [toDate, setToDate] = useState<Dayjs>(() => dayjs().endOf('day'))
 
 	const [report, setReport] = useState<TrialBalanceOutput | null>(null)
@@ -53,7 +52,6 @@ const TrialBalanceReport: FC = () => {
 		startTransition(async () => {
 			try {
 				const result = await TrialBalanceApi({
-					fromDate: fromDate.startOf('day').valueOf(),
 					toDate: toDate.endOf('day').valueOf(),
 				})
 				setReport(result)
@@ -61,7 +59,7 @@ const TrialBalanceReport: FC = () => {
 				setErrorText(HandleApiError(err))
 			}
 		})
-	}, [fromDate, toDate])
+	}, [toDate])
 
 	useEffect(() => {
 		// eslint-disable-next-line react-hooks/set-state-in-effect
@@ -75,7 +73,6 @@ const TrialBalanceReport: FC = () => {
 
 		try {
 			const blob = await TrialBalanceExportApi({
-				fromDate: fromDate.startOf('day').valueOf(),
 				toDate: toDate.endOf('day').valueOf(),
 				format,
 			})
@@ -105,12 +102,6 @@ const TrialBalanceReport: FC = () => {
 					variant='outlined'
 					sx={{ p: 2, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}
 				>
-					<DatePicker
-						label='From Date'
-						value={fromDate}
-						onChange={val => val && setFromDate(val)}
-						slotProps={{ textField: { size: 'small' } }}
-					/>
 					<DatePicker
 						label='To Date'
 						value={toDate}

@@ -1,7 +1,6 @@
 import { AuthenticatedAxiosInstance } from 'Api/AxiosInstance'
 
 export interface TrialBalanceExportParams {
-	fromDate: number
 	toDate: number
 	format: 'xlsx' | 'csv' | 'pdf'
 }

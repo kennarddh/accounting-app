@@ -20,7 +20,7 @@ export const buildTrialBalanceWorkbook = (report: TrialBalanceReportData): Excel
 	sheet.mergeCells('A1:E1')
 
 	const periodRow = sheet.addRow([
-		`Period: ${new Date(report.fromDate).toLocaleDateString()} to ${new Date(report.toDate).toLocaleDateString()}`,
+		`Period: until ${new Date(report.toDate).toLocaleDateString()}`,
 	])
 	periodRow.font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF64748B' } }
 	sheet.mergeCells('A2:E2')

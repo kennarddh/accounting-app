@@ -14,14 +14,11 @@ class ExportTrialBalance extends Controller {
 		request: ControllerRequest<ExportTrialBalance>,
 		response: CelosiaResponse,
 	) {
-		const { fromDate, toDate, format } = request.query
+		const { toDate, format } = request.query
 
-		const from = fromDate
-			? new Date(fromDate)
-			: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
 		const to = toDate ? new Date(toDate) : new Date()
 
-		const report = await this.reportService.getTrialBalance(from, to)
+		const report = await this.reportService.getTrialBalance(to)
 		const dateStr = new Date().toISOString().slice(0, 10)
 
 		if (format === 'csv') {
@@ -51,7 +48,6 @@ class ExportTrialBalance extends Controller {
 
 	public override get query() {
 		return z.object({
-			fromDate: z.coerce.number().positive().optional(),
 			toDate: z.coerce.number().positive().optional(),
 			format: z.enum(['xlsx', 'csv', 'pdf']).default('xlsx'),
 		})

@@ -15,7 +15,6 @@ class GetTrialBalance extends Controller {
 		response: CelosiaResponse,
 	) {
 		const now = new Date()
-		const defaultFrom = new Date(now.getFullYear(), now.getMonth(), 1)
 		const defaultTo = new Date(
 			now.getFullYear(),
 			now.getMonth(),
@@ -26,15 +25,13 @@ class GetTrialBalance extends Controller {
 			999,
 		)
 
-		const fromDate = request.query.fromDate ? new Date(request.query.fromDate) : defaultFrom
 		const toDate = request.query.toDate ? new Date(request.query.toDate) : defaultTo
 
-		const report = await this.reportService.getTrialBalance(fromDate, toDate)
+		const report = await this.reportService.getTrialBalance(toDate)
 
 		response.status(200).json({
 			errors: {},
 			data: {
-				fromDate: report.fromDate,
 				toDate: report.toDate,
 				items: report.items.map(item => ({
 					id: item.id,
@@ -54,7 +51,6 @@ class GetTrialBalance extends Controller {
 
 	public override get query() {
 		return z.object({
-			fromDate: z.coerce.number().positive().optional(),
 			toDate: z.coerce.number().positive().optional(),
 		})
 	}

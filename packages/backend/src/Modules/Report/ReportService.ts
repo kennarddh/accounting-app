@@ -358,7 +358,6 @@ export type TrialBalanceLine = {
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type TrialBalanceReportData = {
-	fromDate: number
 	toDate: number
 	items: TrialBalanceLine[]
 	totalDebit: string
@@ -519,7 +518,7 @@ class ReportService extends Service {
 		return exportProfitAndLossCsv(report)
 	}
 
-	async getTrialBalance(fromDate: Date, toDate: Date): Promise<TrialBalanceReportData> {
+	async getTrialBalance(toDate: Date): Promise<TrialBalanceReportData> {
 		// Aggregates all debits & credits for all accounts with transactions in the period
 		const rows = await this.db.client.$queryRaw<RawAccountAggregation[]>`
 			SELECT 
@@ -532,8 +531,7 @@ class ReportService extends Service {
 			FROM accounts a
 			JOIN journal_lines jl ON jl."accountId" = a.id
 			JOIN journal_entries je ON je.id = jl."journalEntryId"
-			WHERE je.date >= ${fromDate}
-			  AND je.date <= ${toDate}
+			WHERE je.date <= ${toDate}
 			GROUP BY a.id, a.code, a.name, a.type
 			ORDER BY a.code ASC;
 		`
@@ -575,7 +573,6 @@ class ReportService extends Service {
 		const difference = totalDebit.minus(totalCredit).abs()
 
 		return {
-			fromDate: fromDate.getTime(),
 			toDate: toDate.getTime(),
 			items,
 			totalDebit: totalDebit.toDecimalPlaces(4).toString(),
@@ -854,6 +851,9 @@ class ReportService extends Service {
 		}
 
 		// 1. Payment Methods breakdown for completed orders
+		// Ensure explicit null instead of undefined:
+		const cashierFilter = cashierId ?? null
+
 		const paymentRows = await this.db.client.$queryRaw<RawPaymentAgg[]>`
 			SELECT 
 				o."paymentMethod",
@@ -862,9 +862,9 @@ class ReportService extends Service {
 				COALESCE(SUM(o."totalCost"), 0)::text AS "totalCost"
 			FROM orders o
 			WHERE o.date >= ${startOfDay}
-			  AND o.date <= ${endOfDay}
-			  AND o.status = 'Completed'
-			  AND (${cashierId}::bigint IS NULL OR o."createdById" = ${cashierId})
+			AND o.date <= ${endOfDay}
+			AND o.status = 'Completed'
+			AND (${cashierFilter}::bigint IS NULL OR o."createdById" = ${cashierFilter})
 			GROUP BY o."paymentMethod"
 			ORDER BY o."paymentMethod" ASC;
 		`
@@ -1025,6 +1025,8 @@ class ReportService extends Service {
 		}
 
 		// SQL aggregation grouping historical sales and line-item costs by product
+		const categoryFilter = categoryId ?? null
+
 		const rows = await this.db.client.$queryRaw<RawProductSalesAgg[]>`
 			SELECT 
 				p.id AS "productId",
@@ -1040,9 +1042,9 @@ class ReportService extends Service {
 			JOIN products p ON p.id = oi."productId"
 			JOIN categories c ON c.id = p."categoryId"
 			WHERE o.date >= ${fromDate}
-			  AND o.date <= ${toDate}
-			  AND o.status = 'Completed'
-			  AND (${categoryId}::bigint IS NULL OR c.id = ${categoryId})
+			AND o.date <= ${toDate}
+			AND o.status = 'Completed'
+			AND (${categoryFilter}::bigint IS NULL OR c.id = ${categoryFilter})
 			GROUP BY p.id, p.sku, p.name, c.id, c.name
 			ORDER BY SUM(oi.subtotal) DESC;
 		`
@@ -1321,6 +1323,9 @@ class ReportService extends Service {
 		}
 
 		// Chronological stock movement trail
+		const productFilter = productId ?? null
+		const typeFilter = movementType ?? null
+
 		const rows = await this.db.client.$queryRaw<RawMovementRow[]>`
 			SELECT 
 				sm.id AS "movementId",
@@ -1344,8 +1349,8 @@ class ReportService extends Service {
 			LEFT JOIN suppliers sup ON sup.id = sa."supplierId"
 			WHERE sm."createdAt" >= ${fromDate}
 			AND sm."createdAt" <= ${toDate}
-			AND (${productId}::bigint IS NULL OR sm."productId" = ${productId})
-			AND (${movementType}::text IS NULL OR sm.type = ${movementType})
+			AND (${productFilter}::bigint IS NULL OR sm."productId" = ${productFilter})
+			AND (${typeFilter}::text IS NULL OR sm.type = ${typeFilter})
 			ORDER BY sm."createdAt" ASC, sm.id ASC;
 		`
 

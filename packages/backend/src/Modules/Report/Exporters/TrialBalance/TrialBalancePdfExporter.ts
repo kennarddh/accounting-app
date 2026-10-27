@@ -15,10 +15,9 @@ export const exportTrialBalancePdf = (report: TrialBalanceReportData): Promise<B
 		doc.fontSize(18).text('TRIAL BALANCE', { align: 'center' })
 		doc.fontSize(10)
 			.fillColor('#64748b')
-			.text(
-				`Period: ${new Date(report.fromDate).toLocaleDateString()} to ${new Date(report.toDate).toLocaleDateString()}`,
-				{ align: 'center' },
-			)
+			.text(`Period: until ${new Date(report.toDate).toLocaleDateString()}`, {
+				align: 'center',
+			})
 		doc.moveDown(1.5)
 
 		// Table Columns
