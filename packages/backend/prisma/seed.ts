@@ -168,11 +168,65 @@ const main = async () => {
 		},
 	})
 
-	// =========================================================================
-	// 7. SEED CATEGORIES (5 Categories)
-	// =========================================================================
 	const adminUser = await prisma.user.findUniqueOrThrow({ where: { username: 'admin' } })
 
+	// =========================================================================
+	// 7. SEED SUPPLIERS (5 Suppliers)
+	// =========================================================================
+	const supplierDefinitions = [
+		{
+			code: 'SUP-001',
+			name: 'Dairy Fresh Farms Ltd',
+			contact: 'Robert Johnson',
+			email: 'orders@dairyfresh.com',
+			phone: '+62 811-2345-6789',
+			address: 'Jl. Agro Industri No. 12, Bandung',
+			terms: 'Net 30',
+		},
+		{
+			code: 'SUP-002',
+			name: 'Golden Grain Flour & Bakery Supplies',
+			contact: 'Maria Santos',
+			email: 'sales@goldengrain.id',
+			phone: '+62 812-9876-5432',
+			address: 'Kawasan Industri Cikarang Blok B-4, Bekasi',
+			terms: 'Net 15',
+		},
+		{
+			code: 'SUP-003',
+			name: 'Artisan Coffee Roasters Co',
+			contact: 'David Tan',
+			email: 'wholesale@artisancoffee.co',
+			phone: '+62 813-5555-1234',
+			address: 'Jl. Senopati No. 45, Jakarta Selatan',
+			terms: 'Due upon receipt',
+		},
+		{
+			code: 'SUP-004',
+			name: 'EcoPack Packaging Solutions',
+			contact: 'Linda Wijaya',
+			email: 'support@ecopack.co.id',
+			phone: '+62 819-8888-9999',
+			address: 'Jl. Rungkut Industri III No. 8, Surabaya',
+			terms: 'Net 30',
+		},
+		{
+			code: 'SUP-005',
+			name: 'Global Tableware & Merchandise Inc',
+			contact: 'Kenji Sato',
+			email: 'orders@globaltableware.com',
+			phone: '+62 817-4444-7777',
+			address: 'Gedung Wisma Niaga Lt. 5, Jakarta Pusat',
+			terms: 'Net 60',
+		},
+	]
+
+	await prisma.supplier.createMany({ data: supplierDefinitions })
+	const suppliers = await prisma.supplier.findMany({ orderBy: { code: 'asc' } })
+
+	// =========================================================================
+	// 8. SEED CATEGORIES (5 Categories)
+	// =========================================================================
 	const categoryData = [
 		{ name: 'Beverages' },
 		{ name: 'Bakery & Pastries' },
@@ -186,7 +240,7 @@ const main = async () => {
 	const getCatId = (name: string) => categories.find(c => c.name === name)!.id
 
 	// =========================================================================
-	// 8. SEED PRODUCTS (20 Products)
+	// 9. SEED PRODUCTS (20 Products)
 	// =========================================================================
 	const productDefinitions = [
 		// Beverages
@@ -349,8 +403,7 @@ const main = async () => {
 	const products = await prisma.product.findMany()
 
 	// =========================================================================
-	// 9. SEED 6 MANUAL GENERAL JOURNALS
-	// (Rent, Utilities, Advertising, Internet, Supplies, Depreciation)
+	// 10. SEED 6 MANUAL GENERAL JOURNALS
 	// =========================================================================
 	const manualJournalsData = [
 		{
@@ -489,32 +542,65 @@ const main = async () => {
 	}
 
 	// =========================================================================
-	// 10. SEED 15 STOCK ADJUSTMENTS (Restocks, Waste, Audit Corrections)
+	// 11. SEED 15 STOCK ADJUSTMENTS (Restocks, Waste, Corrections)
+	// Some Restocks linked to suppliers, one restock ad-hoc without supplier!
 	// =========================================================================
-	const adjustmentReasons = [
-		{ type: 'Restock', reason: 'Weekly shipment from dairy vendor' },
-		{ type: 'Restock', reason: 'Bulk packaging carton restock' },
-		{ type: 'Restock', reason: 'Specialty coffee bean restock' },
-		{ type: 'Restock', reason: 'Fresh bakery ingredients delivery' },
-		{ type: 'Restock', reason: 'Merchandise restock from manufacturer' },
-		{ type: 'Waste', reason: 'Dropped and shattered ceramic mug' },
-		{ type: 'Waste', reason: 'Milk cartons spoiled due to fridge outage' },
-		{ type: 'Waste', reason: 'Expired muffins and pastries discarded' },
-		{ type: 'Waste', reason: 'Burned bakery batch during morning prep' },
-		{ type: 'Waste', reason: 'Defective tumbler lid return to trash' },
-		{ type: 'Correction', reason: 'Monthly physical inventory audit count' },
-		{ type: 'Correction', reason: 'Discrepancy adjustment after shift transition' },
-		{ type: 'Correction', reason: 'Barista recount surplus found in stockroom' },
-		{ type: 'Correction', reason: 'Quarterly inventory shrinkage audit' },
-		{ type: 'Correction', reason: 'Stock reconciliation after system sync' },
+	const adjustmentDefinitions = [
+		// 5 Restocks: 4 with suppliers, 1 ad-hoc (null supplier)
+		{ type: 'Restock', reason: 'Dairy delivery shipment', supplierCode: 'SUP-001' },
+		{
+			type: 'Restock',
+			reason: 'Bakery flour and yeast bulk delivery',
+			supplierCode: 'SUP-002',
+		},
+		{ type: 'Restock', reason: 'Specialty coffee beans shipment', supplierCode: 'SUP-003' },
+		{ type: 'Restock', reason: 'Takeaway cup and sleeve delivery', supplierCode: 'SUP-004' },
+		{
+			type: 'Restock',
+			reason: 'Emergency supermarket run for lemons & sugar',
+			supplierCode: null,
+		}, // No supplier!
+
+		// 5 Waste Adjustments (No supplier)
+		{ type: 'Waste', reason: 'Dropped and shattered ceramic mug', supplierCode: null },
+		{ type: 'Waste', reason: 'Milk cartons spoiled due to fridge outage', supplierCode: null },
+		{ type: 'Waste', reason: 'Expired muffins and pastries discarded', supplierCode: null },
+		{ type: 'Waste', reason: 'Burned bakery batch during morning prep', supplierCode: null },
+		{ type: 'Waste', reason: 'Defective tumbler lid return to trash', supplierCode: null },
+
+		// 5 Correction Adjustments (No supplier)
+		{
+			type: 'Correction',
+			reason: 'Monthly physical inventory audit count',
+			supplierCode: null,
+		},
+		{
+			type: 'Correction',
+			reason: 'Discrepancy adjustment after shift transition',
+			supplierCode: null,
+		},
+		{
+			type: 'Correction',
+			reason: 'Barista recount surplus found in stockroom',
+			supplierCode: null,
+		},
+		{ type: 'Correction', reason: 'Quarterly inventory shrinkage audit', supplierCode: null },
+		{
+			type: 'Correction',
+			reason: 'Stock reconciliation after system sync',
+			supplierCode: null,
+		},
 	]
 
-	for (let i = 0; i < adjustmentReasons.length; i++) {
-		const adjDef = adjustmentReasons[i]!
+	for (let i = 0; i < adjustmentDefinitions.length; i++) {
+		const adjDef = adjustmentDefinitions[i]!
 		const adjNumber = `ADJ-202608-${(i + 1).toString().padStart(3, '0')}`
 		const date = new Date(Date.now() - (15 - i) * 86400000)
 
-		// Pick 2 products per adjustment
+		const linkedSupplier = adjDef.supplierCode
+			? (suppliers.find(s => s.code === adjDef.supplierCode) ?? null)
+			: null
+
 		const p1 = products[i % products.length]!
 		const p2 = products[(i + 3) % products.length]!
 
@@ -550,6 +636,15 @@ const main = async () => {
 					? getAccountId('103') // Inventory Asset Reduction
 					: getAccountId('41') // Others Income / Gain
 
+		const creditDescription =
+			adjDef.type === 'Restock'
+				? linkedSupplier
+					? `Accounts Payable to ${linkedSupplier.name} for ${adjNumber}`
+					: `Accounts Payable for Ad-hoc Restock ${adjNumber}`
+				: adjDef.type === 'Waste'
+					? `Inventory Asset Reduction for ${adjNumber}`
+					: `Adjustment Credit for ${adjNumber}`
+
 		const je = await prisma.journalEntry.create({
 			data: {
 				entryNumber: `JE-${adjNumber}`,
@@ -568,7 +663,7 @@ const main = async () => {
 							accountId: creditAccount,
 							debit: '0',
 							credit: totalCost,
-							description: `Adjustment Credit for ${adjNumber}`,
+							description: creditDescription,
 						},
 					],
 				},
@@ -582,6 +677,7 @@ const main = async () => {
 				type: adjDef.type,
 				reason: adjDef.reason,
 				totalCost,
+				supplierId: linkedSupplier ? linkedSupplier.id : null,
 				createdById: adminUser.id,
 				journalEntryId: je.id,
 				items: {
@@ -633,17 +729,15 @@ const main = async () => {
 	}
 
 	// =========================================================================
-	// 11. SEED 50 POS ORDERS (With Balanced Sales & COGS Journal Entries)
+	// 12. SEED 50 POS ORDERS (With Balanced Sales & COGS Journal Entries)
 	// =========================================================================
 	const paymentMethods = ['Cash', 'Card', 'BankTransfer', 'QRIS']
 
 	for (let i = 1; i <= 50; i++) {
 		const orderNumber = `ORD-202609-${i.toString().padStart(4, '0')}`
-		// Space orders over the last 10 days
 		const date = new Date(Date.now() - Math.floor(Math.random() * 10 * 86400000))
 		const paymentMethod = paymentMethods[i % paymentMethods.length]!
 
-		// Each order contains 1 to 3 distinct items
 		const itemCount = 1 + (i % 3)
 		const orderProducts = [
 			products[(i * 2) % products.length]!,
@@ -674,7 +768,6 @@ const main = async () => {
 		const paymentAccountId =
 			paymentMethod === 'Cash' ? getAccountId('101') : getAccountId('104')
 
-		// Create Balanced Double-Entry Journal for the Sale
 		const je = await prisma.journalEntry.create({
 			data: {
 				entryNumber: `JE-${orderNumber}`,
@@ -683,7 +776,6 @@ const main = async () => {
 				createdById: adminUser.id,
 				lines: {
 					create: [
-						// Revenue recognition
 						{
 							accountId: paymentAccountId,
 							debit: totalAmount.toString(),
@@ -696,7 +788,6 @@ const main = async () => {
 							credit: totalAmount.toString(),
 							description: `Sales Revenue for ${orderNumber}`,
 						},
-						// Cost of Goods Sold & Inventory depletion
 						{
 							accountId: getAccountId('513'),
 							debit: totalCost.toString(),
@@ -714,7 +805,6 @@ const main = async () => {
 			},
 		})
 
-		// Create Order
 		await prisma.order.create({
 			data: {
 				orderNumber,
@@ -740,7 +830,6 @@ const main = async () => {
 			},
 		})
 
-		// Atomically decrement current product stock
 		for (const item of lineItems) {
 			await prisma.product.update({
 				where: { id: item.productId },
