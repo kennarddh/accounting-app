@@ -387,6 +387,17 @@
 				"Card": "Card",
 				"QRIS": "QRIS"
 			}
+		},
+		"refund": {
+			"refundButton": "Refund Order",
+			"cancelButton": "Void / Cancel Order",
+			"confirmTitle": "Confirm Order Refund",
+			"confirmMessage": "Are you sure you want to refund order {{orderNumber}}? This will automatically reverse the revenue, restore inventory stock, and record a reversing journal entry.",
+			"confirmCancelTitle": "Confirm Order Void",
+			"confirmCancelMessage": "Are you sure you want to void order {{orderNumber}}?",
+			"successRefund": "Order {{orderNumber}} has been refunded successfully.",
+			"successCancel": "Order {{orderNumber}} has been voided successfully.",
+			"alreadyProcessed": "This order cannot be refunded because it is already {{status}}."
 		}
 	},
 	"breadcrumbs": {

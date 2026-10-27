@@ -360,6 +360,135 @@ class OrderService extends Service {
 			})
 		}
 	}
+
+	async refund(
+		id: bigint,
+		userId: bigint,
+		status: OrderStatus = OrderStatus.Refunded,
+		reason?: string,
+	) {
+		return await this.db.transaction(async tx => {
+			const config = await this.posConfigurationService.get()
+
+			// 1. Fetch order with items and products
+			const order = await tx.order.findUniqueOrThrow({
+				where: { id },
+				include: {
+					items: {
+						include: {
+							product: true,
+						},
+					},
+					journalEntry: true,
+				},
+			})
+
+			// 2. Guard: Only completed orders can be refunded or cancelled
+			if ((order.status as OrderStatus) !== OrderStatus.Completed) {
+				throw new BusinessRuleError(
+					ApiErrorResource.Order,
+					`Only completed orders can be refunded. This order is already ${order.status}.`,
+				)
+			}
+
+			// 3. Resolve GL account for payment reversal
+			const paymentAccountId =
+				(order.paymentMethod as PaymentMethod) === PaymentMethod.Cash
+					? config.cashAccountId
+					: config.bankAccountId
+
+			// 4. Build Reversing Double-Entry Journal Lines
+			const reversingLines: Prisma.JournalLineUncheckedCreateWithoutJournalEntryInput[] = []
+
+			// Reverse Revenue: Debit Sales Revenue, Credit Cash/Bank
+			if (order.totalAmount.greaterThan(0)) {
+				reversingLines.push(
+					{
+						accountId: config.salesRevenueAccountId,
+						debit: order.totalAmount,
+						credit: 0,
+						description: `Reversal of Sales Revenue for ${order.orderNumber}${reason ? ` (${reason})` : ''}`,
+					},
+					{
+						accountId: paymentAccountId,
+						debit: 0,
+						credit: order.totalAmount,
+						description: `Refund payment (${order.paymentMethod}) for ${order.orderNumber}`,
+					},
+				)
+			}
+
+			// Reverse COGS: Debit Inventory Asset, Credit COGS
+			if (order.totalCost.greaterThan(0)) {
+				reversingLines.push(
+					{
+						accountId: config.inventoryAssetAccountId,
+						debit: order.totalCost,
+						credit: 0,
+						description: `Restoration of Inventory Asset for ${order.orderNumber}`,
+					},
+					{
+						accountId: config.cogsAccountId,
+						debit: 0,
+						credit: order.totalCost,
+						description: `Reversal of Cost of Goods Sold for ${order.orderNumber}`,
+					},
+				)
+			}
+
+			// 5. Post the Reversing Journal Entry
+			if (reversingLines.length > 0) {
+				await tx.journalEntry.create({
+					data: {
+						entryNumber: `REV-${order.orderNumber}`,
+						date: new Date(),
+						description: `Order ${status}: ${order.orderNumber}${reason ? ` - ${reason}` : ''}`,
+						createdById: userId,
+						lines: {
+							create: reversingLines,
+						},
+					},
+				})
+			}
+
+			// 6. Record Stock Movements of type Return (Positive quantity back in)
+			await tx.stockMovement.createMany({
+				data: order.items.map(item => ({
+					productId: item.productId,
+					orderId: order.id,
+					type: StockMovementType.Return,
+					quantity: item.quantity, // Positive incoming stock
+					costPerUnit: item.unitCost,
+					createdById: userId,
+				})),
+			})
+
+			// 7. Atomically increment physical product stock back
+			await Promise.all(
+				order.items.map(item =>
+					tx.product.update({
+						where: { id: item.productId },
+						data: {
+							currentStock: {
+								increment: item.quantity,
+							},
+						},
+					}),
+				),
+			)
+
+			// 8. Update Order Status
+			const updatedOrder = await tx.order.update({
+				where: { id: order.id },
+				data: {
+					status,
+				},
+				select: this.dataSelect,
+			})
+
+			return updatedOrder
+		})
+	}
 }
 
 export default OrderService
