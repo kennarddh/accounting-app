@@ -449,6 +449,15 @@ const NewStockAdjustment: FC = () => {
 					/>
 
 					<Button
+						startIcon={<AddIcon />}
+						variant='outlined'
+						size='small'
+						onClick={handleAddItem}
+					>
+						{t('stockAdjustments.addItem')}
+					</Button>
+
+					<Button
 						startIcon={<UploadFileIcon />}
 						variant='outlined'
 						color='secondary'
