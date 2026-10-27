@@ -22,12 +22,67 @@ import { exportProfitAndLossPdf } from './Exporters/ProfitAndLoss/ProfitAndLossP
 import { exportSalesByProductCsv } from './Exporters/SalesByProduct/SalesByProductCsvExporter'
 import { exportSalesByProductExcel } from './Exporters/SalesByProduct/SalesByProductExcelExporter'
 import { exportSalesByProductPdf } from './Exporters/SalesByProduct/SalesByProductPdfExporter'
+import { exportStockMovementCsv } from './Exporters/StockMovement/StockMovementCsvExporter'
+import { exportStockMovementExcel } from './Exporters/StockMovement/StockMovementExcelExporter'
+import { exportStockMovementPdf } from './Exporters/StockMovement/StockMovementPdfExporter'
 import { exportTrialBalanceCsv } from './Exporters/TrialBalance/TrialBalanceCsvExporter'
 import { exportTrialBalanceExcel } from './Exporters/TrialBalance/TrialBalanceExcelExporter'
 import { exportTrialBalancePdf } from './Exporters/TrialBalance/TrialBalancePdfExporter'
 import { exportZReportCsv } from './Exporters/ZReport/ZReportCsvExporter'
 import { exportZReportExcel } from './Exporters/ZReport/ZReportExcelExporter'
 import { exportZReportPdf } from './Exporters/ZReport/ZReportPdfExporter'
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type StockMovementLineItem = {
+	movementId: string
+	date: number
+	type: string
+	productId: string
+	sku: string
+	productName: string
+	quantity: string
+	costPerUnit: string
+	totalCost: string
+	referenceNumber: string
+	createdByName: string
+	runningStock?: string | undefined
+}
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type StockMovementReportData = {
+	fromDate: number
+	toDate: number
+	filteredProduct: {
+		id: string
+		sku: string
+		name: string
+	} | null
+	openingStock: string | null
+	closingStock: string | null
+	totalIn: string
+	totalOut: string
+	netDelta: string
+	movements: StockMovementLineItem[]
+}
+
+interface RawMovementRow {
+	movementId: bigint
+	date: Date
+	type: string
+	productId: bigint
+	sku: string
+	productName: string
+	quantity: string
+	costPerUnit: string
+	totalCost: string
+	orderNumber: string | null
+	adjustmentNumber: string | null
+	createdByName: string
+}
+
+interface RawOpeningStock {
+	openingStock: string
+}
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type InventoryValuationItem = {
@@ -1228,6 +1283,130 @@ class ReportService extends Service {
 		view: 'valuation' | 'shrinkage' = 'valuation',
 	) {
 		return exportInventoryValuationCsv(report, view)
+	}
+
+	async getStockMovementReport(
+		fromDate: Date,
+		toDate: Date,
+		productId?: bigint,
+		movementType?: string,
+	): Promise<StockMovementReportData> {
+		let filteredProduct: { id: string; sku: string; name: string } | null = null
+		let openingStockDec = new Prisma.Decimal(0)
+		let hasSpecificProduct = false
+
+		if (productId) {
+			const p = await this.db.client.product.findUnique({
+				where: { id: productId },
+				select: { id: true, sku: true, name: true },
+			})
+			if (p) {
+				hasSpecificProduct = true
+				filteredProduct = { id: p.id.toString(), sku: p.sku, name: p.name }
+
+				// Cumulative opening stock before fromDate
+				const openingRes = await this.db.client.$queryRaw<RawOpeningStock[]>`
+					SELECT 
+						COALESCE(SUM(sm.quantity), 0)::text AS "openingStock"
+					FROM stock_movements sm
+					WHERE sm."productId" = ${productId}
+					  AND sm."createdAt" < ${fromDate};
+				`
+				if (openingRes[0]) {
+					openingStockDec = new Prisma.Decimal(openingRes[0].openingStock)
+				}
+			}
+		}
+
+		// Chronological stock movement trail
+		const rows = await this.db.client.$queryRaw<RawMovementRow[]>`
+			SELECT 
+				sm.id AS "movementId",
+				sm."createdAt" AS "date",
+				sm.type,
+				p.id AS "productId",
+				p.sku,
+				p.name AS "productName",
+				sm.quantity::text AS "quantity",
+				sm."costPerUnit"::text AS "costPerUnit",
+				(ABS(sm.quantity) * sm."costPerUnit")::text AS "totalCost",
+				o."orderNumber",
+				sa."adjustmentNumber",
+				u.name AS "createdByName"
+			FROM stock_movements sm
+			JOIN products p ON p.id = sm."productId"
+			JOIN users u ON u.id = sm."createdById"
+			LEFT JOIN orders o ON o.id = sm."orderId"
+			LEFT JOIN stock_adjustments sa ON sa.id = sm."stockAdjustmentId"
+			WHERE sm."createdAt" >= ${fromDate}
+			  AND sm."createdAt" <= ${toDate}
+			  AND (${productId}::bigint IS NULL OR sm."productId" = ${productId})
+			  AND (${movementType}::text IS NULL OR sm.type = ${movementType})
+			ORDER BY sm."createdAt" ASC, sm.id ASC;
+		`
+
+		let totalIn = new Prisma.Decimal(0)
+		let totalOut = new Prisma.Decimal(0)
+		let runningStock = openingStockDec
+
+		const movements: StockMovementLineItem[] = []
+
+		for (const row of rows) {
+			const qty = new Prisma.Decimal(row.quantity)
+
+			if (qty.isPositive()) {
+				totalIn = totalIn.add(qty)
+			} else {
+				totalOut = totalOut.add(qty.abs())
+			}
+
+			if (hasSpecificProduct) {
+				runningStock = runningStock.add(qty)
+			}
+
+			movements.push({
+				movementId: row.movementId.toString(),
+				date: row.date.getTime(),
+				type: row.type,
+				productId: row.productId.toString(),
+				sku: row.sku,
+				productName: row.productName,
+				quantity: qty.toDecimalPlaces(4).toString(),
+				costPerUnit: new Prisma.Decimal(row.costPerUnit).toDecimalPlaces(4).toString(),
+				totalCost: new Prisma.Decimal(row.totalCost).toDecimalPlaces(4).toString(),
+				referenceNumber: row.orderNumber ?? row.adjustmentNumber ?? '-',
+				createdByName: row.createdByName,
+				runningStock: hasSpecificProduct
+					? runningStock.toDecimalPlaces(4).toString()
+					: undefined,
+			})
+		}
+
+		const netDelta = totalIn.minus(totalOut)
+
+		return {
+			fromDate: fromDate.getTime(),
+			toDate: toDate.getTime(),
+			filteredProduct,
+			openingStock: hasSpecificProduct ? openingStockDec.toDecimalPlaces(4).toString() : null,
+			closingStock: hasSpecificProduct ? runningStock.toDecimalPlaces(4).toString() : null,
+			totalIn: totalIn.toDecimalPlaces(4).toString(),
+			totalOut: totalOut.toDecimalPlaces(4).toString(),
+			netDelta: netDelta.toDecimalPlaces(4).toString(),
+			movements,
+		}
+	}
+
+	exportStockMovementExcel(report: StockMovementReportData) {
+		return exportStockMovementExcel(report)
+	}
+
+	exportStockMovementPdf(report: StockMovementReportData) {
+		return exportStockMovementPdf(report)
+	}
+
+	exportStockMovementCsv(report: StockMovementReportData) {
+		return exportStockMovementCsv(report)
 	}
 }
 

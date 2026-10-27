@@ -7,6 +7,7 @@ import ExportGeneralLedger from './Controllers/ExportGeneralLedger'
 import ExportInventoryValuation from './Controllers/ExportInventoryValuation'
 import ExportProfitAndLoss from './Controllers/ExportProfitAndLoss'
 import ExportSalesByProduct from './Controllers/ExportSalesByProduct'
+import ExportStockMovementReport from './Controllers/ExportStockMovementReport'
 import ExportTrialBalance from './Controllers/ExportTrialBalance'
 import ExportZReport from './Controllers/ExportZReport'
 import GetBalanceSheet from './Controllers/GetBalanceSheet'
@@ -14,6 +15,7 @@ import GetGeneralLedger from './Controllers/GetGeneralLedger'
 import GetInventoryValuation from './Controllers/GetInventoryValuation'
 import GetProfitAndLoss from './Controllers/GetProfitAndLoss'
 import GetSalesByProduct from './Controllers/GetSalesByProduct'
+import GetStockMovementReport from './Controllers/GetStockMovementReport'
 import GetTrialBalance from './Controllers/GetTrialBalance'
 import GetZReport from './Controllers/GetZReport'
 
@@ -39,5 +41,8 @@ ReportRouter.get('/sales-by-product/export', [new VerifyJWT()], new ExportSalesB
 
 ReportRouter.get('/inventory-valuation', [new VerifyJWT()], new GetInventoryValuation())
 ReportRouter.get('/inventory-valuation/export', [new VerifyJWT()], new ExportInventoryValuation())
+
+ReportRouter.get('/stock-movement', [new VerifyJWT()], new GetStockMovementReport())
+ReportRouter.get('/stock-movement/export', [new VerifyJWT()], new ExportStockMovementReport())
 
 export default ReportRouter

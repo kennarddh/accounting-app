@@ -212,7 +212,8 @@
 			"zReport": "Z-Report (Closeout)",
 			"salesByProduct": "Sales by Product",
 			"inventoryValuation": "Inventory Valuation",
-			"settings": "POS Settings"
+			"settings": "POS Settings",
+			"stockMovement": "Stock Movement Audit"
 		}
 	},
 	"accounts": {
@@ -427,7 +428,8 @@
 		"sales-by-product": "Sales by Product",
 		"inventory-valuation": "Inventory Valuation",
 		"settings": "Settings",
-		"pos-configuration": "POS Configuration"
+		"pos-configuration": "POS Configuration",
+		"stock-movement": "Stock Movements"
 	},
 	"stockStatus": {
 		"inStock": "In Stock ({{count}})",
@@ -688,6 +690,42 @@
 			},
 			"emptyValuation": "No active products found in inventory.",
 			"emptyShrinkage": "No waste or stock adjustments recorded for this period."
+		},
+		"stockMovement": {
+			"title": "Stock Movement Audit (Stock Card)",
+			"subtitle": "Chronological Inflow & Outflow History Across Sales, Purchases & Adjustments",
+			"productFilter": "Product (Stock Card Filter)",
+			"allProducts": "All Products (Consolidated Log)",
+			"movementType": "Movement Type",
+			"allTypes": "All Types",
+			"summary": {
+				"totalIn": "Total Stock In (+)",
+				"totalOut": "Total Stock Out (-)",
+				"netDelta": "Net Stock Change",
+				"openingStock": "Opening Stock",
+				"closingStock": "Closing Stock",
+				"totalRecords": "Movement Records"
+			},
+			"table": {
+				"date": "Date & Time",
+				"refNumber": "Reference #",
+				"type": "Type",
+				"sku": "SKU",
+				"product": "Product",
+				"quantity": "Quantity",
+				"unitCost": "Cost / Unit",
+				"totalCost": "Total Value",
+				"runningStock": "Balance",
+				"user": "Created By"
+			},
+			"types": {
+				"Sale": "Sale",
+				"Restock": "Restock",
+				"Waste": "Waste / Spoilage",
+				"Correction": "Correction",
+				"Return": "Return / Refund"
+			},
+			"empty": "No stock movements recorded for the selected criteria."
 		}
 	},
 	"settings": {

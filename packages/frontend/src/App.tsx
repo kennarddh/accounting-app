@@ -248,6 +248,10 @@ const router = createBrowserRouter([
 										path: 'inventory-valuation',
 										lazy: () => import('Pages/Report/InventoryValuationReport'),
 									},
+									{
+										path: 'stock-movement',
+										lazy: () => import('Pages/Report/StockMovementReport'),
+									},
 								],
 							},
 							{

@@ -9,6 +9,7 @@ import FactCheckRoundedIcon from '@mui/icons-material/FactCheckRounded'
 import LeaderboardRoundedIcon from '@mui/icons-material/LeaderboardRounded'
 import PointOfSaleRoundedIcon from '@mui/icons-material/PointOfSaleRounded'
 import ReceiptRoundedIcon from '@mui/icons-material/ReceiptRounded'
+import TimelineRoundedIcon from '@mui/icons-material/TimelineRounded'
 import WarehouseRoundedIcon from '@mui/icons-material/WarehouseRounded'
 
 import {
@@ -109,6 +110,13 @@ const ReportsIndex: FC = () => {
 					path: '/report/inventory-valuation',
 					icon: <WarehouseRoundedIcon sx={{ fontSize: 32 }} />,
 					color: '#b45309',
+				},
+				{
+					title: t('reports.stockMovement.title'),
+					description: t('reports.stockMovement.subtitle'),
+					path: '/report/stock-movement',
+					icon: <TimelineRoundedIcon sx={{ fontSize: 32 }} />,
+					color: '#0284c7',
 				},
 			],
 		},

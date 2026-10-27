@@ -19,6 +19,7 @@ import PointOfSaleRoundedIcon from '@mui/icons-material/PointOfSaleRounded'
 import ReceiptRoundedIcon from '@mui/icons-material/ReceiptRounded'
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded'
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded'
+import TimelineRoundedIcon from '@mui/icons-material/TimelineRounded'
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded'
 import WarehouseRoundedIcon from '@mui/icons-material/WarehouseRounded'
 
@@ -275,6 +276,11 @@ const MenuContent: FC<{ onClickLink?: () => void }> = ({ onClickLink }) => {
 						text: t('navigations.links.inventoryValuation'),
 						to: '/report/inventory-valuation',
 						icon: <WarehouseRoundedIcon fontSize='small' />,
+					},
+					{
+						text: t('navigations.links.stockMovement'),
+						to: '/report/stock-movement',
+						icon: <TimelineRoundedIcon fontSize='small' />,
 					},
 				],
 			},
