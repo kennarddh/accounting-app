@@ -878,7 +878,7 @@ class ReportService extends Service {
 			FROM orders o
 			WHERE o.date >= ${startOfDay}
 			  AND o.date <= ${endOfDay}
-			  AND (${cashierId}::bigint IS NULL OR o."createdById" = ${cashierId})
+			  AND (${cashierFilter}::bigint IS NULL OR o."createdById" = ${cashierFilter})
 			GROUP BY o.status
 			ORDER BY o.status ASC;
 		`
@@ -899,7 +899,7 @@ class ReportService extends Service {
 			WHERE o.date >= ${startOfDay}
 			  AND o.date <= ${endOfDay}
 			  AND o.status = 'Completed'
-			  AND (${cashierId}::bigint IS NULL OR o."createdById" = ${cashierId})
+			  AND (${cashierFilter}::bigint IS NULL OR o."createdById" = ${cashierFilter})
 			GROUP BY p.id, p.sku, p.name, c.name
 			ORDER BY SUM(oi.subtotal) DESC;
 		`

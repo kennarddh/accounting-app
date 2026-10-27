@@ -73,6 +73,8 @@ const SelectTemplate: FC<SelectTemplateProps> = props => {
 
 	const [LastCheckedId, SetLastCheckedId] = useState<string | null>(null)
 
+	const { selectedRowId, getRowById, getRowLabel } = props
+
 	const ToggleFilterMenu = useCallback(() => {
 		SetIsFilterMenuOpen(prev => !prev)
 	}, [])
@@ -119,11 +121,11 @@ const SelectTemplate: FC<SelectTemplateProps> = props => {
 	useEffect(() => {
 		if (isPending) return
 		if (IsOpen) return
-		if (LastCheckedId === props.selectedRowId) return
-		if (SelectedId === props.selectedRowId) return
+		if (LastCheckedId === selectedRowId) return
+		if (SelectedId === selectedRowId) return
 
 		startTransition(async () => {
-			if (props.selectedRowId === null || props.selectedRowId === undefined) {
+			if (selectedRowId === null || selectedRowId === undefined) {
 				SetSelectedLabel(null)
 				SetSelectedId(null)
 				SetSelectedRow(null)
@@ -131,9 +133,9 @@ const SelectTemplate: FC<SelectTemplateProps> = props => {
 				return
 			}
 
-			const row = await props.getRowById(props.selectedRowId)
+			const row = await getRowById(selectedRowId)
 
-			SetLastCheckedId(props.selectedRowId)
+			SetLastCheckedId(selectedRowId)
 
 			if (row === undefined) {
 				SetSelectedLabel(null)
@@ -142,11 +144,20 @@ const SelectTemplate: FC<SelectTemplateProps> = props => {
 				return
 			}
 
-			SetSelectedId(props.selectedRowId)
+			SetSelectedId(selectedRowId)
 			SetSelectedRow(row)
-			SetSelectedLabel(props.getRowLabel(row))
+			SetSelectedLabel(getRowLabel(row))
 		})
-	}, [SelectedId, SelectedRow, isPending, IsOpen, LastCheckedId, props])
+	}, [
+		SelectedId,
+		SelectedRow,
+		isPending,
+		IsOpen,
+		LastCheckedId,
+		selectedRowId,
+		getRowById,
+		getRowLabel,
+	])
 
 	useImperativeHandle(
 		props.ref,

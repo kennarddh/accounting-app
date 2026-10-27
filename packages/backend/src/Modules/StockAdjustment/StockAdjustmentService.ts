@@ -333,17 +333,19 @@ class StockAdjustmentService extends Service {
 					select: { id: true, adjustmentNumber: true },
 				})
 
-				// 8. Update product stock levels
-				await Promise.all(
-					preparedItems.map(item =>
-						tx.product.update({
-							where: { id: item.productId },
-							data: {
-								currentStock: { increment: item.signedQuantity },
-							},
-						}),
-					),
+				// 8. Update product stock levels deterministically to prevent Postgres deadlocks
+				const sortedPreparedItems = [...preparedItems].sort((a, b) =>
+					a.productId < b.productId ? -1 : a.productId > b.productId ? 1 : 0,
 				)
+
+				for (const item of sortedPreparedItems) {
+					await tx.product.update({
+						where: { id: item.productId },
+						data: {
+							currentStock: { increment: item.signedQuantity },
+						},
+					})
+				}
 
 				return stockAdjustment
 			})

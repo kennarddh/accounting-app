@@ -163,7 +163,8 @@ const NewStockAdjustment: FC = () => {
 	const calculateSubtotal = (quantity: string, unitCost: string): string => {
 		const qtyDec = safeDecimal(quantity)
 		const costDec = safeDecimal(unitCost)
-		return qtyDec.times(costDec).toDecimalPlaces(4).toString()
+		// Subtotal cost is always positive monetary value (abs(qty) * unitCost)
+		return qtyDec.abs().times(costDec).toDecimalPlaces(4).toString()
 	}
 
 	const handleProductChange = async (index: number, productId: string | null) => {
@@ -225,9 +226,10 @@ const NewStockAdjustment: FC = () => {
 		})
 	}
 
+	// Gross adjusted cost matches backend: totalGainCost + totalLossCost
 	const totalCost = useMemo(() => {
 		return items
-			.reduce((acc, item) => acc.plus(safeDecimal(item.subtotalCost)), new Decimal(0))
+			.reduce((acc, item) => acc.plus(safeDecimal(item.subtotalCost).abs()), new Decimal(0))
 			.toDecimalPlaces(4)
 			.toString()
 	}, [items])

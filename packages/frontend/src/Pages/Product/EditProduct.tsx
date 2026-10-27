@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next'
 
 import { MuiMoneyInput } from 'Components/MuiMoneyInput'
 import PageContainer from 'Components/PageContainer'
+import SelectCategory from 'Components/SelectResources/SelectCategory'
 
 import HandleApiError from 'Utils/HandleApiError'
 
@@ -129,6 +130,11 @@ const EditProduct: FC = () => {
 						prefix='Rp '
 					/>
 				</FormControl>
+				<SelectCategory
+					value={categoryId}
+					onChange={setCategoryId}
+					onError={SetErrorText}
+				/>
 				<Button
 					type='submit'
 					variant='outlined'

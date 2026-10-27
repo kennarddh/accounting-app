@@ -488,19 +488,21 @@ class OrderService extends Service {
 				})),
 			})
 
-			// 7. Atomically increment physical product stock back
-			await Promise.all(
-				order.items.map(item =>
-					tx.product.update({
-						where: { id: item.productId },
-						data: {
-							currentStock: {
-								increment: item.quantity,
-							},
-						},
-					}),
-				),
+			// 7. Atomically increment physical product stock back deterministically to prevent deadlocks
+			const sortedRefundItems = [...order.items].sort((a, b) =>
+				a.productId < b.productId ? -1 : a.productId > b.productId ? 1 : 0,
 			)
+
+			for (const item of sortedRefundItems) {
+				await tx.product.update({
+					where: { id: item.productId },
+					data: {
+						currentStock: {
+							increment: item.quantity,
+						},
+					},
+				})
+			}
 
 			// 8. Update Order Status
 			const updatedOrder = await tx.order.update({
