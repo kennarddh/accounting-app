@@ -1,3 +1,3 @@
-const Languages = [{ code: 'en' }] as const
+const Languages = [{ code: 'en' }, { code: 'id' }] as const
 
 export default Languages

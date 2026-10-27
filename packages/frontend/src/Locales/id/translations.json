@@ -1,0 +1,816 @@
+{
+	"common": {
+		"submit": "Kirim",
+		"search": "Cari",
+		"refreshData": "Segarkan Data",
+		"create": "Buat",
+		"close": "Tutup",
+		"showFilter": "Tampilkan Filter",
+		"hideFilter": "Sembunyikan Filter",
+		"resetFilter": "Setel Ulang Filter",
+		"back": "Kembali",
+		"home": "Beranda",
+		"refresh": "Segarkan",
+		"edit": "Edit",
+		"all": "Semua",
+		"yes": "Ya",
+		"no": "Tidak",
+		"disable": "Nonaktifkan",
+		"enable": "Aktifkan",
+		"disabled": "Dinonaktifkan",
+		"active": "Aktif",
+		"dateTime": "{{date, datetime(weekday: long; year: numeric; month: long; day: numeric; hour: numeric; minute: numeric; hourCycle: h24)}}",
+		"currency": "{{value, currency(currency: IDR; maximumFractionDigits: 0)}}",
+		"duration": "{{value, duration}}",
+		"save": "Simpan",
+		"saveAndCreateAnother": "Simpan & Buat Lainnya",
+		"cancel": "Batal",
+		"delete": "Hapus",
+		"details": "Detail",
+		"seeDetail": "Lihat Detail",
+		"description": "Deskripsi",
+		"lastUpdated": "Terakhir Diperbarui",
+		"includeDisabled": "Termasuk Dinonaktifkan",
+		"includeInactive": "Termasuk Tidak Aktif",
+		"loadMore": "Muat Lebih Banyak",
+		"loading": "Memuat...",
+		"duplicate": "Duplikat",
+		"reorder": "Pesan Ulang",
+		"createdSuccessfully": "{{item}} berhasil dibuat.",
+		"reverse": "Balikkan Entri"
+	},
+	"auth": {
+		"name": "Nama",
+		"username": "Nama Pengguna",
+		"password": "Kata Sandi",
+		"hidePassword": "Sembunyikan kata sandi",
+		"showPassword": "Tampilkan kata sandi",
+		"logoutButton": "Keluar",
+		"forgetPasswordLink": "Lupa kata sandi?",
+		"login": {
+			"title": "Masuk",
+			"submit": "Masuk"
+		},
+		"haveAccountLoginLink": "Sudah punya akun? Masuk"
+	},
+	"errors": {
+		"noData": "Tidak ada data.",
+		"periodClosed": "Tidak dapat memposting atau mengubah transaksi pada periode akuntansi yang ditutup (Terkunci hingga {{date}}).",
+		"notFound": {
+			"title": "Halaman Tidak Ditemukan",
+			"text": "Halaman yang Anda cari tidak ada."
+		},
+		"unknown": {
+			"title": "Kesalahan Tidak Dikenal",
+			"text": "Kami mengalami masalah. Silakan coba lagi nanti."
+		},
+		"network": {
+			"title": "Kesalahan Jaringan",
+			"text": "Tidak dapat terhubung ke server. Harap periksa koneksi internet Anda."
+		},
+		"accessDenied": {
+			"title": "Akses Ditolak",
+			"text": "Anda tidak memiliki izin untuk mengakses sumber daya ini."
+		},
+		"kinds": {
+			"NotFound": "Item yang diminta tidak ditemukan.",
+			"Taken": "Nilai ini sudah digunakan.",
+			"Disabled": "Item ini dinonaktifkan dan tidak dapat digunakan.",
+			"Invalid": "Data yang diberikan tidak valid.",
+			"Inactive": "Item ini tidak aktif."
+		},
+		"Account": {
+			"NotFound": "Akun tidak ada.",
+			"Taken": "Akun dengan kode '{{code}}' sudah ada.",
+			"Disabled": "Akun '{{name}}' ({{code}}) dinonaktifkan dan tidak dapat digunakan."
+		},
+		"JournalEntry": {
+			"Taken": "Nomor entri sudah digunakan.",
+			"date": {
+				"Invalid": "Tidak dapat memposting transaksi pada periode yang ditutup (Terkunci hingga {{date}})."
+			},
+			"lines": {
+				"Invalid": "Debit ({{debitTotal}}) dan kredit ({{creditTotal}}) harus seimbang."
+			}
+		},
+		"User": {
+			"NotFound": "Pengguna tidak ditemukan.",
+			"Taken": "Nama pengguna sudah digunakan."
+		},
+		"UserSession": {
+			"NotFound": "Sesi tidak ditemukan.",
+			"Inactive": "Sesi tidak aktif."
+		},
+		"Category": {
+			"NotFound": "Kategori tidak ada.",
+			"Taken": "Kategori dengan nama '{{name}}' sudah ada.",
+			"Disabled": "Kategori '{{name}}' dinonaktifkan dan tidak dapat digunakan."
+		},
+		"Product": {
+			"NotFound": "Produk tidak ada.",
+			"Taken": "Produk dengan nama '{{name}}' sudah ada.",
+			"Disabled": "Produk '{{name}}' dinonaktifkan dan tidak dapat digunakan.",
+			"CategoryRequired": "Kategori wajib diisi."
+		},
+		"StockAdjustment": {
+			"NotFound": "Penyesuaian stok tidak ada.",
+			"Taken": "Penyesuaian stok dengan nomor '{{adjustmentNumber}}' sudah ada."
+		},
+		"Order": {
+			"NotFound": "Pesanan tidak ada.",
+			"Taken": "Pesanan dengan nomor '{{orderNumber}}' sudah ada."
+		},
+		"Supplier": {
+			"NotFound": "Pemasok tidak ada.",
+			"Taken": "Pemasok dengan kode '{{code}}' sudah ada.",
+			"Disabled": "Pemasok '{{name}}' dinonaktifkan dan tidak dapat digunakan."
+		}
+	},
+	"pwa": {
+		"manager": {
+			"modal": {
+				"Error": {
+					"title": "PWA Eror",
+					"description": "Pekerja layanan (service worker) aplikasi gagal mendaftar."
+				},
+				"OfflineReady": {
+					"title": "Siap Offline",
+					"description": "Aplikasi siap untuk digunakan secara offline."
+				},
+				"UpdateAvailable": {
+					"title": "Pembaruan tersedia.",
+					"description": "\"Perbarui\" akan menyegarkan aplikasi. Kemajuan yang belum disimpan mungkin hilang. \"Tutup\" akan menginstal pembaruan saat Anda mengunjungi aplikasi lagi.",
+					"update": "Perbarui"
+				}
+			}
+		}
+	},
+	"languages": {
+		"changeLanguage": {
+			"tooltip": "Ubah Bahasa"
+		},
+		"languages": {
+			"en": "English",
+			"id": "Bahasa Indonesia"
+		}
+	},
+	"home": {
+		"title": "Beranda"
+	},
+	"users": {
+		"name": "Nama",
+		"username": "Nama Pengguna",
+		"password": "Kata Sandi",
+		"createdBy": "Dibuat Oleh",
+		"noCreatedBy": "Tidak ada",
+		"hidePassword": "Sembunyikan kata sandi",
+		"showPassword": "Tampilkan kata sandi",
+		"new": {
+			"title": "Pengguna Baru"
+		},
+		"edit": {
+			"title": "Edit Pengguna"
+		},
+		"list": {
+			"title": "Daftar Pengguna"
+		},
+		"detail": {
+			"title": "Detail Pengguna"
+		}
+	},
+	"userSessions": {
+		"user": "Pengguna",
+		"ipAddress": "Alamat IP",
+		"createdAt": "Dibuat Pada",
+		"expireAt": "Berakhir Pada",
+		"lastRefreshAt": "Disegarkan Pada",
+		"loggedOutAt": "Keluar Pada",
+		"revokedAt": "Dicabut Pada",
+		"revokeSession": "Cabut sesi",
+		"list": {
+			"title": "Sesi Pengguna"
+		},
+		"detail": {
+			"title": "Detail Sesi Pengguna"
+		}
+	},
+	"navigations": {
+		"brand": "Akuntansi",
+		"menu": {
+			"open": "Buka menu"
+		},
+		"links": {
+			"home": "Beranda",
+			"profile": "Profil",
+			"users": "Pengguna",
+			"userSessions": "Sesi Pengguna",
+			"accounts": "Daftar Akun (COA)",
+			"journal": "Jurnal Umum",
+			"categories": "Kategori",
+			"products": "Produk",
+			"stockAdjustments": "Penyesuaian Stok",
+			"orders": "Pesanan (POS)",
+			"reports": "Laporan",
+			"profitAndLoss": "Laba Rugi",
+			"trialBalance": "Neraca Saldo",
+			"balanceSheet": "Neraca (Balance Sheet)",
+			"generalLedger": "Buku Besar",
+			"zReport": "Laporan Z (Tutup Kasir)",
+			"salesByProduct": "Penjualan per Produk",
+			"inventoryValuation": "Valuasi Inventaris",
+			"settings": "Pengaturan POS",
+			"stockMovement": "Audit Pergerakan Stok",
+			"suppliers": "Pemasok (Supplier)"
+		}
+	},
+	"accounts": {
+		"code": "Kode",
+		"name": "Nama Akun",
+		"type": "Tipe",
+		"status": "Status",
+		"createdAt": "Dibuat Pada",
+		"new": {
+			"title": "Akun Baru"
+		},
+		"edit": {
+			"title": "Edit Akun"
+		},
+		"detail": {
+			"title": "Detail Akun"
+		},
+		"list": {
+			"title": "Daftar Akun"
+		},
+		"select": {
+			"button": "Pilih Akun",
+			"title": "Pilih Akun"
+		},
+		"enum": {
+			"type": {
+				"Asset": "Aset",
+				"Liability": "Liabilitas",
+				"Equity": "Ekuitas",
+				"Revenue": "Pendapatan",
+				"Expense": "Beban"
+			}
+		}
+	},
+	"journal": {
+		"entryNumber": "Nomor Entri",
+		"date": "Tanggal",
+		"description": "Deskripsi",
+		"createdAt": "Dibuat Pada",
+		"account": "Akun",
+		"lineDescription": "Deskripsi Baris",
+		"debit": "Debit",
+		"credit": "Kredit",
+		"selectAccount": "Pilih Akun",
+		"totals": "Total",
+		"addLine": "Tambah Baris",
+		"reversalDescription": "Pembalikan dari {{entryNumber}}: {{description}}",
+		"new": {
+			"title": "Entri Jurnal Baru"
+		},
+		"detail": {
+			"title": "Detail Entri Jurnal"
+		},
+		"list": {
+			"title": "Jurnal Umum"
+		}
+	},
+	"categories": {
+		"name": "Nama Kategori",
+		"status": "Status",
+		"createdAt": "Dibuat Pada",
+		"new": {
+			"title": "Kategori Baru"
+		},
+		"edit": {
+			"title": "Edit Kategori"
+		},
+		"detail": {
+			"title": "Detail Kategori"
+		},
+		"list": {
+			"title": "Daftar Kategori"
+		},
+		"select": {
+			"button": "Pilih Kategori",
+			"title": "Pilih Kategori"
+		}
+	},
+	"products": {
+		"sku": "SKU",
+		"name": "Nama Produk",
+		"price": "Harga Jual",
+		"costPrice": "Harga Pokok (HPP)",
+		"currentStock": "Stok",
+		"category": "Kategori",
+		"createdAt": "Dibuat Pada",
+		"status": "Status",
+		"new": {
+			"title": "Produk Baru"
+		},
+		"edit": {
+			"title": "Edit Produk"
+		},
+		"detail": {
+			"title": "Detail Produk"
+		},
+		"list": {
+			"title": "Daftar Produk"
+		},
+		"select": {
+			"button": "Pilih Produk",
+			"title": "Pilih Produk"
+		}
+	},
+	"stockAdjustments": {
+		"adjustmentNumber": "Nomor Penyesuaian",
+		"date": "Tanggal",
+		"type": "Tipe",
+		"reason": "Alasan",
+		"totalCost": "Total Nilai",
+		"createdBy": "Dibuat Oleh",
+		"items": "Item",
+		"product": "Produk",
+		"quantity": "Kuantitas",
+		"unitCost": "Harga Satuan",
+		"subtotalCost": "Subtotal",
+		"addItem": "Tambah Item",
+		"totals": "Total Nilai",
+		"supplier": "Pemasok / Vendor",
+		"noSupplier": "Tanpa Pemasok (Internal)",
+		"new": {
+			"title": "Penyesuaian Stok Baru"
+		},
+		"detail": {
+			"title": "Detail Penyesuaian Stok"
+		},
+		"list": {
+			"title": "Penyesuaian Stok"
+		},
+		"enum": {
+			"type": {
+				"Waste": "Limbah / Rusak",
+				"Correction": "Koreksi Audit",
+				"Restock": "Isi Ulang (Restock)"
+			}
+		},
+		"bulkImport": {
+			"uploadCountSheet": "Unggah Lembar Hitung (CSV)",
+			"downloadTemplate": "Unduh Templat",
+			"parsingError": "Gagal mengurai file CSV. Pastikan format CSV valid.",
+			"invalidColumns": "Header yang diperlukan hilang: 'sku' atau 'quantity'.",
+			"noMatchingProducts": "Tidak ditemukan SKU produk yang valid di dalam CSV."
+		}
+	},
+	"orders": {
+		"orderNumber": "Nomor Pesanan",
+		"date": "Tanggal",
+		"status": "Status",
+		"paymentMethod": "Metode Pembayaran",
+		"totalAmount": "Total Harga",
+		"totalCost": "Total HPP",
+		"itemsCount": "Jumlah Item",
+		"cashier": "Kasir",
+		"journalEntry": "Entri Jurnal Terhubung",
+		"product": "Produk",
+		"quantity": "Kuantitas",
+		"unitPrice": "Harga",
+		"unitCost": "HPP",
+		"subtotal": "Subtotal",
+		"addItem": "Tambah Item",
+		"totals": "Total Penjualan",
+		"new": {
+			"title": "Pesanan Baru (POS)"
+		},
+		"detail": {
+			"title": "Detail Pesanan"
+		},
+		"list": {
+			"title": "Daftar Pesanan"
+		},
+		"enum": {
+			"status": {
+				"Completed": "Selesai",
+				"Cancelled": "Dibatalkan",
+				"Refunded": "Dikembalikan (Refund)"
+			},
+			"paymentMethod": {
+				"Cash": "Tunai",
+				"BankTransfer": "Transfer Bank",
+				"Card": "Kartu",
+				"QRIS": "QRIS"
+			}
+		},
+		"refund": {
+			"refundButton": "Kembalikan Dana (Refund)",
+			"cancelButton": "Batalkan Pesanan (Void)",
+			"confirmTitle": "Konfirmasi Pengembalian Dana",
+			"confirmMessage": "Apakah Anda yakin ingin mengembalikan dana untuk pesanan {{orderNumber}}? Ini akan secara otomatis membalikkan pendapatan, memulihkan stok inventaris, dan mencatat jurnal pembalikan.",
+			"confirmCancelTitle": "Konfirmasi Pembatalan Pesanan",
+			"confirmCancelMessage": "Apakah Anda yakin ingin membatalkan pesanan {{orderNumber}}?",
+			"successRefund": "Dana untuk pesanan {{orderNumber}} telah berhasil dikembalikan.",
+			"successCancel": "Pesanan {{orderNumber}} telah berhasil dibatalkan.",
+			"alreadyProcessed": "Pesanan ini tidak dapat dikembalikan karena statusnya sudah {{status}}."
+		}
+	},
+	"breadcrumbs": {
+		"home": "Beranda",
+		"user": "Pengguna",
+		"session": "Sesi",
+		"account": "Akun",
+		"journal": "Jurnal",
+		"category": "Kategori",
+		"product": "Produk",
+		"stock-adjustment": "Penyesuaian Stok",
+		"order": "Pesanan",
+		"new": "Baru",
+		"edit": "Edit",
+		"report": "Laporan",
+		"profit-and-loss": "Laba Rugi",
+		"trial-balance": "Neraca Saldo",
+		"balance-sheet": "Neraca",
+		"general-ledger": "Buku Besar",
+		"z-report": "Laporan Z",
+		"sales-by-product": "Penjualan per Produk",
+		"inventory-valuation": "Valuasi Inventaris",
+		"settings": "Pengaturan",
+		"pos-configuration": "Konfigurasi POS",
+		"stock-movement": "Pergerakan Stok",
+		"supplier": "Pemasok"
+	},
+	"stockStatus": {
+		"inStock": "Tersedia ({{count}})",
+		"lowStock": "Hampir Habis ({{count}})",
+		"outOfStock": "Habis ({{count}})"
+	},
+	"cashCalculator": {
+		"title": "Kalkulator Tunai & Kembalian",
+		"cashTendered": "Uang Diterima",
+		"changeDue": "Kembalian",
+		"exact": "Pas",
+		"add10k": "+10rb",
+		"add20k": "+20rb",
+		"add50k": "+50rb",
+		"add100k": "+100rb"
+	},
+	"modals": {
+		"confirmDisable": {
+			"title": "Nonaktifkan {{item}}",
+			"message": "Apakah Anda yakin ingin menonaktifkan \"{{name}}\"? Item ini tidak akan lagi tersedia untuk transaksi."
+		},
+		"confirmEnable": {
+			"title": "Aktifkan {{item}}",
+			"message": "Apakah Anda yakin ingin mengaktifkan \"{{name}}\"?"
+		},
+		"confirmRevokeSession": {
+			"title": "Cabut Sesi Pengguna",
+			"message": "Apakah Anda yakin ingin mencabut sesi untuk {{user}} dari IP {{ip}}? Pengguna akan segera dikeluarkan."
+		}
+	},
+	"dashboard": {
+		"title": "Dasbor",
+		"quickActions": "Aksi Cepat",
+		"metrics": {
+			"todaySales": "Penjualan Hari Ini",
+			"todayOrders": "Pesanan Hari Ini",
+			"lowStock": "Stok Menipis",
+			"mtdProfit": "Laba Bulan Ini (MTD)"
+		},
+		"metricsSub": {
+			"todaySales": "Pendapatan kotor hari ini",
+			"todayOrders": "Checkout yang diselesaikan",
+			"lowStock": "Item dengan stok < 10",
+			"mtdProfit": "Pendapatan dikurangi HPP"
+		},
+		"recentOrders": {
+			"title": "Pesanan Terbaru",
+			"empty": "Tidak ada pesanan terbaru ditemukan."
+		},
+		"recentAdjustments": {
+			"title": "Penyesuaian Stok Terbaru",
+			"empty": "Tidak ada penyesuaian stok terbaru ditemukan."
+		},
+		"viewAll": "Lihat semua",
+		"viewReports": "Direktori Laporan"
+	},
+	"reports": {
+		"exportAs": "Ekspor Sebagai",
+		"exportExcel": "Excel (.xlsx)",
+		"exportPdf": "Dokumen PDF",
+		"exportCsv": "CSV (Data Mentah)",
+		"hub": {
+			"title": "Direktori Laporan",
+			"subtitle": "Pilih laporan keuangan, penjualan, atau inventaris untuk melihat, menganalisis, dan mengekspor.",
+			"openReport": "Buka Laporan",
+			"sections": {
+				"financial": "Laporan Keuangan & Akuntansi",
+				"financialDesc": "Laporan GAAP entri ganda, jejak audit buku besar, dan neraca saldo.",
+				"pos": "Point-of-Sale (Kasir) & Operasional",
+				"posDesc": "Penutupan kasir harian, rekonsiliasi, dan peringkat pendapatan produk.",
+				"inventory": "Manajemen Inventaris & Aset",
+				"inventoryDesc": "Valuasi inventaris neraca dan log penyusutan/limbah gudang."
+			},
+			"cards": {
+				"pnl": "Pendapatan, harga pokok penjualan (HPP), beban operasional, dan margin laba bersih dari waktu ke waktu.",
+				"trialBalance": "Verifikasi saldo debit dan kredit buku besar untuk integritas audit.",
+				"balanceSheet": "Posisi keuangan pada titik waktu tertentu: Aset, Liabilitas, dan Ekuitas.",
+				"generalLedger": "Transaksi debit/kredit kronologis terperinci dan saldo berjalan untuk suatu akun.",
+				"zReport": "Rekonsiliasi kasir akhir hari, total metode pembayaran, dan penutupan kasir.",
+				"salesByProduct": "Peringkat penjualan produk, unit terjual, dan persentase margin kotor.",
+				"inventoryValuation": "Valuasi moneter stok yang ada dan penyusutan audit fisik yang tercatat."
+			}
+		},
+		"profitAndLoss": {
+			"title": "Laporan Laba Rugi",
+			"subtitle": "Laporan Pendapatan (GAAP)",
+			"operatingRevenues": "Pendapatan Operasional",
+			"cogs": "Harga Pokok Penjualan (HPP)",
+			"grossProfit": "Laba Kotor",
+			"operatingExpenses": "Beban Operasional",
+			"netProfit": "Laba Bersih",
+			"netLoss": "Rugi Bersih",
+			"account": "Akun",
+			"amount": "Nominal",
+			"totalRevenues": "Total Pendapatan",
+			"totalCogs": "Total Harga Pokok Penjualan (HPP)",
+			"totalExpenses": "Total Beban Operasional",
+			"empty": "Tidak ada transaksi keuangan yang ditemukan untuk periode ini.",
+			"runReport": "Jalankan Laporan"
+		},
+		"trialBalance": {
+			"title": "Neraca Saldo (Trial Balance)",
+			"subtitle": "Verifikasi Debit & Kredit Buku Besar",
+			"balanced": "Seimbang",
+			"outOfBalance": "Tidak Seimbang (Selisih: {{diff}})",
+			"accountCode": "Kode Akun",
+			"accountName": "Nama Akun",
+			"accountType": "Tipe",
+			"debit": "Debit",
+			"credit": "Kredit",
+			"totals": "Total Saldo",
+			"runReport": "Jalankan Laporan",
+			"empty": "Tidak ada aktivitas akun yang tercatat dalam periode ini."
+		},
+		"balanceSheet": {
+			"title": "Neraca (Balance Sheet)",
+			"subtitle": "Laporan Posisi Keuangan (GAAP)",
+			"asOfDate": "Per Tanggal",
+			"assets": "Aset",
+			"currentAssets": "Aset Lancar & Tetap",
+			"liabilities": "Liabilitas (Kewajiban)",
+			"equity": "Ekuitas (Modal)",
+			"retainedEarnings": "Laba Ditahan (Laba Bersih Kumulatif)",
+			"totalAssets": "Total Aset",
+			"totalLiabilities": "Total Liabilitas",
+			"totalEquity": "Total Ekuitas",
+			"totalLiabilitiesAndEquity": "Total Liabilitas & Ekuitas",
+			"balanced": "Seimbang (Aset = Liabilitas + Ekuitas)",
+			"outOfBalance": "Tidak Seimbang (Selisih: {{diff}})",
+			"runReport": "Jalankan Laporan",
+			"empty": "Tidak ada transaksi neraca yang ditemukan hingga tanggal ini."
+		},
+		"generalLedger": {
+			"title": "Buku Besar (General Ledger)",
+			"subtitle": "Jejak Audit Akun & Saldo Berjalan",
+			"selectAccount": "Pilih Akun",
+			"account": "Akun",
+			"openingBalance": "Saldo Awal",
+			"periodDebits": "Debit Periode",
+			"periodCredits": "Kredit Periode",
+			"endingBalance": "Saldo Akhir",
+			"date": "Tanggal",
+			"entryNumber": "No Entri",
+			"description": "Deskripsi",
+			"debit": "Debit",
+			"credit": "Kredit",
+			"balance": "Saldo Berjalan",
+			"runReport": "Jalankan Laporan",
+			"empty": "Tidak ada transaksi yang ditemukan untuk akun ini pada periode yang dipilih.",
+			"normalBalance": "Saldo Normal: {{type}}"
+		},
+		"zReport": {
+			"title": "Laporan Penutupan Harian (Laporan Z)",
+			"subtitle": "Rekonsiliasi Kasir & Penjualan POS Akhir Hari",
+			"cashier": "Kasir",
+			"allCashiers": "Semua Kasir",
+			"date": "Tanggal Kasir",
+			"runReport": "Buat Laporan Z",
+			"summary": {
+				"grossSales": "Penjualan Kotor",
+				"totalOrders": "Pesanan Selesai",
+				"itemsSold": "Total Item Terjual",
+				"avgTicket": "Rata-rata Nilai Pesanan",
+				"totalCost": "Harga Pokok Penjualan",
+				"grossProfit": "Margin Kotor",
+				"cashCollected": "Uang Tunai Diterima"
+			},
+			"payments": {
+				"title": "Rekonsiliasi Laci Berdasarkan Metode Pembayaran",
+				"method": "Metode Pembayaran",
+				"orders": "Transaksi",
+				"amount": "Total Terkumpul",
+				"percent": "Bagian"
+			},
+			"categories": {
+				"title": "Penjualan berdasarkan Kategori",
+				"category": "Kategori",
+				"quantity": "Jml Terjual",
+				"revenue": "Pendapatan"
+			},
+			"topProducts": {
+				"title": "Produk Terlaris",
+				"sku": "SKU",
+				"name": "Produk",
+				"quantity": "Jml Terjual",
+				"revenue": "Pendapatan"
+			},
+			"statuses": {
+				"title": "Rincian Status Pesanan",
+				"status": "Status",
+				"count": "Pesanan",
+				"amount": "Total Nominal"
+			},
+			"empty": "Tidak ada pesanan POS yang tercatat untuk tanggal dan kasir yang dipilih."
+		},
+		"salesByProduct": {
+			"title": "Penjualan per Produk & Kategori",
+			"subtitle": "Performa Produk, Volume & Margin Laba",
+			"categoryFilter": "Filter Kategori",
+			"allCategories": "Semua Kategori",
+			"summary": {
+				"totalRevenue": "Total Pendapatan",
+				"totalProfit": "Laba Kotor",
+				"unitsSold": "Unit Terjual",
+				"avgMargin": "Rata-rata Margin"
+			},
+			"categoriesTable": {
+				"title": "Ringkasan Performa Kategori",
+				"category": "Kategori",
+				"uniqueProducts": "Produk Unik",
+				"units": "Unit Terjual",
+				"revenue": "Pendapatan",
+				"cost": "HPP",
+				"profit": "Laba Kotor",
+				"margin": "Margin %"
+			},
+			"productsTable": {
+				"title": "Rincian Penjualan Produk",
+				"sku": "SKU",
+				"product": "Produk",
+				"category": "Kategori",
+				"units": "Unit Terjual",
+				"revenue": "Pendapatan",
+				"cost": "HPP",
+				"profit": "Laba Kotor",
+				"margin": "Margin %"
+			},
+			"empty": "Tidak ada penjualan produk yang tercatat dalam periode yang dipilih."
+		},
+		"inventoryValuation": {
+			"title": "Valuasi Inventaris & Penyusutan",
+			"subtitle": "Valuasi Aset Stok & Log Kehilangan (Audit)",
+			"period": "Periode Penyusutan & Limbah",
+			"summary": {
+				"totalValuation": "Total Nilai Inventaris",
+				"totalUnits": "Unit Tersedia",
+				"wasteCost": "Limbah / Rusak",
+				"shrinkageCost": "Penyusutan / Selisih Kurang"
+			},
+			"valuationTable": {
+				"title": "Valuasi Inventaris Tersedia Saat Ini",
+				"sku": "SKU",
+				"product": "Produk",
+				"category": "Kategori",
+				"stock": "Stok Saat Ini",
+				"unitCost": "Harga Pokok",
+				"totalValue": "Nilai Aset"
+			},
+			"shrinkageTable": {
+				"title": "Log Limbah, Rusak & Selisih Periode Ini",
+				"date": "Tanggal",
+				"adjustmentNumber": "No Penyesuaian",
+				"type": "Tipe",
+				"product": "Produk",
+				"quantity": "Selisih Jml",
+				"unitCost": "Harga",
+				"subtotal": "Dampak Nilai",
+				"reason": "Alasan"
+			},
+			"emptyValuation": "Tidak ada produk aktif yang ditemukan dalam inventaris.",
+			"emptyShrinkage": "Tidak ada limbah atau penyesuaian stok yang tercatat untuk periode ini."
+		},
+		"stockMovement": {
+			"title": "Audit Pergerakan Stok (Kartu Stok)",
+			"subtitle": "Riwayat Aliran Masuk & Keluar secara Kronologis untuk Penjualan, Pembelian & Penyesuaian",
+			"productFilter": "Produk (Filter Kartu Stok)",
+			"allProducts": "Semua Produk (Log Konsolidasi)",
+			"movementType": "Tipe Pergerakan",
+			"allTypes": "Semua Tipe",
+			"summary": {
+				"totalIn": "Total Stok Masuk (+)",
+				"totalOut": "Total Stok Keluar (-)",
+				"netDelta": "Perubahan Stok Bersih",
+				"openingStock": "Stok Awal",
+				"closingStock": "Stok Akhir",
+				"totalRecords": "Catatan Pergerakan"
+			},
+			"table": {
+				"date": "Tanggal & Waktu",
+				"refNumber": "Nomor Referensi",
+				"type": "Tipe",
+				"sku": "SKU",
+				"product": "Produk",
+				"quantity": "Kuantitas",
+				"unitCost": "Harga / Unit",
+				"totalCost": "Total Nilai",
+				"runningStock": "Saldo",
+				"user": "Dibuat Oleh",
+				"supplier": "Pemasok / Sumber"
+			},
+			"types": {
+				"Sale": "Penjualan",
+				"Restock": "Isi Ulang (Restock)",
+				"Waste": "Limbah / Rusak",
+				"Correction": "Koreksi",
+				"Return": "Pengembalian (Return)"
+			},
+			"empty": "Tidak ada pergerakan stok yang tercatat untuk kriteria yang dipilih."
+		}
+	},
+	"settings": {
+		"index": {
+			"title": "Pengaturan Sistem",
+			"subtitle": "Konfigurasi preferensi aplikasi, pemetaan akun GL (Buku Besar), dan opsi sistem.",
+			"openSetting": "Buka Pengaturan",
+			"posConfig": {
+				"title": "Konfigurasi Akuntansi POS",
+				"description": "Konfigurasikan pemetaan Buku Besar otomatis untuk kas, bank, pendapatan, inventaris, dan tanggal penguncian tutup buku."
+			}
+		},
+		"posConfiguration": {
+			"title": "Pengaturan Akuntansi POS",
+			"subtitle": "Konfigurasi pemetaan akun Buku Besar (GL) untuk transaksi entri ganda (double-entry) otomatis.",
+			"saveButton": "Simpan Pemetaan Akun",
+			"savedSuccessfully": "Pemetaan akun POS berhasil diperbarui.",
+			"sections": {
+				"cashAndBank": "Akun Kas & Bank",
+				"cashAndBankDesc": "Akun di mana pembayaran tunai dan transfer bank digital pelanggan dicatat.",
+				"salesAndRevenue": "Pengakuan Penjualan & Pendapatan",
+				"salesAndRevenueDesc": "Akun yang dikreditkan saat pesanan pelanggan diselesaikan.",
+				"inventoryAndCogs": "Aset Inventaris & HPP",
+				"inventoryAndCogsDesc": "Akun yang diperbarui saat produk terjual atau berkurang dari inventaris.",
+				"adjustments": "Penyesuaian Stok, Penyusutan & Limbah",
+				"adjustmentsDesc": "Akun GL yang terpengaruh saat terjadi kerusakan, kehilangan, atau kelebihan inventaris.",
+				"payables": "Utang Pemasok & Pembulatan",
+				"payablesDesc": "Akun untuk pengiriman stok ulang dengan kredit (Utang) dan pembulatan kasir.",
+				"periodClosing": "Penutupan Periode Akuntansi (Tanggal Kunci)",
+				"periodClosingDesc": "Kunci transaksi historis. Pesanan, jurnal, atau penyesuaian tidak dapat dibuat/diubah pada atau sebelum tanggal ini."
+			},
+			"fields": {
+				"cashAccount": "Akun Laci Kas (Aset)",
+				"bankAccount": "Akun Bank (Aset)",
+				"salesRevenueAccount": "Akun Pendapatan Penjualan (Pendapatan)",
+				"inventoryAssetAccount": "Akun Aset Inventaris (Aset)",
+				"cogsAccount": "Akun Harga Pokok Penjualan - HPP (Beban)",
+				"spoilageExpenseAccount": "Akun Beban Limbah / Rusak (Beban)",
+				"shrinkageExpenseAccount": "Akun Beban Penyusutan / Selisih Kurang (Beban)",
+				"inventoryGainAccount": "Akun Keuntungan / Surplus Inventaris (Pendapatan)",
+				"accountsPayableAccount": "Akun Utang Usaha (Liabilitas)",
+				"roundingAccount": "Akun Selisih Pembulatan (Beban)",
+				"closingLockDate": "Buku Ditutup Hingga (Tanggal Kunci)",
+				"noLockDate": "Tidak ada tanggal kunci (Semua periode terbuka)",
+				"clearLockDate": "Hapus / Buka Periode"
+			}
+		}
+	},
+	"suppliers": {
+		"code": "Kode Pemasok",
+		"name": "Nama Pemasok",
+		"contact": "Orang yang Dapat Dihubungi",
+		"email": "Email",
+		"phone": "Telepon",
+		"address": "Alamat",
+		"terms": "Syarat Pembayaran",
+		"status": "Status",
+		"createdAt": "Dibuat Pada",
+		"new": {
+			"title": "Pemasok Baru"
+		},
+		"edit": {
+			"title": "Edit Pemasok"
+		},
+		"detail": {
+			"title": "Detail Pemasok"
+		},
+		"list": {
+			"title": "Daftar Pemasok"
+		},
+		"select": {
+			"button": "Pilih Pemasok",
+			"title": "Pilih Pemasok"
+		}
+	}
+}

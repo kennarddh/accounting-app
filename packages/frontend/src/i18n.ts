@@ -24,7 +24,7 @@ await i18n
 		}),
 	)
 	.init({
-		supportedLngs: ['en'],
+		supportedLngs: ['en', 'id'],
 		lng: 'en',
 		fallbackLng: 'en',
 		ns: ['translations'],

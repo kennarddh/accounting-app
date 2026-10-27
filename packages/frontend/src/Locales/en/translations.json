@@ -150,7 +150,8 @@
 			"tooltip": "Change Language"
 		},
 		"languages": {
-			"en": "English"
+			"en": "English",
+			"id": "Bahasa Indonesia"
 		}
 	},
 	"home": {
