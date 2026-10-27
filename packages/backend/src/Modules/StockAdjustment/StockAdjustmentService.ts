@@ -300,7 +300,7 @@ class StockAdjustmentService extends Service {
 				}
 
 				// 7. Create Stock Adjustment with Supplier Relation
-				const netCost = totalGainCost.minus(totalLossCost)
+				const grossAdjustedCost = totalGainCost.add(totalLossCost)
 
 				const stockAdjustment = await tx.stockAdjustment.create({
 					data: {
@@ -308,7 +308,7 @@ class StockAdjustmentService extends Service {
 						date: data.date,
 						type: data.type,
 						reason: data.reason,
-						totalCost: netCost.abs(),
+						totalCost: grossAdjustedCost,
 						supplierId: data.supplierId ?? null,
 						createdById: data.createdById,
 						journalEntryId: journalId,

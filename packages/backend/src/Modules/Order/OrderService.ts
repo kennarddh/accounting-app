@@ -351,19 +351,21 @@ class OrderService extends Service {
 					select: { id: true, orderNumber: true },
 				})
 
-				// 6. Deduct current stock on each product
-				await Promise.all(
-					calculatedItems.map(item =>
-						tx.product.update({
-							where: { id: item.productId },
-							data: {
-								currentStock: {
-									decrement: item.quantity,
-								},
-							},
-						}),
-					),
+				// 6. Deduct current stock deterministically to prevent Postgres deadlocks
+				const sortedItems = [...calculatedItems].sort((a, b) =>
+					a.productId < b.productId ? -1 : 1,
 				)
+
+				for (const item of sortedItems) {
+					await tx.product.update({
+						where: { id: item.productId },
+						data: {
+							currentStock: {
+								decrement: item.quantity,
+							},
+						},
+					})
+				}
 
 				return order
 			})
@@ -396,15 +398,13 @@ class OrderService extends Service {
 				},
 			})
 
-			if (config.closingLockDate && order.date <= config.closingLockDate) {
+			const today = new Date()
+			if (config.closingLockDate && today <= config.closingLockDate) {
 				const lockedStr = config.closingLockDate.toISOString().slice(0, 10)
 				throw new BusinessRuleError(
 					ApiErrorResource.Order,
-					`Cannot refund an order from a closed accounting period (Locked through ${lockedStr}).`,
-					{
-						field: 'date',
-						meta: { date: lockedStr },
-					},
+					`Cannot process refunds in a closed accounting period (Locked through ${lockedStr}).`,
+					{ field: 'date', meta: { date: lockedStr } },
 				)
 			}
 
