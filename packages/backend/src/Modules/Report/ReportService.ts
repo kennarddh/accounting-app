@@ -412,6 +412,50 @@ class ReportService extends Service {
 		super('ReportService')
 	}
 
+	async getDashboardMetrics(startOfToday: Date, startOfMonth: Date) {
+		// 1. Today's metrics (Sales amount and order count)
+		const todayAgg = await this.db.client.order.aggregate({
+			where: {
+				date: { gte: startOfToday },
+				status: 'Completed',
+			},
+			_sum: { totalAmount: true },
+			_count: { id: true },
+		})
+
+		// 2. Month-to-date metrics (Sales minus COGS)
+		const mtdAgg = await this.db.client.order.aggregate({
+			where: {
+				date: { gte: startOfMonth },
+				status: 'Completed',
+			},
+			_sum: {
+				totalAmount: true,
+				totalCost: true,
+			},
+		})
+
+		// 3. Low stock count (Products with stock < 10)
+		const lowStockCount = await this.db.client.product.count({
+			where: {
+				currentStock: { lt: 10 },
+				disabledAt: null,
+			},
+		})
+
+		const todaySales = todayAgg._sum.totalAmount ?? new Prisma.Decimal(0)
+		const mtdSales = mtdAgg._sum.totalAmount ?? new Prisma.Decimal(0)
+		const mtdCost = mtdAgg._sum.totalCost ?? new Prisma.Decimal(0)
+		const mtdProfit = mtdSales.minus(mtdCost)
+
+		return {
+			todaySales: todaySales.toDecimalPlaces(4).toString(),
+			todayOrdersCount: todayAgg._count.id,
+			lowStockCount,
+			monthToDateGrossProfit: mtdProfit.toDecimalPlaces(4).toString(),
+		}
+	}
+
 	async getProfitAndLoss(fromDate: Date, toDate: Date): Promise<ProfitAndLossReportData> {
 		const config = await this.posConfigService.get()
 

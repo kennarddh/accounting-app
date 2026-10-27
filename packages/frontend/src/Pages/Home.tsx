@@ -42,7 +42,7 @@ import FormatCurrency from 'Utils/FormatCurrency'
 import HandleApiError from 'Utils/HandleApiError'
 
 import OrderFindManyApi, { OrderFindManySingleOutput } from 'Api/Order/OrderFindManyApi'
-import ProductFindManyApi from 'Api/Product/ProductFindManyApi'
+import DashboardMetricsApi from 'Api/Report/DashboardMetricsApi'
 import StockAdjustmentFindManyApi, {
 	StockAdjustmentFindManySingleOutput,
 } from 'Api/StockAdjustment/StockAdjustmentFindManyApi'
@@ -78,57 +78,28 @@ const Home: FC = () => {
 		setErrorText(null)
 
 		try {
+			// Pass local time boundaries to backend
 			const startOfToday = dayjs().startOf('day').valueOf()
 			const startOfMonth = dayjs().startOf('month').valueOf()
 
-			const [monthOrdersRes, recentOrdersRes, productsRes, adjustmentsRes] =
-				await Promise.all([
-					OrderFindManyApi({
-						fromDate: startOfMonth,
-						pagination: { limit: 100 },
-					}),
-					OrderFindManyApi({
-						pagination: { limit: 5 },
-					}),
-					ProductFindManyApi({
-						pagination: { limit: 100 },
-					}),
-					StockAdjustmentFindManyApi({
-						pagination: { limit: 5 },
-					}),
-				])
-
-			let todaySales = new Decimal(0)
-			let todayCount = 0
-			let mtdProfit = new Decimal(0)
-
-			for (const order of monthOrdersRes.list) {
-				if (order.status === OrderStatus.Completed) {
-					const orderAmount = new Decimal(order.totalAmount || 0)
-					const orderCost = new Decimal(order.totalCost || 0)
-
-					mtdProfit = mtdProfit.plus(orderAmount.minus(orderCost))
-
-					if (order.date.getTime() >= startOfToday) {
-						todaySales = todaySales.plus(orderAmount)
-						todayCount += 1
-					}
-				}
-			}
-
-			let lowStock = 0
-			for (const p of productsRes.list) {
-				const stockNum = parseFloat(p.currentStock || '0')
-				if (stockNum < 10) {
-					lowStock += 1
-				}
-			}
+			const [metricsRes, recentOrdersRes, adjustmentsRes] = await Promise.all([
+				DashboardMetricsApi({
+					startOfToday,
+					startOfMonth,
+				}),
+				OrderFindManyApi({
+					pagination: { limit: 5 },
+				}),
+				StockAdjustmentFindManyApi({
+					pagination: { limit: 5 },
+				}),
+			])
 
 			setMetrics({
-				todaySales,
-				todayOrdersCount: todayCount,
-				lowStockCount: lowStock,
-				monthToDateGrossProfit: mtdProfit,
+				todaySales: new Decimal(metricsRes.todaySales),
+				todayOrdersCount: metricsRes.todayOrdersCount,
+				lowStockCount: metricsRes.lowStockCount,
+				monthToDateGrossProfit: new Decimal(metricsRes.monthToDateGrossProfit),
 			})
 
 			setRecentOrders(recentOrdersRes.list)

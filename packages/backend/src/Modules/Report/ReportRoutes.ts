@@ -11,6 +11,7 @@ import ExportStockMovementReport from './Controllers/ExportStockMovementReport'
 import ExportTrialBalance from './Controllers/ExportTrialBalance'
 import ExportZReport from './Controllers/ExportZReport'
 import GetBalanceSheet from './Controllers/GetBalanceSheet'
+import GetDashboardMetrics from './Controllers/GetDashboardMetrics'
 import GetGeneralLedger from './Controllers/GetGeneralLedger'
 import GetInventoryValuation from './Controllers/GetInventoryValuation'
 import GetProfitAndLoss from './Controllers/GetProfitAndLoss'
@@ -20,6 +21,8 @@ import GetTrialBalance from './Controllers/GetTrialBalance'
 import GetZReport from './Controllers/GetZReport'
 
 const ReportRouter = new CelosiaRouter({ strict: true })
+
+ReportRouter.get('/dashboard-metrics', [new VerifyJWT()], new GetDashboardMetrics())
 
 ReportRouter.get('/profit-and-loss', [new VerifyJWT()], new GetProfitAndLoss())
 ReportRouter.get('/profit-and-loss/export', [new VerifyJWT()], new ExportProfitAndLoss())
