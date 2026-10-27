@@ -2,7 +2,6 @@ import { FC, useEffect, useState } from 'react'
 
 import { Await, Outlet, useLoaderData, useNavigate } from 'react-router'
 
-import { ApiErrorKind, ApiErrorResource } from '@accounting-app/common'
 import useAuthStore from 'Stores/AuthStore'
 import { useTranslation } from 'react-i18next'
 
@@ -29,9 +28,7 @@ const MainLayout: FC = () => {
 	const error = useAuthStore(state => state.error)
 
 	const Navigate = useNavigate()
-
 	const { t } = useTranslation()
-
 	const { sessionPromise } = useLoaderData<{ sessionPromise: Promise<void> }>()
 
 	useEffect(() => {
@@ -40,30 +37,9 @@ const MainLayout: FC = () => {
 			if (!error) return
 
 			if (IsApiResponseError(error)) {
-				const firstOtherError = error.apiErrorResponse.errors.others?.[0]
-
-				if (!firstOtherError) {
-					console.error('Empty error during session check api request.', error)
-
-					return SetError(ErrorType.Unknown)
-				}
-
-				if (
-					(firstOtherError.resource === ApiErrorResource.RefreshToken &&
-						(firstOtherError.kind === ApiErrorKind.Expired ||
-							firstOtherError.kind === ApiErrorKind.Invalid)) ||
-					(firstOtherError.resource === null &&
-						firstOtherError.kind === ApiErrorKind.Unauthorized)
-				) {
-					completeLogout()
-
-					await Navigate('/login')
-				} else if (
-					firstOtherError.resource === null &&
-					firstOtherError.kind === ApiErrorKind.InternalServerError
-				) {
-					SetError(ErrorType.Unknown)
-				}
+				// Any 401/403 or invalid session -> logout & go to login
+				completeLogout()
+				await Navigate('/login', { replace: true })
 			} else if (IsApiNoConnectionError(error)) {
 				SetError(ErrorType.Network)
 			} else {
@@ -71,17 +47,18 @@ const MainLayout: FC = () => {
 			}
 		}
 
-		main().catch((error: unknown) => console.error('MainLayout session check error', error))
+		main().catch((err: unknown) => console.error('MainLayout session check error', err))
 	}, [Navigate, completeLogout, error, hasChecked])
 
 	if (Error) {
-		if (Error === ErrorType.Network)
+		if (Error === ErrorType.Network) {
 			return (
 				<ErrorPageTemplate
 					title={t('errors.network.title')}
 					text={t('errors.network.text')}
 				/>
 			)
+		}
 
 		return (
 			<ErrorPageTemplate title={t('errors.unknown.title')} text={t('errors.unknown.text')} />

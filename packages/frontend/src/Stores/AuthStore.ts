@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
 import AuthGetCurrentSessionApi from 'Api/Auth/AuthGetCurrentSessionApi'
+import { IsApiResponseError } from 'Api/index'
 
 export interface AuthState {
 	accessToken: string | null
@@ -39,6 +40,7 @@ const useAuthStore = create<AuthState & AuthAction>()(
 					isLoading: false,
 					isLoggedIn: true,
 					hasChecked: true,
+					error: null,
 				})),
 			completeRefresh: accessToken => set(() => ({ accessToken })),
 			completeLogout: () =>
@@ -59,8 +61,8 @@ const useAuthStore = create<AuthState & AuthAction>()(
 						hasChecked: true,
 						isLoading: false,
 						isLoggedIn: false,
+						error: null,
 					})
-
 					return
 				}
 
@@ -77,14 +79,28 @@ const useAuthStore = create<AuthState & AuthAction>()(
 						isLoading: false,
 						isLoggedIn: true,
 						user: session.user,
+						error: null,
 					})
 				} catch (error) {
-					set({
-						hasChecked: true,
-						isLoading: false,
-						isLoggedIn: false,
-						error: error as Error,
-					})
+					// If the token is invalid, expired, or revoked (401), cleanly purge stale credentials
+					if (IsApiResponseError(error)) {
+						set({
+							accessToken: null,
+							user: null,
+							hasChecked: true,
+							isLoading: false,
+							isLoggedIn: false,
+							error: null,
+						})
+					} else {
+						// Real network failure (offline / DNS)
+						set({
+							hasChecked: true,
+							isLoading: false,
+							isLoggedIn: false,
+							error: error as Error,
+						})
+					}
 				}
 			},
 		}),
