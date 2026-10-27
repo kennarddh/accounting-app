@@ -24,11 +24,11 @@ import ConfigurationService from '../Configuration/ConfigurationService'
 export interface SupplierCreateData {
 	code: string
 	name: string
-	contact?: string
-	email?: string
-	phone?: string
-	address?: string
-	terms?: string
+	contact?: string | undefined
+	email?: string | undefined
+	phone?: string | undefined
+	address?: string | undefined
+	terms?: string | undefined
 }
 
 export interface SupplierUpdateData {
@@ -162,11 +162,11 @@ class SupplierService extends Service {
 				data: {
 					code: data.code,
 					name: data.name,
-					contact: data.contact,
-					email: data.email,
-					phone: data.phone,
-					address: data.address,
-					terms: data.terms,
+					contact: data.contact ?? null,
+					email: data.email ?? null,
+					phone: data.phone ?? null,
+					address: data.address ?? null,
+					terms: data.terms ?? null,
 				},
 				select: { id: true },
 			})

@@ -41,6 +41,13 @@ class FindManyStockAdjustments extends Controller {
 					type: stockAdjustment.type,
 					reason: stockAdjustment.reason,
 					totalCost: stockAdjustment.totalCost.toString(),
+					supplier: stockAdjustment.supplier
+						? {
+								id: stockAdjustment.supplier.id,
+								code: stockAdjustment.supplier.code,
+								name: stockAdjustment.supplier.name,
+							}
+						: null,
 					createdBy: {
 						id: stockAdjustment.createdBy.id,
 						name: stockAdjustment.createdBy.name,

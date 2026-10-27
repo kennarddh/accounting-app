@@ -443,6 +443,9 @@ const StockMovementReport: FC = () => {
 										>
 											{t('reports.stockMovement.table.totalCost')}
 										</TableCell>
+										<TableCell width='15%' sx={{ fontWeight: 600 }}>
+											{t('reports.stockMovement.table.supplier')}
+										</TableCell>
 										{report.filteredProduct && (
 											<TableCell
 												width='10%'
@@ -542,6 +545,19 @@ const StockMovementReport: FC = () => {
 													>
 														{FormatCurrency(m.totalCost)}
 													</TableCell>
+													<TableCell
+														sx={{
+															color: m.supplierName
+																? 'text.primary'
+																: 'text.secondary',
+															fontStyle: m.supplierName
+																? 'normal'
+																: 'italic',
+														}}
+													>
+														{m.supplierName ?? '-'}
+													</TableCell>
+
 													{report.filteredProduct && (
 														<TableCell
 															align='right'

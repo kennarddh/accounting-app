@@ -15,25 +15,31 @@ class FindStockAdjustmentById extends Controller {
 		response: CelosiaResponse,
 	) {
 		const { id } = request.params
-
 		const stockAdjustment = await this.stockAdjustmentService.findById(id)
 
 		response.status(200).json({
 			errors: {},
 			data: {
-				id: stockAdjustment.id,
+				id: stockAdjustment.id.toString(),
 				adjustmentNumber: stockAdjustment.adjustmentNumber,
 				date: stockAdjustment.date.getTime(),
 				type: stockAdjustment.type,
 				reason: stockAdjustment.reason,
 				totalCost: stockAdjustment.totalCost.toString(),
+				supplier: stockAdjustment.supplier
+					? {
+							id: stockAdjustment.supplier.id.toString(),
+							code: stockAdjustment.supplier.code,
+							name: stockAdjustment.supplier.name,
+						}
+					: null,
 				createdBy: {
-					id: stockAdjustment.createdBy.id,
+					id: stockAdjustment.createdBy.id.toString(),
 					name: stockAdjustment.createdBy.name,
 				},
 				items: stockAdjustment.items.map(item => ({
 					product: {
-						id: item.product.id,
+						id: item.product.id.toString(),
 						sku: item.product.sku,
 						name: item.product.name,
 					},

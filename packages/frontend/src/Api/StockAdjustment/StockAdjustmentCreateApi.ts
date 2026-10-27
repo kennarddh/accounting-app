@@ -12,6 +12,7 @@ export interface StockAdjustmentCreateData {
 	date: string
 	type: StockAdjustmentType
 	reason: string
+	supplierId?: string | undefined
 	items: {
 		productId: string
 		quantity: string
@@ -31,11 +32,7 @@ const StockAdjustmentCreateApi: ApiFunction<
 		data,
 	})
 
-	const outputData = result.data.data
-
-	return {
-		id: outputData.id,
-	}
+	return result.data.data
 }
 
 export default StockAdjustmentCreateApi

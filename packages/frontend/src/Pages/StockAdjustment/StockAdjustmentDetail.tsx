@@ -103,7 +103,6 @@ const StockAdjustmentDetail: FC = () => {
 						{t('common.duplicate')}
 					</Button>
 				</Box>
-
 				<Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
 					<FormControl sx={{ flex: 1, minWidth: 250 }}>
 						<TextField
@@ -136,7 +135,6 @@ const StockAdjustmentDetail: FC = () => {
 						/>
 					</FormControl>
 				</Box>
-
 				<Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
 					<FormControl sx={{ flex: 2, minWidth: 250 }}>
 						<TextField
@@ -147,6 +145,21 @@ const StockAdjustmentDetail: FC = () => {
 						/>
 					</FormControl>
 
+					{/* Display Supplier if populated */}
+					{adjustment.supplier && (
+						<FormControl sx={{ flex: 1.5, minWidth: 220 }}>
+							<TextField
+								value={`${adjustment.supplier.code} - ${adjustment.supplier.name}`}
+								label={t('stockAdjustments.supplier')}
+								variant='outlined'
+								slotProps={{
+									inputLabel: { shrink: true },
+									input: { readOnly: true },
+								}}
+							/>
+						</FormControl>
+					)}
+
 					<FormControl sx={{ flex: 1, minWidth: 200 }}>
 						<TextField
 							value={adjustment.createdBy.name}
@@ -156,7 +169,6 @@ const StockAdjustmentDetail: FC = () => {
 						/>
 					</FormControl>
 				</Box>
-
 				<TableContainer component={Paper} variant='outlined' sx={{ mb: 2 }}>
 					<Table size='small'>
 						<TableHead sx={{ backgroundColor: '#f8fafc' }}>

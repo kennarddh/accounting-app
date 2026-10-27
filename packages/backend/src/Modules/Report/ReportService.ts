@@ -45,6 +45,7 @@ export type StockMovementLineItem = {
 	totalCost: string
 	referenceNumber: string
 	createdByName: string
+	supplierName?: string | undefined
 	runningStock?: string | undefined
 }
 
@@ -78,6 +79,7 @@ interface RawMovementRow {
 	orderNumber: string | null
 	adjustmentNumber: string | null
 	createdByName: string
+	supplierName: string | null
 }
 
 interface RawOpeningStock {
@@ -1332,16 +1334,18 @@ class ReportService extends Service {
 				(ABS(sm.quantity) * sm."costPerUnit")::text AS "totalCost",
 				o."orderNumber",
 				sa."adjustmentNumber",
+				sup.name AS "supplierName",
 				u.name AS "createdByName"
 			FROM stock_movements sm
 			JOIN products p ON p.id = sm."productId"
 			JOIN users u ON u.id = sm."createdById"
 			LEFT JOIN orders o ON o.id = sm."orderId"
 			LEFT JOIN stock_adjustments sa ON sa.id = sm."stockAdjustmentId"
+			LEFT JOIN suppliers sup ON sup.id = sa."supplierId"
 			WHERE sm."createdAt" >= ${fromDate}
-			  AND sm."createdAt" <= ${toDate}
-			  AND (${productId}::bigint IS NULL OR sm."productId" = ${productId})
-			  AND (${movementType}::text IS NULL OR sm.type = ${movementType})
+			AND sm."createdAt" <= ${toDate}
+			AND (${productId}::bigint IS NULL OR sm."productId" = ${productId})
+			AND (${movementType}::text IS NULL OR sm.type = ${movementType})
 			ORDER BY sm."createdAt" ASC, sm.id ASC;
 		`
 
@@ -1376,6 +1380,7 @@ class ReportService extends Service {
 				totalCost: new Prisma.Decimal(row.totalCost).toDecimalPlaces(4).toString(),
 				referenceNumber: row.orderNumber ?? row.adjustmentNumber ?? '-',
 				createdByName: row.createdByName,
+				supplierName: row.supplierName ?? undefined,
 				runningStock: hasSpecificProduct
 					? runningStock.toDecimalPlaces(4).toString()
 					: undefined,

@@ -6,10 +6,15 @@ import { ApiFunction } from 'Api/Types'
 interface StockAdjustmentFindByIdResponse {
 	id: string
 	adjustmentNumber: string
-	date: string
+	date: number
 	type: string
 	reason: string
 	totalCost: string
+	supplier: {
+		id: string
+		code: string
+		name: string
+	} | null
 	createdBy: {
 		id: string
 		name: string
@@ -24,7 +29,7 @@ interface StockAdjustmentFindByIdResponse {
 		subtotalCost: string
 		unitCost: string
 	}[]
-	createdAt: string
+	createdAt: number
 }
 
 export interface StockAdjustmentFindByIdOutput {
@@ -34,6 +39,11 @@ export interface StockAdjustmentFindByIdOutput {
 	type: StockAdjustmentType
 	reason: string
 	totalCost: string
+	supplier: {
+		id: string
+		code: string
+		name: string
+	} | null
 	createdBy: {
 		id: string
 		name: string
@@ -65,30 +75,19 @@ const StockAdjustmentFindByIdApi: ApiFunction<
 		true,
 	)
 
-	const outputData = result.data.data
+	const d = result.data.data
 
 	return {
-		id: outputData.id,
-		adjustmentNumber: outputData.adjustmentNumber,
-		date: new Date(outputData.date),
-		type: outputData.type as StockAdjustmentType,
-		reason: outputData.reason,
-		totalCost: outputData.totalCost,
-		createdBy: {
-			id: outputData.createdBy.id,
-			name: outputData.createdBy.name,
-		},
-		items: outputData.items.map(item => ({
-			product: {
-				id: item.product.id,
-				sku: item.product.sku,
-				name: item.product.name,
-			},
-			quantity: item.quantity,
-			unitCost: item.unitCost,
-			subtotalCost: item.subtotalCost,
-		})),
-		createdAt: new Date(outputData.createdAt),
+		id: d.id,
+		adjustmentNumber: d.adjustmentNumber,
+		date: new Date(d.date),
+		type: d.type as StockAdjustmentType,
+		reason: d.reason,
+		totalCost: d.totalCost,
+		supplier: d.supplier,
+		createdBy: d.createdBy,
+		items: d.items,
+		createdAt: new Date(d.createdAt),
 	}
 }
 

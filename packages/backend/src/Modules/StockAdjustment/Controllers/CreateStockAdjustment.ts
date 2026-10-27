@@ -19,8 +19,7 @@ class CreateStockAdjustment extends Controller {
 		request: ControllerRequest<CreateStockAdjustment>,
 		response: CelosiaResponse,
 	) {
-		const { adjustmentNumber, date, type, reason, items } = request.body
-
+		const { adjustmentNumber, date, type, reason, items, supplierId } = request.body
 		const createdById = data.user.id
 
 		const stockAdjustment = await this.stockAdjustmentService.create({
@@ -29,13 +28,14 @@ class CreateStockAdjustment extends Controller {
 			type,
 			reason,
 			createdById,
+			supplierId,
 			items,
 		})
 
 		response.status(200).json({
 			errors: {},
 			data: {
-				id: stockAdjustment.id,
+				id: stockAdjustment.id.toString(),
 			},
 		})
 	}
@@ -46,6 +46,7 @@ class CreateStockAdjustment extends Controller {
 			date: z.coerce.date(),
 			type: z.enum(StockAdjustmentType),
 			reason: z.string().trim().min(1).max(100),
+			supplierId: z.coerce.bigint().min(1n).optional(),
 			items: z
 				.array(
 					z.object({

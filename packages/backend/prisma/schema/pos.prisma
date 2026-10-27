@@ -63,12 +63,15 @@ model StockMovement {
 
 model StockAdjustment {
     id               BigInt   @id @default(autoincrement())
-    adjustmentNumber String   @unique(map: "stock_adjustments_adjustmentNumber_key") // e.g. "ADJ-20260910-001"
+    adjustmentNumber String   @unique(map: "stock_adjustments_adjustmentNumber_key")
     date             DateTime @default(now())
     type             String   @db.VarChar(50)
     reason           String
 
     totalCost Decimal @default(0) @db.Decimal(28, 4)
+
+    supplierId BigInt?
+    supplier   Supplier? @relation(fields: [supplierId], references: [id])
 
     createdById BigInt
     createdBy   User   @relation("StockAdjustmentCreator", fields: [createdById], references: [id])
@@ -199,7 +202,9 @@ model Supplier {
     email   String?
     phone   String?
     address String? @db.Text
-    terms   String? @db.VarChar(50) // e.g. "Net 30", "Due upon receipt"
+    terms   String? @db.VarChar(50)
+
+    stockAdjustments StockAdjustment[]
 
     disabledAt DateTime?
     createdAt  DateTime  @default(now())

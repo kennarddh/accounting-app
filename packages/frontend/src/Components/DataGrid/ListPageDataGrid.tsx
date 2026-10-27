@@ -62,6 +62,7 @@ const ListPageDataGrid: FC<ListPageDataGridProps> = props => {
 	})
 
 	const OnError = useCallback((error: GridGetRowsError | GridUpdateRowError) => {
+		console.error(error) // TODO: Remove this logging
 		SetDataSourceError(HandleDataGridError(error))
 	}, [])
 

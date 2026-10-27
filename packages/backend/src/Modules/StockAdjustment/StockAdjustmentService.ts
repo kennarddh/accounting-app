@@ -7,7 +7,7 @@ import {
 	StockAdjustmentType,
 } from '@accounting-app/common'
 
-import { BusinessRuleError, NotFoundError } from 'Errors'
+import { BusinessRuleError, NotFoundError, ResourceDisabledError } from 'Errors'
 
 import DatabaseService from 'Modules/Database/DatabaseService'
 import { buildPrismaPagination, handlePrismaError } from 'Modules/Database/PrismaUtils'
@@ -30,6 +30,7 @@ export interface StockAdjustmentCreateData {
 	type: StockAdjustmentType
 	reason: string
 	createdById: bigint
+	supplierId?: bigint | undefined
 	items: StockAdjustmentItemCreateData[]
 }
 
@@ -73,6 +74,13 @@ class StockAdjustmentService extends Service {
 			type: true,
 			reason: true,
 			totalCost: true,
+			supplier: {
+				select: {
+					id: true,
+					code: true,
+					name: true,
+				},
+			},
 			createdBy: { select: { id: true, name: true } },
 			items: {
 				select: {
@@ -131,24 +139,21 @@ class StockAdjustmentService extends Service {
 	}
 
 	async create(data: StockAdjustmentCreateData) {
-		const config = await this.posConfigurationService.get()
-		if (config.closingLockDate && data.date <= config.closingLockDate) {
-			const lockedStr = config.closingLockDate.toISOString().slice(0, 10)
-			throw new BusinessRuleError(
-				ApiErrorResource.StockAdjustment,
-				`Cannot adjust stock in a closed accounting period (Locked through ${lockedStr}).`,
-				{
-					field: 'date',
-					meta: { date: lockedStr },
-				},
-			)
-		}
-
 		try {
 			return await this.db.transaction(async tx => {
 				const config = await this.posConfigurationService.get()
 
-				// 1. Guard against duplicate products in the same adjustment document
+				// Period Lock Guard
+				if (config.closingLockDate && data.date <= config.closingLockDate) {
+					const lockedStr = config.closingLockDate.toISOString().slice(0, 10)
+					throw new BusinessRuleError(
+						ApiErrorResource.StockAdjustment,
+						`Cannot adjust stock in a closed accounting period (Locked through ${lockedStr}).`,
+						{ field: 'date', meta: { date: lockedStr } },
+					)
+				}
+
+				// 1. Guard against duplicate products
 				const productIds = data.items.map(i => i.productId)
 				if (new Set(productIds).size !== productIds.length) {
 					throw new BusinessRuleError(
@@ -167,18 +172,31 @@ class StockAdjustmentService extends Service {
 					throw new NotFoundError(ApiErrorResource.Product)
 				}
 
-				// 3. Prepare normalized signed items & compute consolidated totals
-				let totalGainCost = new Prisma.Decimal(0) // Inventory asset additions (+)
-				let totalLossCost = new Prisma.Decimal(0) // Inventory asset reductions (-)
+				// 3. Verify Supplier if provided on Restock
+				let supplierName: string | undefined
+				if (data.supplierId) {
+					const s = await tx.supplier.findUnique({
+						where: { id: data.supplierId },
+						select: { id: true, name: true, disabledAt: true },
+					})
+
+					if (!s) {
+						throw new NotFoundError(ApiErrorResource.Supplier)
+					} else if (s.disabledAt !== null) {
+						throw new ResourceDisabledError(ApiErrorResource.Supplier)
+					} else {
+						supplierName = s.name
+					}
+				}
+
+				// 4. Prepare normalized signed items & compute totals
+				let totalGainCost = new Prisma.Decimal(0)
+				let totalLossCost = new Prisma.Decimal(0)
 
 				const preparedItems = data.items.map(item => {
 					const rawQty = new Prisma.Decimal(item.quantity)
 					const unitCost = new Prisma.Decimal(item.unitCost)
 
-					// Quantity enforcement by type:
-					// - Waste: always a deduction (negative)
-					// - Restock: always an addition (positive)
-					// - Correction: signed as provided (+ for surplus, - for shortage)
 					let signedQuantity: Prisma.Decimal
 					if (data.type === StockAdjustmentType.Waste) {
 						signedQuantity = rawQty.abs().negated()
@@ -212,38 +230,31 @@ class StockAdjustmentService extends Service {
 					}
 				})
 
-				// 4. Build consolidated Double-Entry Journal Lines (Max 4 lines total, never bloated)
+				// 5. Build consolidated Double-Entry Journal Lines
 				const journalLines: Prisma.JournalLineUncheckedCreateWithoutJournalEntryInput[] = []
 
-				// A. Consolidated Loss Side (Shrinkage / Waste expense vs Inventory Asset)
 				if (totalLossCost.greaterThan(0)) {
 					const lossExpenseAccountId =
 						data.type === StockAdjustmentType.Waste
 							? config.spoilageExpenseAccountId
 							: config.shrinkageExpenseAccountId
 
-					const lossDescription =
-						data.type === StockAdjustmentType.Waste
-							? `Inventory Waste/Spoilage for ${data.adjustmentNumber}`
-							: `Inventory Shrinkage/Shortage for ${data.adjustmentNumber}`
-
 					journalLines.push(
 						{
 							accountId: lossExpenseAccountId,
 							debit: totalLossCost,
 							credit: 0,
-							description: lossDescription,
+							description: `Loss (${data.type}) for ${data.adjustmentNumber}`,
 						},
 						{
 							accountId: config.inventoryAssetAccountId,
 							debit: 0,
 							credit: totalLossCost,
-							description: `Inventory Asset reduction for ${data.adjustmentNumber}`,
+							description: `Inventory reduction for ${data.adjustmentNumber}`,
 						},
 					)
 				}
 
-				// B. Consolidated Gain Side (Inventory Asset vs Gain Income / Accounts Payable)
 				if (totalGainCost.greaterThan(0)) {
 					const gainCreditAccountId =
 						data.type === StockAdjustmentType.Restock
@@ -252,15 +263,15 @@ class StockAdjustmentService extends Service {
 
 					const gainDescription =
 						data.type === StockAdjustmentType.Restock
-							? `Accounts Payable for Supplier Delivery ${data.adjustmentNumber}`
-							: `Inventory Surplus/Gain for ${data.adjustmentNumber}`
+							? `Accounts Payable${supplierName ? ` to ${supplierName}` : ''} for Delivery ${data.adjustmentNumber}`
+							: `Inventory Surplus for ${data.adjustmentNumber}`
 
 					journalLines.push(
 						{
 							accountId: config.inventoryAssetAccountId,
 							debit: totalGainCost,
 							credit: 0,
-							description: `Inventory Asset addition for ${data.adjustmentNumber}`,
+							description: `Inventory addition for ${data.adjustmentNumber}`,
 						},
 						{
 							accountId: gainCreditAccountId,
@@ -271,21 +282,19 @@ class StockAdjustmentService extends Service {
 					)
 				}
 
-				// 5. Create the SINGLE consolidated Journal Entry
+				// 6. Create Journal Entry
 				const journal = await tx.journalEntry.create({
 					data: {
 						entryNumber: `JE-${data.adjustmentNumber}`,
 						date: data.date,
 						description: `Inventory Adjustment (${data.type}): ${data.reason}`,
 						createdById: data.createdById,
-						lines: {
-							create: journalLines,
-						},
+						lines: { create: journalLines },
 					},
 					select: { id: true },
 				})
 
-				// 6. Create Stock Adjustment document & Stock Movements
+				// 7. Create Stock Adjustment with Supplier Relation
 				const netCost = totalGainCost.minus(totalLossCost)
 
 				const stockAdjustment = await tx.stockAdjustment.create({
@@ -294,7 +303,8 @@ class StockAdjustmentService extends Service {
 						date: data.date,
 						type: data.type,
 						reason: data.reason,
-						totalCost: netCost.abs(), // Magnitude of adjusted inventory value
+						totalCost: netCost.abs(),
+						supplierId: data.supplierId ?? null,
 						createdById: data.createdById,
 						journalEntryId: journal.id,
 						items: {
@@ -318,15 +328,13 @@ class StockAdjustmentService extends Service {
 					select: { id: true, adjustmentNumber: true },
 				})
 
-				// 7. Update each product's current cached stock level atomically
+				// 8. Update product stock levels
 				await Promise.all(
 					preparedItems.map(item =>
 						tx.product.update({
 							where: { id: item.productId },
 							data: {
-								currentStock: {
-									increment: item.signedQuantity,
-								},
+								currentStock: { increment: item.signedQuantity },
 							},
 						}),
 					),

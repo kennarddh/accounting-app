@@ -338,6 +338,8 @@
 		"subtotalCost": "Subtotal",
 		"addItem": "Add Item",
 		"totals": "Total Cost",
+		"supplier": "Supplier / Vendor",
+		"noSupplier": "No Supplier (Ad-hoc / Internal)",
 		"new": {
 			"title": "New Stock Adjustment"
 		},
@@ -723,7 +725,8 @@
 				"unitCost": "Cost / Unit",
 				"totalCost": "Total Value",
 				"runningStock": "Balance",
-				"user": "Created By"
+				"user": "Created By",
+				"supplier": "Supplier / Source"
 			},
 			"types": {
 				"Sale": "Sale",

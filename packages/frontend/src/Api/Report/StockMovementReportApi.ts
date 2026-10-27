@@ -13,6 +13,7 @@ export interface StockMovementItemOutput {
 	totalCost: string
 	referenceNumber: string
 	createdByName: string
+	supplierName?: string
 	runningStock?: string
 }
 

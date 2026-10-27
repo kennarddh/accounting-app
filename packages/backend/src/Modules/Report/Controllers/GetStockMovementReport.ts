@@ -63,6 +63,7 @@ class GetStockMovementReport extends Controller {
 					totalCost: m.totalCost,
 					referenceNumber: m.referenceNumber,
 					createdByName: m.createdByName,
+					supplierName: m.supplierName ?? null,
 					runningStock: m.runningStock ?? null,
 				})),
 			},
