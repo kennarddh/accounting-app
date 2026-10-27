@@ -25,11 +25,17 @@ await i18n
 	)
 	.init({
 		supportedLngs: ['en', 'id'],
-		lng: 'en',
 		fallbackLng: 'en',
 		ns: ['translations'],
 		defaultNS: 'translations',
 		fallbackNS: 'translations',
+
+		detection: {
+			order: ['localStorage', 'navigator'],
+			caches: ['localStorage'], // Automatically saves to localStorage on i18n.changeLanguage()
+			lookupLocalStorage: 'accountingAppLanguage', // The key used in localStorage
+		},
+
 		interpolation: {
 			escapeValue: false,
 		},
