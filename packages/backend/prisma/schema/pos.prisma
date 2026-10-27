@@ -190,3 +190,20 @@ model PosConfiguration {
 
     @@map("pos_configurations")
 }
+
+model Supplier {
+    id      BigInt  @id @default(autoincrement())
+    code    String  @unique(map: "suppliers_code_key")
+    name    String
+    contact String?
+    email   String?
+    phone   String?
+    address String? @db.Text
+    terms   String? @db.VarChar(50) // e.g. "Net 30", "Due upon receipt"
+
+    disabledAt DateTime?
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
+
+    @@map("suppliers")
+}

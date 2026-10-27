@@ -22,6 +22,7 @@ export enum ApiErrorResource {
 	StockMovement = 'StockMovement',
 	StockAdjustment = 'StockAdjustment',
 	PosConfiguration = 'PosConfiguration',
+	Supplier = 'Supplier',
 }
 
 export enum ApiErrorKind {
@@ -131,4 +132,10 @@ export enum OrderSortField {
 	CreatedAt = 'createdAt',
 	OrderNumber = 'orderNumber',
 	TotalAmount = 'totalAmount',
+}
+
+export enum SupplierSortField {
+	Code = 'code',
+	Name = 'name',
+	CreatedAt = 'createdAt',
 }

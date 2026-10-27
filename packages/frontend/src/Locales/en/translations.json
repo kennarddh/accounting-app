@@ -119,6 +119,11 @@
 		"Order": {
 			"NotFound": "The order does not exist.",
 			"Taken": "An order with number '{{orderNumber}}' already exists."
+		},
+		"Supplier": {
+			"NotFound": "The supplier does not exist.",
+			"Taken": "A supplier with code '{{code}}' already exists.",
+			"Disabled": "The supplier '{{name}}' is disabled and cannot be used."
 		}
 	},
 	"pwa": {
@@ -213,7 +218,8 @@
 			"salesByProduct": "Sales by Product",
 			"inventoryValuation": "Inventory Valuation",
 			"settings": "POS Settings",
-			"stockMovement": "Stock Movement Audit"
+			"stockMovement": "Stock Movement Audit",
+			"suppliers": "Suppliers"
 		}
 	},
 	"accounts": {
@@ -429,7 +435,8 @@
 		"inventory-valuation": "Inventory Valuation",
 		"settings": "Settings",
 		"pos-configuration": "POS Configuration",
-		"stock-movement": "Stock Movements"
+		"stock-movement": "Stock Movements",
+		"supplier": "Suppliers"
 	},
 	"stockStatus": {
 		"inStock": "In Stock ({{count}})",
@@ -763,6 +770,33 @@
 				"noLockDate": "No lock date set (All periods open)",
 				"clearLockDate": "Clear / Unlock Period"
 			}
+		}
+	},
+	"suppliers": {
+		"code": "Supplier Code",
+		"name": "Supplier Name",
+		"contact": "Contact Person",
+		"email": "Email",
+		"phone": "Phone",
+		"address": "Address",
+		"terms": "Payment Terms",
+		"status": "Status",
+		"createdAt": "Created At",
+		"new": {
+			"title": "New Supplier"
+		},
+		"edit": {
+			"title": "Edit Supplier"
+		},
+		"detail": {
+			"title": "Supplier Detail"
+		},
+		"list": {
+			"title": "Suppliers"
+		},
+		"select": {
+			"button": "Select Supplier",
+			"title": "Select Supplier"
 		}
 	}
 }

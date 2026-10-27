@@ -14,6 +14,7 @@ import PosConfigurationRouter from 'Modules/PosConfiguration/PosConfigurationRou
 import ProductRouter from 'Modules/Product/ProductRoutes'
 import ReportRouter from 'Modules/Report/ReportRoutes'
 import StockAdjustmentRouter from 'Modules/StockAdjustment/StockAdjustmentRoutes'
+import SupplierRouter from 'Modules/Supplier/SupplierRoutes'
 import UserRouter from 'Modules/User/UserRoutes'
 
 const Router = new CelosiaRouter({ strict: true })
@@ -30,6 +31,7 @@ Router.useRouters('/stock-adjustment', StockAdjustmentRouter)
 Router.useRouters('/order', OrderRouter)
 Router.useRouters('/report', ReportRouter)
 Router.useRouters('/pos-configuration', PosConfigurationRouter)
+Router.useRouters('/supplier', SupplierRouter)
 
 Router.get('/health', [], new HealthController())
 Router.all('/*splat', [], new NoMatchController())

@@ -13,6 +13,7 @@ import HomeRoundedIcon from '@mui/icons-material/HomeRounded'
 import HowToRegRoundedIcon from '@mui/icons-material/HowToRegRounded'
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded'
 import LeaderboardRoundedIcon from '@mui/icons-material/LeaderboardRounded'
+import LocalShippingRoundedIcon from '@mui/icons-material/LocalShippingRounded'
 import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded'
 import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded'
 import PointOfSaleRoundedIcon from '@mui/icons-material/PointOfSaleRounded'
@@ -235,6 +236,11 @@ const MenuContent: FC<{ onClickLink?: () => void }> = ({ onClickLink }) => {
 				text: t('navigations.links.orders'),
 				to: '/order',
 				icon: <ShoppingCartRoundedIcon fontSize='small' />,
+			},
+			{
+				text: t('navigations.links.suppliers'),
+				to: '/supplier',
+				icon: <LocalShippingRoundedIcon fontSize='small' />,
 			},
 			// Collapsible Reports Tree (Defaults to OPEN)
 			{
