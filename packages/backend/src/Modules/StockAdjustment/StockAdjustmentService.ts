@@ -283,16 +283,21 @@ class StockAdjustmentService extends Service {
 				}
 
 				// 6. Create Journal Entry
-				const journal = await tx.journalEntry.create({
-					data: {
-						entryNumber: `JE-${data.adjustmentNumber}`,
-						date: data.date,
-						description: `Inventory Adjustment (${data.type}): ${data.reason}`,
-						createdById: data.createdById,
-						lines: { create: journalLines },
-					},
-					select: { id: true },
-				})
+				let journalId: bigint | null = null
+				if (journalLines.length >= 2) {
+					const journal = await tx.journalEntry.create({
+						data: {
+							entryNumber: `JE-${data.adjustmentNumber}`,
+							date: data.date,
+							description: `Inventory Adjustment (${data.type}): ${data.reason}`,
+							createdById: data.createdById,
+							lines: { create: journalLines },
+						},
+						select: { id: true },
+					})
+
+					journalId = journal.id
+				}
 
 				// 7. Create Stock Adjustment with Supplier Relation
 				const netCost = totalGainCost.minus(totalLossCost)
@@ -306,7 +311,7 @@ class StockAdjustmentService extends Service {
 						totalCost: netCost.abs(),
 						supplierId: data.supplierId ?? null,
 						createdById: data.createdById,
-						journalEntryId: journal.id,
+						journalEntryId: journalId,
 						items: {
 							create: preparedItems.map(item => ({
 								productId: item.productId,
