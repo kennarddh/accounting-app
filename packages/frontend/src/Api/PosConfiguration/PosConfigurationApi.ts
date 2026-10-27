@@ -12,6 +12,7 @@ export interface PosConfigurationOutput {
 	inventoryGainAccountId: string
 	accountsPayableAccountId: string
 	roundingAccountId: string
+	closingLockDate: number | null
 }
 
 export interface PosConfigurationUpdateData {
@@ -25,6 +26,7 @@ export interface PosConfigurationUpdateData {
 	inventoryGainAccountId?: string
 	accountsPayableAccountId?: string
 	roundingAccountId?: string
+	closingLockDate?: number | null
 }
 
 export const PosConfigurationGetApi: ApiFunction<PosConfigurationOutput> = async () => {

@@ -1,5 +1,6 @@
 import { FC, SubmitEvent, useCallback, useEffect, useState, useTransition } from 'react'
 
+import LockClockRoundedIcon from '@mui/icons-material/LockClockRounded'
 import SaveIcon from '@mui/icons-material/Save'
 
 import {
@@ -15,7 +16,9 @@ import {
 	Snackbar,
 	Typography,
 } from '@mui/material'
+import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 
+import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
 
 import PageContainer from 'Components/PageContainer'
@@ -422,6 +425,104 @@ const PosConfigurationSettings: FC = () => {
 										/>
 									</Grid>
 								</Grid>
+							</CardContent>
+						</Card>
+
+						<Card
+							variant='outlined'
+							sx={{
+								borderColor: config.closingLockDate ? 'warning.main' : 'divider',
+							}}
+						>
+							<CardContent
+								sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2.5 }}
+							>
+								<Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+									<LockClockRoundedIcon
+										color={config.closingLockDate ? 'warning' : 'action'}
+									/>
+									<Box>
+										<Typography
+											variant='h6'
+											sx={{ fontSize: '1.05rem', fontWeight: 600 }}
+										>
+											{t('settings.posConfiguration.sections.periodClosing')}
+										</Typography>
+										<Typography
+											variant='body2'
+											sx={{ color: 'text.secondary', mt: 0.25 }}
+										>
+											{t(
+												'settings.posConfiguration.sections.periodClosingDesc',
+											)}
+										</Typography>
+									</Box>
+								</Box>
+								<Divider />
+								<Box
+									sx={{
+										display: 'flex',
+										gap: 2,
+										alignItems: 'center',
+										flexWrap: 'wrap',
+									}}
+								>
+									<DatePicker
+										label={t(
+											'settings.posConfiguration.fields.closingLockDate',
+										)}
+										value={
+											config.closingLockDate
+												? dayjs(config.closingLockDate)
+												: null
+										}
+										onChange={val => {
+											setConfig(prev =>
+												prev
+													? {
+															...prev,
+															closingLockDate: val
+																? val.endOf('day').valueOf()
+																: null,
+														}
+													: prev,
+											)
+										}}
+										slotProps={{
+											textField: { size: 'small', sx: { minWidth: 260 } },
+										}}
+									/>
+
+									{config.closingLockDate && (
+										<Button
+											variant='outlined'
+											color='inherit'
+											size='small'
+											onClick={() =>
+												setConfig(prev =>
+													prev
+														? { ...prev, closingLockDate: null }
+														: prev,
+												)
+											}
+										>
+											{t('settings.posConfiguration.fields.clearLockDate')}
+										</Button>
+									)}
+
+									<Typography
+										variant='caption'
+										sx={{
+											color: config.closingLockDate
+												? 'warning.dark'
+												: 'text.secondary',
+										}}
+									>
+										{config.closingLockDate
+											? `Transactions on or prior to ${dayjs(config.closingLockDate).format('DD/MM/YYYY')} are permanently locked.`
+											: t('settings.posConfiguration.fields.noLockDate')}
+									</Typography>
+								</Box>
 							</CardContent>
 						</Card>
 

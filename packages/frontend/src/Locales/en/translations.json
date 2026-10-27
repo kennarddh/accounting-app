@@ -55,6 +55,7 @@
 	},
 	"errors": {
 		"noData": "No data.",
+		"periodClosed": "Cannot post or modify transactions in a closed accounting period (Locked through {{date}}).",
 		"notFound": {
 			"title": "Page Not Found",
 			"text": "The page you are looking for does not exist."
@@ -85,7 +86,12 @@
 		},
 		"JournalEntry": {
 			"Taken": "The entry number is already taken.",
-			"Invalid": "Debits ({{debitTotal}}) and credits ({{creditTotal}}) must match."
+			"date": {
+				"Invalid": "Cannot post transactions to a closed period (Locked through {{date}})."
+			},
+			"lines": {
+				"Invalid": "Debits ({{debitTotal}}) and credits ({{creditTotal}}) must match."
+			}
 		},
 		"User": {
 			"NotFound": "The user was not found.",
@@ -700,7 +706,9 @@
 				"adjustments": "Stock Adjustments, Shrinkage & Waste",
 				"adjustmentsDesc": "GL accounts touched during inventory damage, loss, or audit surplus.",
 				"payables": "Supplier Payables & Rounding",
-				"payablesDesc": "Accounts for restock deliveries on credit and POS roundings."
+				"payablesDesc": "Accounts for restock deliveries on credit and POS roundings.",
+				"periodClosing": "Accounting Period Closing (Lock Date)",
+				"periodClosingDesc": "Lock historical transactions. No orders, journals, or adjustments can be created or modified on or before this date."
 			},
 			"fields": {
 				"cashAccount": "Cash Drawer Account (Asset)",
@@ -712,7 +720,10 @@
 				"shrinkageExpenseAccount": "Shrinkage / Shortage Loss Account (Expense)",
 				"inventoryGainAccount": "Inventory Gain / Surplus Account (Revenue)",
 				"accountsPayableAccount": "Accounts Payable Account (Liability)",
-				"roundingAccount": "Rounding Difference Account (Expense)"
+				"roundingAccount": "Rounding Difference Account (Expense)",
+				"closingLockDate": "Books Closed Through (Lock Date)",
+				"noLockDate": "No lock date set (All periods open)",
+				"clearLockDate": "Clear / Unlock Period"
 			}
 		}
 	}

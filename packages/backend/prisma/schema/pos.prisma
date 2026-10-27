@@ -183,6 +183,9 @@ model PosConfiguration {
     roundingAccountId BigInt
     roundingAccount   Account @relation("ConfigRoundingAccount", fields: [roundingAccountId], references: [id])
 
+    // F. PERIOD CLOSING LOCK DATE
+    closingLockDate DateTime?
+
     updatedAt DateTime @updatedAt
 
     @@map("pos_configurations")

@@ -25,7 +25,18 @@ class UpdatePosConfiguration extends Controller {
 			inventoryGainAccountId,
 			accountsPayableAccountId,
 			roundingAccountId,
+			closingLockDate,
 		} = request.body
+
+		let parsedLockDate: Date | null | undefined
+
+		if (closingLockDate === null) {
+			parsedLockDate = null
+		} else if (closingLockDate !== undefined) {
+			parsedLockDate = new Date(closingLockDate)
+		} else {
+			parsedLockDate = undefined
+		}
 
 		const updated = await this.posConfigService.update({
 			cashAccountId,
@@ -38,7 +49,16 @@ class UpdatePosConfiguration extends Controller {
 			inventoryGainAccountId,
 			accountsPayableAccountId,
 			roundingAccountId,
+			closingLockDate: parsedLockDate,
 		})
+
+		let updatedLockTimestamp: number | null
+
+		if (updated.closingLockDate) {
+			updatedLockTimestamp = updated.closingLockDate.getTime()
+		} else {
+			updatedLockTimestamp = null
+		}
 
 		response.status(200).json({
 			errors: {},
@@ -53,6 +73,7 @@ class UpdatePosConfiguration extends Controller {
 				inventoryGainAccountId: updated.inventoryGainAccountId.toString(),
 				accountsPayableAccountId: updated.accountsPayableAccountId.toString(),
 				roundingAccountId: updated.roundingAccountId.toString(),
+				closingLockDate: updatedLockTimestamp,
 			},
 		})
 	}
@@ -69,6 +90,7 @@ class UpdatePosConfiguration extends Controller {
 			inventoryGainAccountId: z.coerce.bigint().min(1n).optional(),
 			accountsPayableAccountId: z.coerce.bigint().min(1n).optional(),
 			roundingAccountId: z.coerce.bigint().min(1n).optional(),
+			closingLockDate: z.coerce.number().positive().nullable().optional(),
 		})
 	}
 }

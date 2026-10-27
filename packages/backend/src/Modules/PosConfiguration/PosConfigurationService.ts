@@ -20,6 +20,7 @@ export interface PosConfigurationData {
 	inventoryGainAccountId: bigint
 	accountsPayableAccountId: bigint
 	roundingAccountId: bigint
+	closingLockDate: Date | null
 }
 
 @Injectable()

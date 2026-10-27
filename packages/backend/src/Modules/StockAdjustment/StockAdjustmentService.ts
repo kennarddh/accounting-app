@@ -131,6 +131,19 @@ class StockAdjustmentService extends Service {
 	}
 
 	async create(data: StockAdjustmentCreateData) {
+		const config = await this.posConfigurationService.get()
+		if (config.closingLockDate && data.date <= config.closingLockDate) {
+			const lockedStr = config.closingLockDate.toISOString().slice(0, 10)
+			throw new BusinessRuleError(
+				ApiErrorResource.StockAdjustment,
+				`Cannot adjust stock in a closed accounting period (Locked through ${lockedStr}).`,
+				{
+					field: 'date',
+					meta: { date: lockedStr },
+				},
+			)
+		}
+
 		try {
 			return await this.db.transaction(async tx => {
 				const config = await this.posConfigurationService.get()

@@ -177,6 +177,19 @@ class OrderService extends Service {
 			)
 		}
 
+		const config = await this.posConfigurationService.get()
+		if (config.closingLockDate && data.date <= config.closingLockDate) {
+			const lockedStr = config.closingLockDate.toISOString().slice(0, 10)
+			throw new BusinessRuleError(
+				ApiErrorResource.Order,
+				`Cannot create orders in a closed accounting period (Locked through ${lockedStr}).`,
+				{
+					field: 'date',
+					meta: { date: lockedStr },
+				},
+			)
+		}
+
 		const status = data.status ?? OrderStatus.Completed
 
 		try {
@@ -382,6 +395,18 @@ class OrderService extends Service {
 					journalEntry: true,
 				},
 			})
+
+			if (config.closingLockDate && order.date <= config.closingLockDate) {
+				const lockedStr = config.closingLockDate.toISOString().slice(0, 10)
+				throw new BusinessRuleError(
+					ApiErrorResource.Order,
+					`Cannot refund an order from a closed accounting period (Locked through ${lockedStr}).`,
+					{
+						field: 'date',
+						meta: { date: lockedStr },
+					},
+				)
+			}
 
 			// 2. Guard: Only completed orders can be refunded or cancelled
 			if ((order.status as OrderStatus) !== OrderStatus.Completed) {

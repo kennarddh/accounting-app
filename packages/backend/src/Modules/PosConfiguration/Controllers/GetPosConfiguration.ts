@@ -14,6 +14,14 @@ class GetPosConfiguration extends Controller {
 	) {
 		const config = await this.posConfigService.get(true)
 
+		let lockTimestamp: number | null
+
+		if (config.closingLockDate) {
+			lockTimestamp = config.closingLockDate.getTime()
+		} else {
+			lockTimestamp = null
+		}
+
 		response.status(200).json({
 			errors: {},
 			data: {
@@ -27,6 +35,7 @@ class GetPosConfiguration extends Controller {
 				inventoryGainAccountId: config.inventoryGainAccountId.toString(),
 				accountsPayableAccountId: config.accountsPayableAccountId.toString(),
 				roundingAccountId: config.roundingAccountId.toString(),
+				closingLockDate: lockTimestamp,
 			},
 		})
 	}

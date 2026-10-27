@@ -6,6 +6,7 @@ import { BusinessRuleError, NotFoundError, ResourceDisabledError } from 'Errors'
 
 import DatabaseService from 'Modules/Database/DatabaseService'
 import { buildPrismaPagination, handlePrismaError } from 'Modules/Database/PrismaUtils'
+import PosConfigurationService from 'Modules/PosConfiguration/PosConfigurationService'
 
 import { Prisma } from 'PrismaGenerated/client'
 
@@ -44,6 +45,7 @@ class JournalService extends Service {
 	constructor(
 		private db = DI.get(DatabaseService),
 		private configurationService = DI.get(ConfigurationService),
+		private posConfigService = DI.get(PosConfigurationService),
 	) {
 		super('JournalService')
 	}
@@ -168,6 +170,18 @@ class JournalService extends Service {
 			)
 		}
 
+		const config = await this.posConfigService.get()
+		if (config.closingLockDate && data.date <= config.closingLockDate) {
+			const lockedStr = config.closingLockDate.toISOString().slice(0, 10)
+			throw new BusinessRuleError(
+				ApiErrorResource.JournalEntry,
+				`Cannot post transactions to a closed accounting period (Locked through ${lockedStr}).`,
+				{
+					field: 'date',
+					meta: { date: lockedStr },
+				},
+			)
+		}
 		let totalDebit = new Prisma.Decimal(0)
 		let totalCredit = new Prisma.Decimal(0)
 
