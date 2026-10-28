@@ -178,7 +178,8 @@ const ProfitAndLossReport: FC = () => {
 								sx={{
 									display: 'flex',
 									justifyContent: 'space-between',
-									alignItems: 'center',
+									alignItems: { xs: 'flex-start', md: 'center' },
+									flexDirection: { xs: 'column', md: 'row' },
 								}}
 							>
 								<Box>

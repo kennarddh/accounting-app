@@ -161,8 +161,9 @@ const TrialBalanceReport: FC = () => {
 								sx={{
 									display: 'flex',
 									justifyContent: 'space-between',
-									alignItems: 'center',
+									alignItems: { xs: 'flex-start', md: 'center' },
 									py: 2,
+									flexDirection: { xs: 'column', md: 'row' },
 								}}
 							>
 								<Box>
@@ -188,7 +189,16 @@ const TrialBalanceReport: FC = () => {
 									</Typography>
 								</Box>
 
-								<Box sx={{ display: 'flex', gap: 4, textAlign: 'right' }}>
+								<Box
+									sx={{
+										display: 'flex',
+										width: { xs: '100%', md: 'unset' },
+										gap: { xs: 1, md: 4 },
+										textAlign: 'right',
+										flexDirection: { xs: 'column', md: 'row' },
+										alignItems: { xs: 'flex-end', md: 'unset' },
+									}}
+								>
 									<Box>
 										<Typography variant='caption' color='textSecondary'>
 											Total Debits
