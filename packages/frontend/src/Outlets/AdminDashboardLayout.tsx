@@ -16,7 +16,7 @@ const AdminDashboardLayout: FC = () => {
 					flexGrow: 1,
 					height: 'calc(100dvh - 64px)',
 					overflow: 'auto',
-					marginTop: { xs: '56px', md: '64px' },
+					marginTop: { xs: '0px', md: '64px' },
 					marginLeft: { xs: 0, md: `${DRAWER_WIDTH}px` },
 					width: { xs: '100%', md: `calc(100% - ${DRAWER_WIDTH}px)` },
 				}}

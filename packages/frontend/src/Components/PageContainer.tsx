@@ -30,12 +30,12 @@ const PageContainer: FC<PageContainerProps> = ({
 
 	return (
 		<Box
-			sx={theme => ({
-				width: `calc(100% - ${noPadding ? 0 : theme.spacing(4)})`,
-				height: `calc(100% - ${noPadding ? 0 : theme.spacing(4)})`,
+			sx={{
+				width: '100%',
+				height: '100%',
 				padding: noPadding ? 0 : 2,
 				overflowY: 'auto',
-			})}
+			}}
 		>
 			<Breadcrumbs
 				separator={<NavigateNextIcon fontSize='small' />}
